@@ -3,21 +3,14 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Homepage",
+            "name": "TickTockTrack",
             "request": "launch",
-            "mainClass": "ticktocktrack.gui.Homepage",
-            "projectName": "TicktocktrackSystem_915a5a42"
+            "mainClass": "ticktocktrack.TickTockTrack",
+            "projectName": "TicktocktrackSystem"
         },
         {
             "type": "java",
-            "name": "HomePage",
-            "request": "launch",
-            "mainClass": "ticktocktrack.gui.HomePage",
-            "projectName": "TicktocktrackSystem_915a5a42"
-        },
-        {
-            "type": "java",
-            "name": "TicktocktrackApp",
+            "name": "TickTockTrack",
             "request": "launch",
             "mainClass": "ticktocktrack.TickTockTrack",
             "projectName": "TicktocktrackSystem_915a5a42"
