@@ -1,3 +1,5 @@
+package ticktocktrack;
+
 import ticktocktrack.gui.Homepage;
 import javafx.application.Application;
 
