@@ -27,7 +27,7 @@ public class TeacherAddCourseCenterPanel {
         shadowView.setLayoutY(-115);
 
         // Create the "Create Users" Text
-        Text createUsersTitle = new Text("Add Coursess");
+        Text createUsersTitle = new Text("Add Coursess try");
         createUsersTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
         createUsersTitle.setFill(Color.web("#02383E"));
         createUsersTitle.setLayoutX(50);

@@ -23,9 +23,16 @@ public class Login {
      * @return The role of the user ("HeadAdmin", "Admin", "Teacher", "Student") if successful; otherwise null.
      */
     public String authenticate(String username, String password) {
-    	if (username.equals("headadmin") && password.equals("headadmin123")) {
-    	    return "HeadAdmin";
-    	}
+        // Hardcoded accounts
+        if (username.equals("headadmin") && password.equals("headadmin123")) {
+            return "HeadAdmin";
+        }
+        if (username.equals("teacher") && password.equals("teacher123")) {
+            return "Teacher";
+        }
+        if (username.equals("student") && password.equals("student123")) {
+            return "Student";
+        }
 
         try {
             dbConnection.connectToSQLServer();
