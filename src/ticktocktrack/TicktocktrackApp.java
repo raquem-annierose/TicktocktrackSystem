@@ -1,10 +1,11 @@
 package ticktocktrack;
 
 import ticktocktrack.gui.Homepage;
-import javafx.application.Application;
+// Removed unused import
 
 public class TicktocktrackApp {
+
     public static void main(String[] args) {
-        Application.launch(Homepage.class, args);
+        javafx.application.Application.launch(Homepage.class, args);
     }
 }

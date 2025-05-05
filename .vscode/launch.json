@@ -3,18 +3,12 @@
     "configurations": [
         {
             "type": "java",
-            "name": "TicktocktrackApp",
-            "request": "launch",
-            "mainClass": "ticktocktrack.TicktocktrackApp",
-            "projectName": "TicktocktrackSystem_915a5a42"
-        },
-        {
-            "type": "java",
             "name": "Launch TicktocktrackApp",
             "request": "launch",
             "mainClass": "ticktocktrack.TicktocktrackApp",
             "vmArgs": "--module-path \"${workspaceFolder}/lib\" --add-modules javafx.controls,javafx.fxml",
-            "projectName": "Ticktocktrack System"
+            "cwd": "${workspaceFolder}",
+            "projectName": "TicktocktrackApp"
         }
     ]
 }
