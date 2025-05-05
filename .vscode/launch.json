@@ -3,16 +3,30 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Homepage",
+            "request": "launch",
+            "mainClass": "ticktocktrack.gui.Homepage",
+            "projectName": "TicktocktrackSystem_915a5a42"
+        },
+        {
+            "type": "java",
+            "name": "HomePage",
+            "request": "launch",
+            "mainClass": "ticktocktrack.gui.HomePage",
+            "projectName": "TicktocktrackSystem_915a5a42"
+        },
+        {
+            "type": "java",
             "name": "TicktocktrackApp",
             "request": "launch",
-            "mainClass": "ticktocktrack.TicktocktrackApp",
+            "mainClass": "ticktocktrack.TickTockTrack",
             "projectName": "TicktocktrackSystem_915a5a42"
         },
         {
             "type": "java",
             "name": "Launch TicktocktrackApp",
             "request": "launch",
-            "mainClass": "ticktocktrack.TicktocktrackApp",
+            "mainClass": "ticktocktrack.TickTockTrack",
             "vmArgs": "--module-path \"${workspaceFolder}/lib\" --add-modules javafx.controls,javafx.fxml",
             "cwd": "${workspaceFolder}",
             "projectName": "TicktocktrackApp"
