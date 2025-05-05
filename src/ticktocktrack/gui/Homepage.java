@@ -11,9 +11,14 @@ public class Homepage extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Homepage");
         Label label = new Label("Welcome to the Homepage!");
-        StackPane root = new StackPane(label);
+        StackPane root = new StackPane();
+        root.getChildren().add(label);
         Scene scene = new Scene(root, 400, 300);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

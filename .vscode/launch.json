@@ -1,20 +1,17 @@
 {
-    "version": "0.2.0",
+    "type": "java",
+    "name": "Ticktock Track System",
+    "request": "launch",
+    "mainClass": "ticktocktrack.TicktocktrackApp",
+    "vmArgs": "--module-path \"${workspaceFolder}/lib\" --add-modules javafx.controls,javafx.fxml",
     "configurations": [
+        
         {
             "type": "java",
             "name": "TicktocktrackApp",
             "request": "launch",
             "mainClass": "TicktocktrackApp",
             "projectName": "TicktocktrackSystem_915a5a42"
-        },
-        {
-            "type": "java",
-            "name": "Ticktock Track System",
-            "request": "launch",
-            "mainClass": "ticktocktrack.TicktocktrackApp",
-            "vmArgs": "--module-path \"${workspaceFolder}/lib\" --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }
-// Compare this snippet from .vscode/tasks.json:
