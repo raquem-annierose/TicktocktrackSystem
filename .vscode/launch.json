@@ -1,7 +1,13 @@
 {
     "version": "0.2.0",
     "configurations": [
-    
+        {
+            "type": "java",
+            "name": "TickTockTrack",
+            "request": "launch",
+            "mainClass": "ticktocktrack.TickTockTrack",
+            "projectName": "TicktocktrackSystem"
+        },
         {
             "type": "java",
             "name": "Launch TicktocktrackApp",
