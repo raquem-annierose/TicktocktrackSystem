@@ -6,16 +6,7 @@
             "name": "TickTockTrack",
             "request": "launch",
             "mainClass": "ticktocktrack.TickTockTrack",
-            "projectName": "TicktocktrackSystem"
-        },
-        {
-            "type": "java",
-            "name": "Launch TicktocktrackApp",
-            "request": "launch",
-            "mainClass": "ticktocktrack.TickTockTrack",
-            "vmArgs": "--module-path \"${workspaceFolder}/lib\" --add-modules javafx.controls,javafx.fxml",
-            "cwd": "${workspaceFolder}",
-            "projectName": "TicktocktrackApp"
+            "vmArgs": "--module-path \"${workspaceFolder}/lib/javafx-sdk-23.0.2/lib\" --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.web,javafx.swing,javafx.media"
         }
     ]
 }
