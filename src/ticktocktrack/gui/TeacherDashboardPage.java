@@ -590,11 +590,15 @@ public class TeacherDashboardPage extends Application {
     }
     
     private void onAddCourseClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
-        selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+        System.out.println("Add Course clicked!");
+        selectSidebarText((Text) event.getSource()); // Highlight the selected text
+
+        // Clear the center content pane
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = TeacherAddCourseCenterPanel.createPanel();
-        centerContentPane.getChildren().add(dashboardPanel);
+
+        // Create the Add Course dialog and add it to the center content pane
+        Pane addCourseDialog = TeacherAddCourseCenterPanel.createAddCourseDialog(centerContentPane);
+        centerContentPane.getChildren().add(addCourseDialog);
     }
     
     private void onAttendanceSummaryClicked(MouseEvent event) {
