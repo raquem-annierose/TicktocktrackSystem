@@ -31,7 +31,7 @@ public class TeacherAddCourseCenterPanel {
 
 
 
-        centerPanel.getChildren().addAll(shadowView, createUsersTitle, openDialogBtn);
+        centerPanel.getChildren().addAll(shadowView);
 
         return centerPanel;
     }
