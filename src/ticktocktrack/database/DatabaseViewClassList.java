@@ -7,34 +7,43 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ticktocktrack.logic.ViewClassList;
+
 public class DatabaseViewClassList {
 
-    public static List<String[]> getCourses() {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        List<String[]> courses = new ArrayList<>();
+	public static List<String[]> getCourses() {
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    List<String[]> courses = new ArrayList<>();
 
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        Connection conn = dbConn.getConnection();
 
-            String sql = "SELECT course_name, section FROM Courses";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
+	        String sql = "SELECT course_name, section, program FROM Courses";
+	        PreparedStatement pstmt = conn.prepareStatement(sql);
+	        ResultSet rs = pstmt.executeQuery();
 
-            while (rs.next()) {
-                String courseName = rs.getString("course_name");
-                String section = rs.getString("section");
-                courses.add(new String[]{courseName, section});
-            }
+	        while (rs.next()) {
+	            String courseName = rs.getString("course_name");
+	            String section = rs.getString("section");
+	            String program = rs.getString("program");
+	            if (program == null) program = "N/A"; // Fallback
 
-        } catch (SQLException e) {
-            System.err.println("Error fetching courses: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
+	            // Map program to its abbreviation
+	            String programAbbreviation = ViewClassList.mapProgramToShortName(program);
+	            // Add course info with the abbreviation
+	            courses.add(new String[]{courseName, section, programAbbreviation});
+	        }
 
-        return courses;
-    }
+	    } catch (SQLException e) {
+	        System.err.println("Error fetching courses: " + e.getMessage());
+	    } finally {
+	        dbConn.closeConnection();
+	    }
+
+	    return courses;
+	}
+
 
     public static void deleteCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -92,6 +101,7 @@ public class DatabaseViewClassList {
         }
     }
 
+ // Fetching students for a course
     public static List<Student> getStudentsForCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         List<Student> students = new ArrayList<>();
@@ -100,32 +110,36 @@ public class DatabaseViewClassList {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            String sql = "SELECT s.username, s.first_name, s.middle_name, s.last_name, s.year_level, s.email, se.section " +
+            String sql = "SELECT s.student_id, s.username, s.first_name, s.middle_name, s.last_name, s.year_level, s.email, se.section, s.program " +
                          "FROM Students s " +
                          "JOIN StudentEnrollments se ON s.student_id = se.student_id " +
                          "JOIN Courses c ON se.course_id = c.course_id " +
-                         "WHERE c.course_name = ? AND se.section = ?";
-
+                         "WHERE c.course_name = ? AND c.section = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, courseName);
             pstmt.setString(2, section);
+
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                String username = rs.getString("username");
-                String firstName = rs.getString("first_name");
-                String middleName = rs.getString("middle_name");
-                String lastName = rs.getString("last_name");
-                String yearLevel = rs.getString("year_level");
-                String email = rs.getString("email");
-                String courseSection = rs.getString("section");
+                Student student = new Student(
+                        rs.getInt("student_id"),
+                        rs.getString("username"),
+                        rs.getString("first_name"),
+                        rs.getString("middle_name"),
+                        rs.getString("last_name"),
+                        rs.getString("section"),
+                        rs.getString("year_level"),
+                        rs.getString("program")
+                );
+                
+                // ✅ Set email separately
+                student.setEmail(rs.getString("email"));
 
-                // Updated constructor includes email
-                students.add(new Student(username, firstName, middleName, lastName, courseSection, yearLevel, email));
+                students.add(student);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error fetching students for course: " + e.getMessage());
+            System.err.println("Error fetching students: " + e.getMessage());
         } finally {
             dbConn.closeConnection();
         }

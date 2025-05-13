@@ -55,17 +55,17 @@ public class TeacherViewClassStudents {
 
         String fullTitle = "Students for " + courseName;
         if (section != null) {
-            fullTitle += " (Section " + section + ")";
+            fullTitle += "\n (Section " + section + ")";
         }
 
         Pane manualLayout = new Pane(); // Use Pane to set absolute positions
 
         // Title Text
         Text title = new Text(fullTitle);
-        title.setFont(javafx.scene.text.Font.font("Poppins", javafx.scene.text.FontWeight.BOLD, 32));
+        title.setFont(javafx.scene.text.Font.font("Poppins", javafx.scene.text.FontWeight.BOLD, 28));
         title.setFill(javafx.scene.paint.Color.web("#02383E"));
         title.setLayoutX(30);
-        title.setLayoutY(70);
+        title.setLayoutY(50);
 
         // Search Field
         TextField searchField = new TextField();

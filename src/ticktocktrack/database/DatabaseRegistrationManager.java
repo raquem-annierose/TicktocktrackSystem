@@ -85,8 +85,10 @@ public class DatabaseRegistrationManager {
         }
     }
 
-    // Method to register a Student with Year Level and Section
-    public static boolean registerStudent(String username, String role, String email, String passwordHash, String firstName, String middleName, String lastName, String yearLevel, String section) {
+ // Method to register a Student with Year Level, Section, and Program
+    public static boolean registerStudent(String username, String role, String email, String passwordHash,
+                                          String firstName, String middleName, String lastName,
+                                          String yearLevel, String section, String program) {
         if (checkUsernameExists(username)) {
             System.out.println("Username already taken!");
             return false;
@@ -101,8 +103,9 @@ public class DatabaseRegistrationManager {
                 statement.executeUpdate();
             }
 
-            // Insert student details into 'Students' table including Year Level and Section
-            sql = "INSERT INTO Students (username, email, password_hash, first_name, middle_name, last_name, year_level, section, attendance_status, absent_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Insert student details into 'Students' table including Program
+            sql = "INSERT INTO Students (username, email, password_hash, first_name, middle_name, last_name, year_level, section, program, attendance_status, absent_count) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, username);
                 statement.setString(2, email);
@@ -110,27 +113,33 @@ public class DatabaseRegistrationManager {
                 statement.setString(4, firstName);
                 statement.setString(5, middleName);
                 statement.setString(6, lastName);
-                statement.setString(7, yearLevel); // Set Year Level
-                statement.setString(8, section);  // Set Section
-                statement.setString(9, "Pending"); // Default attendance status
-                statement.setInt(10, 0);          // Default absent_count
+                statement.setString(7, yearLevel);
+                statement.setString(8, section);
+                statement.setString(9, program); // ⬅️ New field
+                statement.setString(10, "Pending");
+                statement.setInt(11, 0);
                 statement.executeUpdate();
             }
 
-            return true; // Student successfully registered
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
-    // Unified method to register a user based on role (with updated student registration)
-    public static boolean registerUser(String username, String role, String email, String passwordHash, String firstName, String middleName, String lastName, String yearLevel, String section) {
-        if (role.equals("Student")) {
-            return registerStudent(username, role, email, passwordHash, firstName, middleName, lastName, yearLevel, section);
-        } else if (role.equals("Admin") || role.equals("Teacher")) {
-            return registerFaculty(username, role, email, passwordHash);
-        }
-        return false; // Invalid role
+    
+    public static boolean registerUser(String username, String role, String email, String passwordHash,
+            String firstName, String middleName, String lastName,
+            String yearLevel, String section, String program) {
+    	if (role.equals("Student")) {
+    		return registerStudent(username, role, email, passwordHash,
+    				firstName, middleName, lastName,
+    				yearLevel, section, program);
+    	} else if (role.equals("Admin") || role.equals("Teacher")) {
+    		return registerFaculty(username, role, email, passwordHash);
+    	}
+    		return false;
     }
+
+   
 }

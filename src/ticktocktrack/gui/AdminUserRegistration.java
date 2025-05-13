@@ -197,65 +197,87 @@ public class AdminUserRegistration {
 
             Button exitButton = createExitButton(studentRegistrationPanel);
             studentRegistrationPanel.getChildren().add(exitButton);
-            
-            
+
             double startX = 225;
             double startY = 100;
             double startW = 480;
             double startH = 50;
             double gap = 65;
-            
-            // For First Name and Middle Name on the same line
-            double smallFieldWidth = 235;  // Half-width fields
-            double smallGap = 10;           // Gap between first and middle name fields
+
+            double smallFieldWidth = 235;
+            double smallGap = 10;
 
             TextField emailField = createTextField("Email Address", startX, startY, startW, startH);
             TextField usernameField = createTextField("Username", startX, startY + gap, startW, startH);
-         
-            // Adding ComboBox for Year Level (styled) on the right of the name fields
+            
+         // ComboBox for Program (NEW)
+            ComboBox<String> programComboBox = new ComboBox<>();  // ⬅️ NEW
+            programComboBox.getItems().addAll(                    // ⬅️ NEW
+                "BSECE – BS in Electronics Engineering",
+                "BSME – BS in Mechanical Engineering",
+                "BSA – BS in Accountancy",
+                "BSBA-HRDM – BSBA major in Human Resource Development Management",
+                "BSBA-MM – BSBA major in Marketing Management",
+                "BSENTREP – BS in Entrepreneurship",
+                "BSIT – BS in Information Technology",
+                "BSAM – BS in Applied Mathematics",
+                "BSED-ENGLISH – Bachelor in Secondary Education major in English",
+                "BSED-MATH – Bachelor in Secondary Education major in Mathematics",
+                "BSOA – BS in Office Administration"
+            );
+            programComboBox.setPromptText("Select Program");       // ⬅️ NEW
+            programComboBox.setLayoutX(startX);              // ⬅️ NEW (Positioned beside Year Level)
+            programComboBox.setLayoutY(startY + gap * 2);          // ⬅️ NEW
+            programComboBox.setPrefWidth(480);                     // ⬅️ NEW (Wide enough for full text)
+            programComboBox.setPrefHeight(50);                     // ⬅️ NEW
+
+            // Apply the same style for rounded corners and border
+            programComboBox.setStyle(
+                "-fx-border-color: #02383E;" +
+                "-fx-border-width: 2px;" +
+                "-fx-background-radius: 12px;" +
+                "-fx-border-radius: 12px;" +
+                "-fx-background-color: white;" +
+                "-fx-prompt-text-fill: #02383E;"
+            );
+
+            // ComboBox for Year Level
             ComboBox<String> yearLevelComboBox = new ComboBox<>();
             yearLevelComboBox.getItems().addAll(
                 "1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"
             );
             yearLevelComboBox.setPromptText("Select Year Level");
-            yearLevelComboBox.setLayoutX(startX);  // Positioned to the right of name fields
-            yearLevelComboBox.setLayoutY(startY + gap * 2);
-            yearLevelComboBox.setPrefWidth(235);
-            yearLevelComboBox.setPrefHeight(50); // To match your smaller field height
+            yearLevelComboBox.setLayoutX(startX);
+            yearLevelComboBox.setLayoutY(startY + gap * 3);
+            yearLevelComboBox.setPrefWidth(startW / 2);  // Adjusted width to fit 3 items on a row
+            yearLevelComboBox.setPrefHeight(50);
 
-            // Style it nicely
-            String comboBoxBaseStyle = ""
-                + "-fx-background-color: transparent;"
-                + "-fx-text-fill: #02383E;"
-                + "-fx-prompt-text-fill: #02383E;"
-                + "-fx-border-color: #02383E;"
-                + "-fx-border-width: 2px;"
-                + "-fx-background-radius: 12px;"
-                + "-fx-border-radius: 12px;";
+            // Apply the same style for rounded corners and border to Year Level ComboBox
+            yearLevelComboBox.setStyle(
+                "-fx-border-color: #02383E;" +
+                "-fx-border-width: 2px;" +
+                "-fx-background-radius: 12px;" +
+                "-fx-border-radius: 12px;" +
+                "-fx-background-color: white;" +
+                "-fx-prompt-text-fill: #02383E;"
+            );
+            // Section field
+            TextField sectionField = createTextField("Section", startX + smallFieldWidth + smallGap, startY + gap * 3, startW / 2, 50); // ⬅️ Adjusted position
 
-            yearLevelComboBox.setStyle(comboBoxBaseStyle);
+            TextField lastNameField = createTextField("Last Name", startX, startY + gap * 4, startW, startH);
 
-            // Section field next to Year Level
-            TextField sectionField = createTextField("Section", startX + smallFieldWidth + smallGap, startY + gap * 2, 235, 50);
-            
-            TextField lastNameField = createTextField("Last Name", startX, startY + gap * 3, startW, startH);
-           
-
-            TextField firstNameField = createTextField("First Name", startX, startY + gap * 4, startW, startH);
+            TextField firstNameField = createTextField("First Name", startX, startY + gap * 5, startW, startH);
             firstNameField.setPrefWidth(smallFieldWidth);
 
-            TextField middleNameField = createTextField("Middle Name", startX + smallFieldWidth + smallGap, startY + gap * 4, startW, startH);
+            TextField middleNameField = createTextField("Middle Name", startX + smallFieldWidth + smallGap, startY + gap * 5, startW, startH);
             middleNameField.setPrefWidth(smallFieldWidth);
 
-            PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 5, startW, startH);
-            PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX, startY + gap * 6, startW, startH);
+            PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 6, startW / 2, startH);
+            PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX + smallFieldWidth + smallGap, startY + gap * 6, startW / 2, startH);
 
-         
-            
             Button doneButton = createDoneButton(800, 490);
 
             doneButton.setOnAction(event -> {
-                // Get all the values from the fields
                 String email = emailField.getText();
                 String username = usernameField.getText();
                 String lastName = lastNameField.getText();
@@ -263,10 +285,11 @@ public class AdminUserRegistration {
                 String middleName = middleNameField.getText();
                 String password = passwordField.getText();
                 String confirmPassword = confirmPasswordField.getText();
-                String yearLevel = yearLevelComboBox.getValue();  // Get selected Year Level
+                String yearLevel = yearLevelComboBox.getValue();
                 String section = sectionField.getText();
+                String program = programComboBox.getValue(); // ⬅️ NEW
 
-                // Now simply call the UserRegistration method
+                // Now pass the new field as well
                 UserRegistration.registerStudent(
                     username,
                     email,
@@ -276,22 +299,22 @@ public class AdminUserRegistration {
                     middleName,
                     lastName,
                     yearLevel,
-                    section
+                    section,
+                    program // ⬅️ NEW
                 );
             });
 
             studentRegistrationPanel.getChildren().addAll(
-                    emailField, usernameField, lastNameField,
-                    firstNameField, middleNameField,
-                    passwordField, confirmPasswordField,
-                    yearLevelComboBox, sectionField,  // Add ComboBox for Year Level and Section field
-                    doneButton
+                emailField, usernameField, lastNameField,
+                firstNameField, middleNameField,
+                passwordField, confirmPasswordField,
+                yearLevelComboBox, programComboBox, sectionField, // ⬅️ NEW programComboBox added
+                doneButton
             );
 
             return studentRegistrationPanel;
         }
     }
-
 
 	public static void showAlert(AlertType error, String string, String string2) {
 		// TODO Auto-generated method stub

@@ -24,11 +24,11 @@ public class ViewClassList {
         DatabaseViewClassList.deleteCourse(courseName, section);
     }
 
-    public static void addNewCourse(String courseName, String section) {
-        DatabaseAddCourse.addCourse(courseName, section);
+    public static void addNewCourse(String courseName, String section, String program) {
+        DatabaseAddCourse.addCourse(courseName, section, program);
     }
 
-    // ========== HANDLER Methods ==========
+    // ========== HANDLER Methods ==========S
 
     public static void handleEditCourse(String oldCourseName, String oldSection) {
         TextField courseNameField = new TextField(oldCourseName);
@@ -62,7 +62,49 @@ public class ViewClassList {
             TeacherViewClassListCenterPanel.updateClassListPanel();
         }
     }
+    
+    public static String mapProgramToShortName(String programName) {
+        if (programName == null) {
+            return "N/A"; // Return "N/A" if programName is null
+        }
 
+        // Trim the programName to remove leading/trailing spaces
+        programName = programName.trim();
+
+        // Check if "–" exists in the string and limit the program name to before the "–"
+        int dashIndex = programName.lastIndexOf("–");
+        if (dashIndex != -1) {
+            programName = programName.substring(0, dashIndex).trim();
+        }
+
+        // Mapping of full names to short names
+        java.util.Map<String, String> programMap = new java.util.HashMap<>();
+        programMap.put("BS in Electronics Engineering", "BSECE");
+        programMap.put("BS in Mechanical Engineering", "BSME");
+        programMap.put("BS in Accountancy", "BSA");
+        programMap.put("BSBA major in Human Resource Development Management", "BSBA-HRDM");
+        programMap.put("BSBA major in Marketing Management", "BSBA-MM");
+        programMap.put("BS in Entrepreneurship", "BSENTREP");
+        programMap.put("BS in Information Technology", "BSIT");
+        programMap.put("BS in Applied Mathematics", "BSAM");
+        programMap.put("Bachelor in Secondary Education major in English", "BSED-ENGLISH");
+        programMap.put("Bachelor in Secondary Education major in Mathematics", "BSED-MATH");
+        programMap.put("BS in Office Administration", "BSOA");
+
+        // Check if the program is in the map and return the corresponding short name
+        String shortName = programMap.get(programName);
+
+        // If the program is not found in the map, return a shorter version of the original name
+        if (shortName == null) {
+            return programName.length() > 15 ? programName.substring(0, 15) + "..." : programName;
+        }
+
+        return shortName;
+    }
+
+
+
+   
     public static void goToNextPage() {
         TeacherViewClassListCenterPanel.incrementPage();
     }

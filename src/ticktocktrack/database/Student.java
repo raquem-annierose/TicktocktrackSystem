@@ -9,6 +9,7 @@ public class Student {
     private String section;
     private String yearLevel;
     private String email; // Add this field
+    private String program; // Add this field for program
 
  // Constructor without student_id (still works for existing code)
     public Student(String username, String firstName, String middleName, String lastName, String section, String yearLevel, String email) {
@@ -22,7 +23,7 @@ public class Student {
     }
 
     // Constructor with student_id (for future use)
-    public Student(int student_id, String username, String firstName, String middleName, String lastName, String section, String yearLevel) {
+    public Student(int student_id, String username, String firstName, String middleName, String lastName, String section, String yearLevel, String program) {
         this.student_id = student_id;
         this.username = username;
         this.firstName = firstName;
@@ -30,6 +31,12 @@ public class Student {
         this.lastName = lastName;
         this.section = section;
         this.yearLevel = yearLevel;
+        this.program = program; // Initialize program
+    }
+    
+    // Getter and setter for program
+    public String getProgram() {
+        return program;
     }
  // Add getter
     public String getEmail() {
@@ -64,7 +71,10 @@ public class Student {
     public String getYearLevel() {
         return yearLevel;
     }
-
+    
+    public void setEmail(String email) {
+        this.email = email;
+    }
     @Override
     public String toString() {
         return firstName + " " + (middleName != null ? middleName + " " : "") + lastName + " (" + section + ")";

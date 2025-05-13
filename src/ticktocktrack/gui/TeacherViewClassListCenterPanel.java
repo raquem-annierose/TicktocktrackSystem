@@ -58,7 +58,7 @@ public class TeacherViewClassListCenterPanel {
     private static void addClassListPanel() {
         classListPanel = new VBox(20);
         classListPanel.setLayoutX(50);
-        classListPanel.setLayoutY(150);
+        classListPanel.setLayoutY(130);
 
         updateClassListPanel();
 
@@ -78,7 +78,7 @@ public class TeacherViewClassListCenterPanel {
 
         for (int i = startIndex; i < endIndex; i++) {
             String[] course = courses.get(i);
-            VBox courseBox = createCourseBox(course[0], course[1]);
+            VBox courseBox = createCourseBox(course[0], course[1], course[2]);
             row.getChildren().add(courseBox);
             boxCount++;
 
@@ -97,13 +97,14 @@ public class TeacherViewClassListCenterPanel {
         classListPanel.getChildren().add(createNavButtons(courses.size()));
     }
 
-    private static VBox createCourseBox(String courseName, String section) {
+    private static VBox createCourseBox(String courseName, String section, String program) {
         VBox courseBox = new VBox(10);
         courseBox.setStyle("-fx-padding: 15px; -fx-border-color: #ccc; -fx-border-width: 2px; -fx-background-color: #f9f9f9;");
         courseBox.setPrefSize(250, 120);
 
         Text courseNameText = new Text("Course: " + courseName);
         Text sectionText = new Text("Section: " + section);
+        Text programText = new Text("Program: " + ViewClassList.mapProgramToShortName(program));// New Text Field for Program
 
         Button editButton = createEditButton(courseName, section);
         Button deleteButton = createDeleteButton(courseName, section);
@@ -113,7 +114,7 @@ public class TeacherViewClassListCenterPanel {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.getChildren().addAll(editButton, deleteButton, viewStudentsButton);
 
-        courseBox.getChildren().addAll(courseNameText, sectionText, buttonBox);
+        courseBox.getChildren().addAll(courseNameText, sectionText, programText, buttonBox);  // Added programText
         return courseBox;
     }
 

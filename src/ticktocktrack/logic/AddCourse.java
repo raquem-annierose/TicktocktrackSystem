@@ -5,23 +5,23 @@ import ticktocktrack.database.DatabaseAddCourse;
 
 public class AddCourse {
 
-	public static boolean createCourse(String courseName, String section) {
+	public static boolean createCourse(String courseName, String section, String program) {
 	    if (courseName == null || courseName.trim().isEmpty()) {
 	        showAlert(Alert.AlertType.ERROR, "Error", "Course name is required.");
 	        return false;
 	    }
 
 	    // Check if course already exists
-	    boolean alreadyExists = DatabaseAddCourse.courseExists(courseName, section);
+	    boolean alreadyExists = DatabaseAddCourse.courseExists(courseName, section, program); // Add the program argument
 
 	    if (alreadyExists) {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Course already exists! Try a different name or section.");
+	        showAlert(Alert.AlertType.ERROR, "Error", "Course already exists! Try a different name, section, or program.");
 	        return false;
 	    } else {
-	        boolean success = DatabaseAddCourse.addCourse(courseName, section);
+	        boolean success = DatabaseAddCourse.addCourse(courseName, section, program); // Add the program argument
 	        if (success) {
 	            // Fetch the course ID after adding the course
-	            int courseId = DatabaseAddCourse.getCourseId(courseName, section); // New method to get the course ID
+	            int courseId = DatabaseAddCourse.getCourseId(courseName, section, program); // You may need to modify this to also account for 'program'
 	            if (courseId != -1) {
 	                showAlert(Alert.AlertType.INFORMATION, "Success", "Course added successfully!");
 	                return true; // Return true if the course was added successfully

@@ -26,7 +26,6 @@ import ticktocktrack.logic.AddCourse;
 
 public class TeacherAddCourseCenterPanel {
 
-    // Remove the duplicate method definition from here
     public static Pane createAddCourseDialog(Pane root) {
         Pane overlay = new Pane();
         overlay.setPrefSize(1300, 750);
@@ -59,6 +58,24 @@ public class TeacherAddCourseCenterPanel {
         sectionField.setPrefWidth(260);
         sectionField.setStyle("-fx-background-color: #eeeeee; -fx-border-color: transparent transparent black transparent; -fx-border-width: 1px;");
 
+        // New Program ComboBox (NEW)
+        ComboBox<String> programComboBox = new ComboBox<>();
+        programComboBox.getItems().addAll(
+            "BSECE – BS in Electronics Engineering",
+            "BSME – BS in Mechanical Engineering",
+            "BSA – BS in Accountancy",
+            "BSBA-HRDM – BSBA major in Human Resource Development Management",
+            "BSBA-MM – BSBA major in Marketing Management",
+            "BSENTREP – BS in Entrepreneurship",
+            "BSIT – BS in Information Technology",
+            "BSAM – BS in Applied Mathematics",
+            "BSED-ENGLISH – Bachelor in Secondary Education major in English",
+            "BSED-MATH – Bachelor in Secondary Education major in Mathematics",
+            "BSOA – BS in Office Administration"
+        );
+        programComboBox.setPromptText("Select Program");
+        programComboBox.setPrefWidth(260);
+
         // Buttons
         HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
@@ -75,34 +92,41 @@ public class TeacherAddCourseCenterPanel {
         createBtn.setOnAction(e -> {
             String courseName = courseField.getText().trim();
             String section = sectionField.getText().trim();
+            String program = programComboBox.getValue();
 
-            // Create the course
-            boolean success = AddCourse.createCourse(courseName, section);
-            if (success) {
-                int courseId = DatabaseAddCourse.getCourseId(courseName, section); // Get the course ID
-                if (courseId != -1) {
-                    // Fetch students after creating the course
-                    List<Student> students = DatabaseAddCourse.getStudents();
-                    showStudentSelectionDialog(students, courseName, section, courseId); // Pass courseId here
+            // Ensure the program is selected before creating the course
+            if (program != null && !program.isEmpty()) {
+                // Create the course
+                boolean success = AddCourse.createCourse(courseName, section, program);
+                if (success) {
+                    int courseId = DatabaseAddCourse.getCourseId(courseName, section, program); // Get the course ID
+                    if (courseId != -1) {
+                        // Fetch students after creating the course
+                        List<Student> students = DatabaseAddCourse.getStudents();
+                        showStudentSelectionDialog(students, courseName, section, courseId, program); // Pass program to student dialog
+                    }
                 }
             }
         });
-        // Enable the Create button if both fields are filled
-        courseField.textProperty().addListener((observable, oldValue, newValue) -> updateCreateButtonState(createBtn, courseField, sectionField));
-        sectionField.textProperty().addListener((observable, oldValue, newValue) -> updateCreateButtonState(createBtn, courseField, sectionField));
+
+        // Enable the Create button if all fields are filled
+        courseField.textProperty().addListener((observable, oldValue, newValue) -> updateCreateButtonState(createBtn, courseField, sectionField, programComboBox));
+        sectionField.textProperty().addListener((observable, oldValue, newValue) -> updateCreateButtonState(createBtn, courseField, sectionField, programComboBox));
+        programComboBox.valueProperty().addListener((observable, oldValue, newValue) -> updateCreateButtonState(createBtn, courseField, sectionField, programComboBox));
 
         buttonBox.getChildren().addAll(cancelBtn, createBtn);
-        dialog.getChildren().addAll(title, courseField, sectionField, buttonBox);
+        dialog.getChildren().addAll(title, courseField, sectionField, programComboBox, buttonBox);
         overlay.getChildren().add(dialog);
 
         return overlay;
     }
 
-    private static void updateCreateButtonState(Button createBtn, TextField courseField, TextField sectionField) {
+    private static void updateCreateButtonState(Button createBtn, TextField courseField, TextField sectionField, ComboBox<String> programComboBox) {
         String courseName = courseField.getText().trim();
         String section = sectionField.getText().trim();
+        String program = programComboBox.getValue();
 
-        boolean enable = !courseName.isEmpty() && !section.isEmpty();
+        boolean enable = !courseName.isEmpty() && !section.isEmpty() && program != null && !program.isEmpty();
         createBtn.setDisable(!enable);
 
         // Update style when enabled/disabled
@@ -113,7 +137,7 @@ public class TeacherAddCourseCenterPanel {
         }
     }
 
-    private static void showStudentSelectionDialog(List<Student> students, String courseName, String section, int courseId) {
+    private static void showStudentSelectionDialog(List<Student> students, String courseName, String section, int courseId, String program) {
         Stage studentDialog = new Stage();
         studentDialog.setTitle("Select Students");
 
@@ -129,28 +153,19 @@ public class TeacherAddCourseCenterPanel {
         yearLevelComboBox.getItems().addAll("All", "1st Year", "2nd Year", "3rd Year", "4th Year");
         yearLevelComboBox.setValue("All"); // Default value
 
-        List<Student> filteredStudents = students.stream()
-                .filter(student -> section.equalsIgnoreCase(student.getSection()))
-                .filter(student -> "All".equals(yearLevelComboBox.getValue()) || student.getYearLevel().equalsIgnoreCase(yearLevelComboBox.getValue()))
-                .collect(Collectors.toCollection(ArrayList::new)); // Use ArrayList for a mutable list
+        // Filter students based on section, program, and year level
+        List<Student> filteredStudents = getFilteredStudents(students, section, program, "All");
 
         // Filter button for applying year level filter
         Button filterBtn = new Button("Filter by Year Level");
         filterBtn.setStyle("-fx-background-color: #0097A7; -fx-text-fill: white;");
         filterBtn.setOnAction(e -> {
-            // Create a new list to hold the filtered students
-            List<Student> newFilteredStudents = students.stream()
-                .filter(student -> section.equalsIgnoreCase(student.getSection()))
-                .filter(student -> "All".equals(yearLevelComboBox.getValue()) || student.getYearLevel().equalsIgnoreCase(yearLevelComboBox.getValue()))
-                .toList();
-
-            // Clear the existing list and add the filtered students
-            filteredStudents.clear();
-            filteredStudents.addAll(newFilteredStudents);
-
+            filteredStudents.clear(); // Clear existing filter
+            filteredStudents.addAll(getFilteredStudents(students, section, program, yearLevelComboBox.getValue()));
             allStudentsBox.getChildren().clear(); // Clear the existing students list
             populateStudentRows(filteredStudents, allStudentsBox, selectedListView);
         });
+
         // Populate student rows based on the filtered list
         populateStudentRows(filteredStudents, allStudentsBox, selectedListView);
 
@@ -184,6 +199,19 @@ public class TeacherAddCourseCenterPanel {
         studentDialog.show();
     }
 
+    private static List<Student> getFilteredStudents(List<Student> students, String section, String program, String yearLevel) {
+        return students.stream()
+                .filter(student -> {
+                    // Handle null program gracefully
+                    boolean programMatch = (student.getProgram() != null && student.getProgram().equalsIgnoreCase(program)) || program.equals("All");
+                    boolean sectionMatch = student.getSection().equalsIgnoreCase(section) || section.equals("All");
+                    boolean yearLevelMatch = student.getYearLevel().equalsIgnoreCase(yearLevel) || yearLevel.equals("All");
+
+                    return programMatch && sectionMatch && yearLevelMatch;
+                })
+                .collect(Collectors.toList());
+    }
+
     private static void populateStudentRows(List<Student> filteredStudents, VBox allStudentsBox, ListView<Student> selectedListView) {
         for (Student student : filteredStudents) {
             HBox row = new HBox(10);
@@ -215,6 +243,4 @@ public class TeacherAddCourseCenterPanel {
             allStudentsBox.getChildren().add(row);
         }
     }
-
-
 }

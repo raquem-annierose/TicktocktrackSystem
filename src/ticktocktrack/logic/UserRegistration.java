@@ -15,7 +15,7 @@ public class UserRegistration {
             if (passwordHash != null) {
                 boolean isRegistered = false;
                 if (role.equals("Admin") || role.equals("Teacher")) {
-                    isRegistered = DatabaseRegistrationManager.registerUser(username, role, email, passwordHash, null, null, null, null, null);
+                    isRegistered = DatabaseRegistrationManager.registerUser(username, role, email, passwordHash, null, null, null, null, null, null);
                 }
 
                 if (isRegistered) {
@@ -31,28 +31,34 @@ public class UserRegistration {
         }
     }
 
-    // Method to register a student
     public static void registerStudent(String username, String email, String password, String confirmPassword,
-                                       String firstName, String middleName, String lastName, String yearLevel, String section) {
-        if (password.equals(confirmPassword)) {
-            String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+            String firstName, String middleName, String lastName,
+            String yearLevel, String section, String program) {
+    	if (!password.equals(confirmPassword)) {
+    		showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
+    		return;
+    	}
 
-            if (passwordHash != null) {
-                boolean isRegistered = DatabaseRegistrationManager.registerStudent(username, "Student", email, passwordHash,
-                        firstName, middleName, lastName, yearLevel, section);
+    	String passwordHash = DatabaseRegistrationManager.hashPassword(password);
 
-                if (isRegistered) {
-                    showAlert(AlertType.INFORMATION, "Registration Successful", "Student successfully registered!");
-                } else {
-                    showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
-                }
-            } else {
-                showAlert(AlertType.ERROR, "Error", "Error hashing the password.");
-            }
-        } else {
-            showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
-        }
+    	if (passwordHash == null) {
+    		showAlert(AlertType.ERROR, "Error", "Error hashing the password.");
+    		return;
+    	}
+
+    	boolean isRegistered = DatabaseRegistrationManager.registerUser(
+    			username, "Student", email, passwordHash,
+    			firstName, middleName, lastName,
+    			yearLevel, section, program
+    			);
+
+    	if (isRegistered) {
+    		showAlert(AlertType.INFORMATION, "Registration Successful", "Student successfully registered!");
+    	} else {
+    		showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
+    	}
     }
+
 
  // Method to show standard styled alerts with adjustable position
     private static void showAlert(AlertType alertType, String title, String message) {
