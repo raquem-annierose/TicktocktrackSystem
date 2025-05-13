@@ -1,40 +1,140 @@
 package ticktocktrack.gui;
 
-import javafx.scene.layout.Pane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.paint.Color;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.layout.*;
+import javafx.scene.image.*;
 
 public class TeacherMarkAttendanceCenterPanel {
+    public static BorderPane createPanel() {
+        BorderPane mainPane = new BorderPane();
+        mainPane.setPrefSize(1300, 750);
+        mainPane.setStyle("-fx-background-color: white;");
 
-    public static Pane createPanel() {
-        // Create the center panel
-        Pane centerPanel = new Pane();
-        centerPanel.setPrefSize(1300, 750);
-        centerPanel.setLayoutX(0);
-        centerPanel.setLayoutY(0);
-        centerPanel.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
+        try {
+            String shadowPath = TeacherMarkAttendanceCenterPanel.class
+                .getResource("/resources/SHADOW.png").toExternalForm();
+            ImageView shadowView = new ImageView(new Image(shadowPath));
+            shadowView.setFitWidth(1300);
+            shadowView.setFitHeight(250);
+            shadowView.setLayoutY(-115);
+            mainPane.getChildren().add(shadowView);
+        } catch (Exception e) {
+            System.out.println("Shadow image not found or error loading");
+        }
 
-        // Shadow image
-        String shadowPath = TeacherMarkAttendanceCenterPanel.class.getResource("/resources/SHADOW.png").toExternalForm();
-        ImageView shadowView = new ImageView(new Image(shadowPath));
-        shadowView.setFitWidth(1300);
-        shadowView.setFitHeight(250);
-        shadowView.setLayoutX(0);
-        shadowView.setLayoutY(-115);
+        ObservableList<Student> students = FXCollections.observableArrayList(
+            new Student(true, "2023-00000-TG-0", "Piatos, Mary Grace", "2023-10-23", "Present"),
+            new Student(false, "2023-00001-TG-0", "Tralalelo, Tralala", "2023-10-23", "Absent"),
+            new Student(false, "2023-00002-TG-0", "Cappucino, Assassino", "2023-10-23", "Late"),
+            new Student(false, "2023-00003-TG-0", "Ballerina, Cappuccina", "2023-10-23", "Present"),
+            new Student(false, "2023-00004-TG-0", "La Vaca, Saturno Saturnita", "2023-10-23", "Absent")
+        );
 
-        // Create the "Create Users" Text
-        Text createUsersTitle = new Text("Mark Attendance");
-        createUsersTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        createUsersTitle.setFill(Color.web("#02383E"));
-        createUsersTitle.setLayoutX(50);
-        createUsersTitle.setLayoutY(70);
+        FilteredList<Student> filteredStudents = new FilteredList<>(students, p -> true);
 
-        centerPanel.getChildren().addAll(shadowView, createUsersTitle);
+        VBox centerVBox = new VBox(10);
+        centerVBox.setPadding(new Insets(20, 50, 20, 50));
 
-        return centerPanel;
+        HBox searchCourseBox = new HBox(473);
+        searchCourseBox.setPadding(new Insets(1, 0, 10, 4));
+        searchCourseBox.setAlignment(Pos.CENTER_LEFT);
+
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search Student");
+        searchField.setPrefWidth(350);
+        searchField.setStyle("-fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 20px;");
+
+        ComboBox<String> courseComboBox = new ComboBox<>();
+        courseComboBox.getItems().addAll("BSIT 2-1", "BSIT 2-2", "BSIT 3-3");
+        courseComboBox.setPrefWidth(120); // made thinner
+        courseComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
+        courseComboBox.getSelectionModel().selectFirst();
+
+        searchCourseBox.getChildren().addAll(searchField, courseComboBox);
+
+
+
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            String filter = newVal.toLowerCase();
+            filteredStudents.setPredicate(student -> {
+                if (filter.isEmpty()) return true;
+                return student.getStudentId().toLowerCase().contains(filter) ||
+                       student.getFullName().toLowerCase().contains(filter);
+            });
+        });
+
+        TableView<Student> table = new TableView<>();
+        table.setPrefWidth(950);
+        table.setMaxWidth(950);
+        table.setItems(filteredStudents);
+        table.setEditable(true);
+        table.setStyle("-fx-font-size: 14px;");
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<Student, String> numberCol = new TableColumn<>("#");
+        numberCol.setPrefWidth(50);
+        numberCol.setCellValueFactory(cellData ->
+            new ReadOnlyStringWrapper(String.valueOf(students.indexOf(cellData.getValue()) + 1)));
+
+        TableColumn<Student, String> idCol = new TableColumn<>("Student ID");
+        idCol.setPrefWidth(150);
+        idCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+
+        TableColumn<Student, String> nameCol = new TableColumn<>("Last Name, First Name, Middle Name");
+        nameCol.setPrefWidth(350);
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+
+        TableColumn<Student, String> dateCol = new TableColumn<>("Date");
+        dateCol.setPrefWidth(150);
+        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+        TableColumn<Student, String> statusCol = new TableColumn<>("Status");
+        statusCol.setPrefWidth(150);
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusCol.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent", "Late"));
+
+        table.getColumns().addAll(numberCol, idCol, nameCol, dateCol, statusCol);
+
+        ScrollPane scrollPane = new ScrollPane(table);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setPrefSize(950, 250);
+        scrollPane.setMaxSize(950, 250);
+
+        centerVBox.getChildren().addAll(searchCourseBox, scrollPane);
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+
+        mainPane.setCenter(centerVBox);
+        return mainPane;
+    }
+
+    public static class Student {
+        private final BooleanProperty selected;
+        private final StringProperty studentId;
+        private final StringProperty fullName;
+        private final StringProperty date;
+        private final StringProperty status;
+
+        public Student(boolean selected, String studentId, String fullName, String date, String status) {
+            this.selected = new SimpleBooleanProperty(selected);
+            this.studentId = new SimpleStringProperty(studentId);
+            this.fullName = new SimpleStringProperty(fullName);
+            this.date = new SimpleStringProperty(date);
+            this.status = new SimpleStringProperty(status);
+        }
+
+        public BooleanProperty selectedProperty() { return selected; }
+        public String getStudentId() { return studentId.get(); }
+        public String getFullName() { return fullName.get(); }
+        public String getDate() { return date.get(); }
+        public String getStatus() { return status.get(); }
     }
 }
