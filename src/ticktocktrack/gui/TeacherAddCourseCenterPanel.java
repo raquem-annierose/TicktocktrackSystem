@@ -54,7 +54,7 @@ public class TeacherAddCourseCenterPanel {
         courseField.setStyle("-fx-background-color: #eeeeee; -fx-border-color: transparent transparent black transparent; -fx-border-width: 1px;");
 
         TextField sectionField = new TextField();
-        sectionField.setPromptText("Section");
+        sectionField.setPromptText("Section (required)");
         sectionField.setPrefWidth(260);
         sectionField.setStyle("-fx-background-color: #eeeeee; -fx-border-color: transparent transparent black transparent; -fx-border-width: 1px;");
 
