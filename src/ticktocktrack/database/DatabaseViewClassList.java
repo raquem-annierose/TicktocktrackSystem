@@ -35,6 +35,7 @@ public class DatabaseViewClassList {
 
         return courses;
     }
+
     public static void deleteCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
 
@@ -42,7 +43,6 @@ public class DatabaseViewClassList {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            // Prepare the SQL query to delete the course
             String sql = "DELETE FROM Courses WHERE course_name = ? AND section = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, courseName);
@@ -62,6 +62,7 @@ public class DatabaseViewClassList {
             dbConn.closeConnection();
         }
     }
+
     public static void updateCourse(String oldCourseName, String oldSection, String newCourseName, String newSection) {
         DatabaseConnection dbConn = new DatabaseConnection();
 
@@ -69,7 +70,6 @@ public class DatabaseViewClassList {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            // Prepare the SQL query to update the course
             String sql = "UPDATE Courses SET course_name = ?, section = ? WHERE course_name = ? AND section = ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, newCourseName);
@@ -91,6 +91,7 @@ public class DatabaseViewClassList {
             dbConn.closeConnection();
         }
     }
+
     public static List<Student> getStudentsForCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         List<Student> students = new ArrayList<>();
@@ -99,8 +100,7 @@ public class DatabaseViewClassList {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            // Update SQL query to fetch username instead of student_id
-            String sql = "SELECT s.username, s.first_name, s.last_name, s.year_level, se.section " +
+            String sql = "SELECT s.username, s.first_name, s.middle_name, s.last_name, s.year_level, s.email, se.section " +
                          "FROM Students s " +
                          "JOIN StudentEnrollments se ON s.student_id = se.student_id " +
                          "JOIN Courses c ON se.course_id = c.course_id " +
@@ -112,13 +112,16 @@ public class DatabaseViewClassList {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                String username = rs.getString("username");  // Fetch the username
+                String username = rs.getString("username");
                 String firstName = rs.getString("first_name");
+                String middleName = rs.getString("middle_name");
                 String lastName = rs.getString("last_name");
                 String yearLevel = rs.getString("year_level");
+                String email = rs.getString("email");
                 String courseSection = rs.getString("section");
 
-                students.add(new Student(username, firstName, lastName, courseSection, yearLevel));  // Pass username to Student constructor
+                // Updated constructor includes email
+                students.add(new Student(username, firstName, middleName, lastName, courseSection, yearLevel, email));
             }
 
         } catch (SQLException e) {
@@ -129,5 +132,4 @@ public class DatabaseViewClassList {
 
         return students;
     }
-
 }

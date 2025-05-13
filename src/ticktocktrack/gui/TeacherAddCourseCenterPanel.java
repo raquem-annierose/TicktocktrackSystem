@@ -180,7 +180,7 @@ public class TeacherAddCourseCenterPanel {
                 doneBtn
         );
 
-        studentDialog.setScene(new Scene(layout, 500, 550));
+        studentDialog.setScene(new Scene(layout, 600, 650));
         studentDialog.show();
     }
 
@@ -189,22 +189,29 @@ public class TeacherAddCourseCenterPanel {
             HBox row = new HBox(10);
             row.setAlignment(Pos.CENTER_LEFT);
 
-            // Show name + year + section
-            String displayText = student.getFirstName() + " " + student.getLastName() +
-                    " | Year: " + student.getYearLevel() +
-                    " | Section: " + student.getSection();
+            // Build display text with full name (including middle name), username, year, and section
+            String displayText = student.getFirstName() + " " +
+                (student.getMiddleName() != null && !student.getMiddleName().isBlank() ? student.getMiddleName() + " " : "") +
+                student.getLastName() +
+                " [" + student.getUsername() + "]" +
+                " | Year: " + student.getYearLevel() +
+                " | Section: " + student.getSection();
 
+            // Create student info text
             Text studentInfo = new Text(displayText);
+            studentInfo.setWrappingWidth(440); // Adjust to make lines align nicely
+
+            // Create "Add" button
             Button addBtn = new Button("Add");
             addBtn.setStyle("-fx-background-color: #0097A7; -fx-text-fill: white;");
-
             addBtn.setOnAction(e -> {
                 if (!selectedListView.getItems().contains(student)) {
                     selectedListView.getItems().add(student);
                 }
             });
 
-            row.getChildren().addAll(studentInfo, addBtn);
+            // Add button first, then student info
+            row.getChildren().addAll(addBtn, studentInfo);
             allStudentsBox.getChildren().add(row);
         }
     }

@@ -21,8 +21,7 @@ public class DatabaseAddCourse {
             pstmt.setString(2, section);
 
             int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0; // true if inserted successfully
-
+            return rowsInserted > 0;
         } catch (SQLException e) {
             System.err.println("Error inserting course: " + e.getMessage());
             return false;
@@ -31,7 +30,6 @@ public class DatabaseAddCourse {
         }
     }
 
-    // ✨ New method to check if course already exists
     public static boolean courseExists(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -56,7 +54,8 @@ public class DatabaseAddCourse {
             dbConn.closeConnection();
         }
     }
- // Method to fetch list of students (you can filter by section if needed)
+
+    // ✅ Updated method to fetch students with middle name
     public static List<Student> getStudents() {
         DatabaseConnection dbConn = new DatabaseConnection();
         List<Student> students = new ArrayList<>();
@@ -64,21 +63,21 @@ public class DatabaseAddCourse {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            // Add 'username' to the SELECT clause
-            String sql = "SELECT student_id, first_name, last_name, username, section, year_level FROM Students";
+            String sql = "SELECT student_id, username, first_name, middle_name, last_name, section, year_level FROM Students";
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 int studentId = rs.getInt("student_id");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
                 String username = rs.getString("username");
+                String firstName = rs.getString("first_name");
+                String middleName = rs.getString("middle_name");
+                String lastName = rs.getString("last_name");
                 String section = rs.getString("section");
                 String yearLevel = rs.getString("year_level");
 
-                // Ensure the Student constructor matches these fields
-                students.add(new Student(studentId, firstName, lastName, username, section, yearLevel));
+                // ✅ Match the updated Student constructor
+                students.add(new Student(studentId, username, firstName, middleName, lastName, section, yearLevel));
             }
         } catch (SQLException e) {
             System.err.println("Error fetching students: " + e.getMessage());
@@ -87,7 +86,7 @@ public class DatabaseAddCourse {
         }
         return students;
     }
- // New method to fetch the course ID for the given course and section
+
     public static int getCourseId(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -103,16 +102,15 @@ public class DatabaseAddCourse {
             if (rs.next()) {
                 return rs.getInt("course_id");
             }
-            return -1; // Return -1 if the course ID is not found
+            return -1;
         } catch (SQLException e) {
             System.err.println("Error fetching course ID: " + e.getMessage());
-            return -1; // Return -1 on error
+            return -1;
         } finally {
             dbConn.closeConnection();
         }
     }
 
-    // Method to enroll students into a course
     public static boolean enrollStudentInCourse(int studentId, int courseId, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -126,7 +124,7 @@ public class DatabaseAddCourse {
             pstmt.setString(3, section);
 
             int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0; // true if enrolled successfully
+            return rowsInserted > 0;
         } catch (SQLException e) {
             System.err.println("Error enrolling student: " + e.getMessage());
             return false;
@@ -134,13 +132,14 @@ public class DatabaseAddCourse {
             dbConn.closeConnection();
         }
     }
+
     public static boolean deleteCourse(int courseId) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            // Step 1: Delete from StudentEnrollments first
+            // Step 1: Delete from StudentEnrollments
             String deleteEnrollmentsSql = "DELETE FROM StudentEnrollments WHERE course_id = ?";
             PreparedStatement deleteEnrollmentsStmt = conn.prepareStatement(deleteEnrollmentsSql);
             deleteEnrollmentsStmt.setInt(1, courseId);
@@ -160,5 +159,4 @@ public class DatabaseAddCourse {
             dbConn.closeConnection();
         }
     }
-
 }
