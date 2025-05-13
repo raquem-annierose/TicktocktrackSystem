@@ -6,6 +6,13 @@
             "name": "TickTockTrack",
             "request": "launch",
             "mainClass": "ticktocktrack.TickTockTrack",
+            "projectName": "TicktocktrackSystem"
+        },
+        {
+            "type": "java",
+            "name": "TickTockTrack",
+            "request": "launch",
+            "mainClass": "ticktocktrack.TickTockTrack",
             "projectName": "TicktocktrackSystem_915a5a42"
         },
         {

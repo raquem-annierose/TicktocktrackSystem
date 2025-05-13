@@ -91,4 +91,43 @@ public class DatabaseViewClassList {
             dbConn.closeConnection();
         }
     }
+    public static List<Student> getStudentsForCourse(String courseName, String section) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        List<Student> students = new ArrayList<>();
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+
+            // Update SQL query to fetch username instead of student_id
+            String sql = "SELECT s.username, s.first_name, s.last_name, s.year_level, se.section " +
+                         "FROM Students s " +
+                         "JOIN StudentEnrollments se ON s.student_id = se.student_id " +
+                         "JOIN Courses c ON se.course_id = c.course_id " +
+                         "WHERE c.course_name = ? AND se.section = ?";
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, courseName);
+            pstmt.setString(2, section);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String username = rs.getString("username");  // Fetch the username
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                String yearLevel = rs.getString("year_level");
+                String courseSection = rs.getString("section");
+
+                students.add(new Student(username, firstName, lastName, courseSection, yearLevel));  // Pass username to Student constructor
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching students for course: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+
+        return students;
+    }
+
 }
