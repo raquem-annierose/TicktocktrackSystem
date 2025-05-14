@@ -68,6 +68,7 @@ public class TeacherAddCourseCenterPanel {
             "BSBA-MM – BSBA major in Marketing Management",
             "BSENTREP – BS in Entrepreneurship",
             "BSIT – BS in Information Technology",
+            "DIT – Diploma Information Technology",
             "BSAM – BS in Applied Mathematics",
             "BSED-ENGLISH – Bachelor in Secondary Education major in English",
             "BSED-MATH – Bachelor in Secondary Education major in Mathematics",

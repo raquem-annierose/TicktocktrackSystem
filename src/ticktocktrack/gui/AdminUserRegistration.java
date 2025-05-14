@@ -220,10 +220,12 @@ public class AdminUserRegistration {
                 "BSBA-MM – BSBA major in Marketing Management",
                 "BSENTREP – BS in Entrepreneurship",
                 "BSIT – BS in Information Technology",
+                "DIT – Diploma Information Technology",
                 "BSAM – BS in Applied Mathematics",
                 "BSED-ENGLISH – Bachelor in Secondary Education major in English",
                 "BSED-MATH – Bachelor in Secondary Education major in Mathematics",
                 "BSOA – BS in Office Administration"
+                
             );
             programComboBox.setPromptText("Select Program");       // ⬅️ NEW
             programComboBox.setLayoutX(startX);              // ⬅️ NEW (Positioned beside Year Level)
