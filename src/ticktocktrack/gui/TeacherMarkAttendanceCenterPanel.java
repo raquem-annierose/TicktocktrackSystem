@@ -31,11 +31,7 @@ public class TeacherMarkAttendanceCenterPanel {
         }
 
         ObservableList<Student> students = FXCollections.observableArrayList(
-            new Student(true, "2023-00000-TG-0", "Piatos, Mary Grace", "2023-10-23", "Present"),
-            new Student(false, "2023-00001-TG-0", "Tralalelo, Tralala", "2023-10-23", "Absent"),
-            new Student(false, "2023-00002-TG-0", "Cappucino, Assassino", "2023-10-23", "Late"),
-            new Student(false, "2023-00003-TG-0", "Ballerina, Cappuccina", "2023-10-23", "Present"),
-            new Student(false, "2023-00004-TG-0", "La Vaca, Saturno Saturnita", "2023-10-23", "Absent")
+  
         );
 
         FilteredList<Student> filteredStudents = new FilteredList<>(students, p -> true);
