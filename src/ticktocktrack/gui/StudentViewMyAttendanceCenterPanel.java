@@ -7,6 +7,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.effect.DropShadow;
 
 public class StudentViewMyAttendanceCenterPanel {
 
@@ -26,14 +29,26 @@ public class StudentViewMyAttendanceCenterPanel {
         shadowView.setLayoutX(0);
         shadowView.setLayoutY(-115);
 
-        // Create the "Create Users" Text
-        Text createUsersTitle = new Text("My Attendance");
-        createUsersTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        createUsersTitle.setFill(Color.web("#02383E"));
-        createUsersTitle.setLayoutX(50);
-        createUsersTitle.setLayoutY(70);
+        // Create a centered rectangle
+        Rectangle centeredRect = new Rectangle();
+        centeredRect.setWidth(840);
+        centeredRect.setHeight(511);
+        centeredRect.setFill(Paint.valueOf("#FFFFFF"));
+        centeredRect.setStroke(Paint.valueOf("#CBCBCB"));
+        centeredRect.setStrokeWidth(2);
+        centeredRect.setLayoutX((1300 - 1075) / 2.0); // center horizontally
+        centeredRect.setLayoutY((750 - 630) / 2.0);   // center vertically
 
-        centerPanel.getChildren().addAll(shadowView, createUsersTitle);
+        // Drop shadow effect
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setOffsetX(0);
+        dropShadow.setOffsetY(4);
+        dropShadow.setRadius(10);
+        dropShadow.setColor(Color.rgb(0, 0, 0, 0.15));
+        centeredRect.setEffect(dropShadow);
+
+        // Add all nodes to the panel
+        centerPanel.getChildren().addAll(shadowView, centeredRect);
 
         return centerPanel;
     }
