@@ -212,7 +212,7 @@ public class AdminViewAllUsersCenterPanel {
 
             // Add subtle glow effect when clicked
             DropShadow glow = new DropShadow();
-            glow.setColor(Color.web("#34BCCE", 0.4)); // reduced opacity
+            glow.setColor(Color.web("#34BCCE")); // reduced opacity
             glow.setOffsetY(0);
             glow.setRadius(5); // reduced glow radius
             searchField.setEffect(glow);
