@@ -492,14 +492,14 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
     private void onViewMyAttendanceClicked(MouseEvent event) {
-        System.out.println("Create Users clicked!");
+        System.out.println("View My Attendance Clicked!");
         centerContentPane.getChildren().clear();
         Pane createUsersPanel = StudentViewMyAttendanceCenterPanel.createPanel();
         centerContentPane.getChildren().add(createUsersPanel);
     }
     
     private void onAttendanceStatusClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
+        System.out.println("Attendance Status Clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
         Pane dashboardPanel = StudentAttendanceStatusCenterPanel.createPanel();
@@ -507,7 +507,7 @@ public class StudentDashboardPage extends Application {
     }
     
     private void onSubmitExcuseClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
+        System.out.println("Submit Excuse Clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
         Pane dashboardPanel = StudentSubmitExcuseCenterPanel.createPanel();
