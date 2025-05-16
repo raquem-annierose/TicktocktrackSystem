@@ -19,6 +19,8 @@ import javafx.scene.layout.*;
 import javafx.util.Duration;
 import ticktocktrack.database.DatabaseAttendance;
 import ticktocktrack.database.DatabaseViewClassList;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 
 import java.util.*;
 
@@ -216,6 +218,7 @@ public class TeacherMarkAttendanceCenterPanel {
 
         return mainPane;
     }
+    
 
     private static void loadStudentsBasedOnSelection(ComboBox<String> courseComboBox,
                                                      ComboBox<String> sectionComboBox,
@@ -236,13 +239,21 @@ public class TeacherMarkAttendanceCenterPanel {
         students.clear();
         try {
             String today = java.time.LocalDate.now().toString();
-            students.addAll(DatabaseAttendance.fetchStudentsWithAttendanceForDate(courseName, section, today));
+
+            // Get user ID from the current session
+            UsersModel currentUser = Session.getCurrentUser();
+            int userId = (currentUser != null) ? currentUser.getUserId() : 0;
+
+            // Now fetch students with this user ID
+            students.addAll(DatabaseAttendance.fetchStudentsWithAttendanceForDate(userId, courseName, section, today));
+
             System.out.println("Loaded students: " + students.size() + " for date: " + today);
         } catch (Exception e) {
             System.out.println("Error loading students: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     public static class Student {
         private final BooleanProperty selected;

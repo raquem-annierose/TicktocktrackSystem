@@ -242,11 +242,5 @@ public class DatabaseViewClassList {
 
         return students;
     }
-
-
-
-
-
-
     
 }

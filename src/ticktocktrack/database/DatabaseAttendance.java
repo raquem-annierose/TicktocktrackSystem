@@ -9,42 +9,49 @@ import ticktocktrack.gui.TeacherMarkAttendanceCenterPanel.Student;
 
 public class DatabaseAttendance {
 
-	 public static List<Student> fetchStudentsWithAttendanceForDate(String courseName, String section, String date) {
-	        List<Student> students = new ArrayList<>();
-	        String sql = "SELECT s.student_id, s.last_name, s.first_name, s.middle_name, " +
-	                     "COALESCE(a.status, 'Pending') AS status, COALESCE(a.reason, '') AS reason " +
-	                     "FROM Students s " +
-	                     "JOIN StudentEnrollments se ON s.student_id = se.student_id " +
-	                     "JOIN Courses c ON se.course_id = c.course_id " +
-	                     "LEFT JOIN Attendance a ON s.student_id = a.student_id AND a.date = ? " +
-	                     "WHERE c.course_name = ? AND c.section = ? " +
-	                     "ORDER BY s.last_name, s.first_name";
+	public static List<Student> fetchStudentsWithAttendanceForDate(int userId, String courseName, String section, String date) {
+	    List<Student> students = new ArrayList<>();
+	    
+	    String sql = 
+	        "SELECT s.student_id, s.last_name, s.first_name, s.middle_name, " +
+	        "       COALESCE(a.status, 'Pending') AS status, COALESCE(a.reason, '') AS reason " +
+	        "FROM Users u " +
+	        "JOIN Teachers t ON u.user_id = t.user_id " +
+	        "JOIN Classes cl ON t.teacher_id = cl.teacher_id " +
+	        "JOIN Enrollments e ON cl.class_id = e.class_id " +
+	        "JOIN Students s ON e.student_id = s.student_id " +
+	        "LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id AND a.date = ? " +
+	        "WHERE u.user_id = ? " + 
+	        "  AND cl.section = ? " + 
+	        "  AND cl.course_id = (SELECT course_id FROM Courses WHERE course_name = ?) " +
+	        "ORDER BY s.last_name, s.first_name";
+	    
+	    try (Connection conn = getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-	        try (Connection conn = getConnection();
-	             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	        pstmt.setString(1, date);
+	        pstmt.setInt(2, userId);
+	        pstmt.setString(3, section);
+	        pstmt.setString(4, courseName);
 
-	            pstmt.setString(1, date);
-	            pstmt.setString(2, courseName);
-	            pstmt.setString(3, section);
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            while (rs.next()) {
+	                String studentId = rs.getString("student_id");
+	                String lastName = rs.getString("last_name");
+	                String firstName = rs.getString("first_name");
+	                String middleName = rs.getString("middle_name");
+	                String status = rs.getString("status");
+	                String reason = rs.getString("reason");
 
-	            try (ResultSet rs = pstmt.executeQuery()) {
-	                while (rs.next()) {
-	                    String studentId = rs.getString("student_id");
-	                    String lastName = rs.getString("last_name");
-	                    String firstName = rs.getString("first_name");
-	                    String middleName = rs.getString("middle_name");
-	                    String status = rs.getString("status");
-	                    String reason = rs.getString("reason");
-
-	                    students.add(new Student(studentId, lastName, firstName, middleName, date, status, reason));
-	                }
+	                students.add(new Student(studentId, lastName, firstName, middleName, date, status, reason));
 	            }
-	        } catch (SQLException e) {
-	            System.out.println("Error fetching students with attendance: " + e.getMessage());
-	            e.printStackTrace();
 	        }
-	        return students;
+	    } catch (SQLException ex) {
+	        ex.printStackTrace();
 	    }
+	    return students;
+	}
+
 
     /**
      * Saves or updates attendance record for a student on a specific date.
