@@ -10,6 +10,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.Cursor;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -22,48 +28,38 @@ public class TeacherNotificationPane {
     private ImageView notificationIcon;
     private StackPane notificationIconWrapper;
 
-    // List to hold notifications
     private ObservableList<Notification> notifications;
-    private VBox notificationHolder; // Holder for notifications
+    private VBox notificationHolder;
 
     public TeacherNotificationPane() {
-        // Initialize the notification list
         notifications = FXCollections.observableArrayList();
 
-        // Example notifications (these will later be loaded from the database)
         notifications.add(new Notification("Student 1 Submitted Excuse Letter"));
         notifications.add(new Notification("Student 2 Submitted Excuse Letter"));
         notifications.add(new Notification("Student 3 Submitted Excuse Letter"));
 
-        // Initialize the popup and content
         notificationPopup = new Popup();
-        notificationHolder = new VBox(10); // Notification holder (VBox)
+        notificationHolder = new VBox(10);
         notificationHolder.setPadding(new Insets(10));
         notificationHolder.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #20B2AA; -fx-border-width: 2px;");
         notificationHolder.setPrefWidth(250);
 
-        // Dynamically add notification holders (HBox) based on the list of notifications
         for (Notification notification : notifications) {
             addNotificationToHolder(notification);
         }
         notificationPopup.getContent().add(notificationHolder);
 
-        // Notification icon
         String notificationIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(notificationIconPath));
         notificationIcon.setFitWidth(50);
         notificationIcon.setFitHeight(50);
         notificationIcon.setPreserveRatio(true);
 
-        // Wrap the icon in a StackPane to ensure its clickable area matches its bounds
         notificationIconWrapper = new StackPane(notificationIcon);
-        notificationIconWrapper.setPrefSize(50, 50); // Make the wrapper large enough to be entirely clickable
-        notificationIconWrapper.setMaxSize(50, 50); // Ensure the wrapper doesn't expand
-
-        // Set cursor to hand for the entire area of the icon's wrapper
+        notificationIconWrapper.setPrefSize(50, 50);
+        notificationIconWrapper.setMaxSize(50, 50);
         notificationIconWrapper.setCursor(Cursor.HAND);
 
-        // Make the whole region clickable, not just the icon
         notificationIconWrapper.setOnMouseClicked(e -> {
             if (notificationPopup.isShowing()) {
                 notificationPopup.hide();
@@ -75,47 +71,77 @@ public class TeacherNotificationPane {
         });
     }
 
-    // Method to add a new notification (this will be connected to your database later)
     public void addNotification(String message) {
         Notification newNotification = new Notification(message);
         notifications.add(newNotification);
-
-        // Add the new notification to the holder without clearing the existing ones
         addNotificationToHolder(newNotification);
     }
 
- // Method to add a notification to the holder
     private void addNotificationToHolder(Notification notification) {
-        // Get the "time ago" instead of the date
-        String timeAgo = notification.getTimeAgo();  // Now we use getTimeAgo() from Notification
+        String timeAgo = notification.getTimeAgo();
 
-        // Create a label for each notification
-        Label notificationLabel = new Label("â€¢ " + notification.getMessage() + "\n" + timeAgo);
-        notificationLabel.setFont(javafx.scene.text.Font.font("Poppins", 14));
-
-        // Enable text wrapping
+        Label notificationLabel = new Label("• " + notification.getMessage() + "\n" + timeAgo);
+        notificationLabel.setFont(Font.font("Poppins", 14));
         notificationLabel.setWrapText(true);
-        notificationLabel.setMaxWidth(Region.USE_COMPUTED_SIZE);  // Allow the label to take up the width of the container
+        notificationLabel.setMaxWidth(220);
+        notificationLabel.setPrefHeight(60);
+        notificationLabel.setMinHeight(60);
+        notificationLabel.setStyle("-fx-text-overrun: ellipsis;"); // Optional: adds "..." for overflow
 
-        // Create an HBox for each notification, add the label inside
-        HBox notificationBox = new HBox(10, notificationLabel);
-        notificationBox.setStyle("-fx-padding: 5px; -fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);");
+        HBox notificationBox = new HBox(notificationLabel);
+        notificationBox.setPadding(new Insets(5));
+        notificationBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);");
+        notificationBox.setMinHeight(70); // fixed height for uniformity
+        notificationBox.setMaxHeight(70);
+        notificationBox.setPrefHeight(70);
 
-        // Add hover effect for highlighting
         addHoverEffect(notificationBox);
 
-        // Set the HBox's height to be flexible and adjust based on its content
-        notificationBox.setMinHeight(Region.USE_COMPUTED_SIZE);  // Let the HBox grow/shrink based on content
-        notificationLabel.setMaxHeight(Double.MAX_VALUE);  // Let the label expand as needed
+        notificationBox.setOnMouseClicked(event -> {
+            showExpandedNotification(notification);
+        });
 
-        // Add the HBox to the VBox holder
         notificationHolder.getChildren().add(notificationBox);
     }
 
-    // Method to add hover effects to a notification box
+
     private void addHoverEffect(HBox notificationBox) {
         notificationBox.setOnMouseEntered(e -> notificationBox.setStyle("-fx-padding: 5px; -fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0.5, 0, 0);"));
         notificationBox.setOnMouseExited(e -> notificationBox.setStyle("-fx-padding: 5px; -fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);"));
+    }
+
+    private void showExpandedNotification(Notification notification) {
+        Stage dialog = new Stage();
+
+        StackPane backgroundPane = new StackPane();
+        backgroundPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
+
+        VBox contentBox = new VBox(10);
+        contentBox.setPadding(new Insets(20));
+        contentBox.setStyle("-fx-background-color: white; -fx-background-radius: 10px;");
+
+        Label messageLabel = new Label(notification.getMessage());
+        messageLabel.setFont(Font.font("Poppins", 16));
+        messageLabel.setWrapText(true);
+        messageLabel.setTextAlignment(TextAlignment.CENTER);
+
+        Label timeLabel = new Label(notification.getTimeAgo());
+        timeLabel.setFont(Font.font("Poppins", 12));
+        timeLabel.setTextFill(Color.GRAY);
+
+        // Removed the red exit button here
+
+        BorderPane dialogPane = new BorderPane();
+        // No close button added to the top anymore
+        dialogPane.setCenter(contentBox);
+
+        contentBox.getChildren().addAll(messageLabel, timeLabel);
+
+        StackPane root = new StackPane(backgroundPane, dialogPane);
+        Scene scene = new Scene(root, 400, 200);
+        dialog.setScene(scene);
+        dialog.show();
     }
 
     public StackPane getNotificationIconWrapper() {
@@ -127,7 +153,7 @@ public class TeacherNotificationPane {
     }
 
     public void showPopup(double x, double y) {
-        notificationPopup.show(notificationIconWrapper, x, y); // Use the wrapper for showing the popup
+        notificationPopup.show(notificationIconWrapper, x, y);
     }
 
     public void hidePopup() {
@@ -138,14 +164,13 @@ public class TeacherNotificationPane {
         return notificationPopup.isShowing();
     }
 
-    // Inner class to represent a single notification
     public static class Notification {
         private String message;
         private LocalDateTime dateSent;
 
         public Notification(String message) {
             this.message = message;
-            this.dateSent = LocalDateTime.now(); // Default to current time when the notification is created
+            this.dateSent = LocalDateTime.now();
         }
 
         public String getMessage() {
@@ -164,7 +189,6 @@ public class TeacherNotificationPane {
             this.dateSent = dateSent;
         }
 
-        // Calculate time ago
         public String getTimeAgo() {
             Duration duration = Duration.between(dateSent, LocalDateTime.now());
             long seconds = duration.getSeconds();
