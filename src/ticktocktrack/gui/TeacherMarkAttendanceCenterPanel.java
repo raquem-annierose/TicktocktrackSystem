@@ -1,5 +1,8 @@
 package ticktocktrack.gui;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,12 +16,17 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 import ticktocktrack.database.DatabaseAttendance;
 import ticktocktrack.database.DatabaseViewClassList;
 
 import java.util.*;
 
 public class TeacherMarkAttendanceCenterPanel {
+
+    private static String lastRefreshDate = "";
+    private static String lastSelectedCourse = null;
+    private static String lastSelectedSection = null;
 
     public static BorderPane createPanel() {
         return createPanel(null, null);
@@ -75,43 +83,35 @@ public class TeacherMarkAttendanceCenterPanel {
         sectionComboBox.setPrefWidth(120);
         sectionComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
 
-        // Save Attendance Button
         Button saveButton = new Button("Save Attendance");
         saveButton.setStyle("-fx-font-size: 16px; -fx-padding: 10 20 10 20;");
         saveButton.setOnAction(e -> {
             try {
                 for (Student student : students) {
                     DatabaseAttendance.saveAttendance(
-                        student.getStudentId(),
-                        student.getDate(),
-                        student.getStatus(),
-                        student.getReason()
+                            student.getStudentId(),
+                            student.getDate(),
+                            student.getStatus(),
+                            student.getReason()
                     );
                 }
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Success");
-                alert.setHeaderText(null);
-                alert.setContentText("Attendance saved successfully.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.INFORMATION, "Attendance saved successfully.").showAndWait();
             } catch (Exception ex) {
+                new Alert(Alert.AlertType.ERROR, "Failed to save attendance: " + ex.getMessage()).showAndWait();
                 ex.printStackTrace();
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Failed to save attendance");
-                alert.setContentText(ex.getMessage());
-                alert.showAndWait();
             }
         });
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // Add only searchField, courseComboBox, sectionComboBox, saveButton (clearButton removed)
         searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, saveButton, spacer);
 
-        courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldCourse, newCourse) -> {
+        courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             sectionComboBox.getItems().clear();
-            if (newCourse != null) {
-                Set<String> sections = courseSectionsMap.get(newCourse);
+            if (newVal != null) {
+                Set<String> sections = courseSectionsMap.get(newVal);
                 if (sections != null) {
                     sectionComboBox.getItems().addAll(sections);
                     sectionComboBox.getSelectionModel().selectFirst();
@@ -120,7 +120,7 @@ public class TeacherMarkAttendanceCenterPanel {
             loadStudentsBasedOnSelection(courseComboBox, sectionComboBox, students);
         });
 
-        sectionComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldSection, newSection) -> {
+        sectionComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             loadStudentsBasedOnSelection(courseComboBox, sectionComboBox, students);
         });
 
@@ -128,11 +128,10 @@ public class TeacherMarkAttendanceCenterPanel {
             String filter = newVal == null ? "" : newVal.toLowerCase().trim();
             filteredStudents.setPredicate(student -> {
                 if (filter.isEmpty()) return true;
-
-                return student.getStudentId().toLowerCase().contains(filter) ||
-                        student.getLastName().toLowerCase().contains(filter) ||
-                        student.getFirstName().toLowerCase().contains(filter) ||
-                        student.getMiddleName().toLowerCase().contains(filter);
+                return student.getStudentId().toLowerCase().contains(filter)
+                        || student.getLastName().toLowerCase().contains(filter)
+                        || student.getFirstName().toLowerCase().contains(filter)
+                        || student.getMiddleName().toLowerCase().contains(filter);
             });
         });
 
@@ -144,38 +143,29 @@ public class TeacherMarkAttendanceCenterPanel {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Student, String> idCol = new TableColumn<>("Student ID");
-        idCol.setPrefWidth(100);
         idCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
 
         TableColumn<Student, String> lastNameCol = new TableColumn<>("Last Name");
-        lastNameCol.setPrefWidth(150);
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
 
         TableColumn<Student, String> firstNameCol = new TableColumn<>("First Name");
-        firstNameCol.setPrefWidth(150);
         firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
 
         TableColumn<Student, String> middleNameCol = new TableColumn<>("Middle Name");
-        middleNameCol.setPrefWidth(150);
         middleNameCol.setCellValueFactory(new PropertyValueFactory<>("middleName"));
 
         TableColumn<Student, String> dateCol = new TableColumn<>("Date");
-        dateCol.setPrefWidth(100);
         dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
 
         TableColumn<Student, String> statusCol = new TableColumn<>("Status");
-        statusCol.setPrefWidth(100);
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusCol.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent", "Late", "Pending"));
+        statusCol.setOnEditCommit(e -> e.getRowValue().setStatus(e.getNewValue()));
 
         TableColumn<Student, String> reasonCol = new TableColumn<>("Reason");
-        reasonCol.setPrefWidth(290);
         reasonCol.setCellValueFactory(new PropertyValueFactory<>("reason"));
         reasonCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        reasonCol.setOnEditCommit(event -> {
-            Student student = event.getRowValue();
-            student.setReason(event.getNewValue());
-        });
+        reasonCol.setOnEditCommit(e -> e.getRowValue().setReason(e.getNewValue()));
 
         table.getColumns().addAll(idCol, lastNameCol, firstNameCol, middleNameCol, dateCol, statusCol, reasonCol);
 
@@ -187,6 +177,26 @@ public class TeacherMarkAttendanceCenterPanel {
         centerVBox.getChildren().addAll(searchCourseBox, sp);
         VBox.setVgrow(sp, Priority.ALWAYS);
         mainPane.setCenter(centerVBox);
+
+        lastRefreshDate = java.time.LocalDate.now().toString();
+
+        Timeline dailyClearTimer = new Timeline(
+                new KeyFrame(Duration.seconds(30), e -> {
+                    String today = java.time.LocalDate.now().toString();
+                    if (!today.equals(lastRefreshDate)) {
+                        Platform.runLater(() -> {
+                            students.clear();
+                            if (lastSelectedCourse != null && lastSelectedSection != null) {
+                                loadStudents(lastSelectedCourse, lastSelectedSection, students);
+                                System.out.println("Auto-cleared and reloaded for new day: " + today);
+                            }
+                            lastRefreshDate = today;
+                        });
+                    }
+                })
+        );
+        dailyClearTimer.setCycleCount(Timeline.INDEFINITE);
+        dailyClearTimer.play();
 
         if (defaultCourse != null && courseSectionsMap.containsKey(defaultCourse)) {
             courseComboBox.getSelectionModel().select(defaultCourse);
@@ -212,7 +222,8 @@ public class TeacherMarkAttendanceCenterPanel {
         String selectedSection = sectionComboBox.getSelectionModel().getSelectedItem();
 
         if (selectedCourse != null && selectedSection != null) {
-            System.out.println("Fetching students for course: " + selectedCourse + ", section: " + selectedSection);
+            lastSelectedCourse = selectedCourse;
+            lastSelectedSection = selectedSection;
             loadStudents(selectedCourse, selectedSection, students);
         } else {
             students.clear();
@@ -222,26 +233,22 @@ public class TeacherMarkAttendanceCenterPanel {
     private static void loadStudents(String courseName, String section, ObservableList<Student> students) {
         students.clear();
         try {
-            students.addAll(DatabaseAttendance.fetchStudents(courseName, section));
-            System.out.println("Loaded students: " + students.size());
+            String today = java.time.LocalDate.now().toString();
+            students.addAll(DatabaseAttendance.fetchStudentsWithAttendanceForDate(courseName, section, today));
+            System.out.println("Loaded students: " + students.size() + " for date: " + today);
         } catch (Exception e) {
             System.out.println("Error loading students: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public static class Student {
         private final BooleanProperty selected;
-        private final StringProperty studentId;
-        private final StringProperty lastName;
-        private final StringProperty firstName;
-        private final StringProperty middleName;
-        private final StringProperty date;
-        private final StringProperty status;
-        private final StringProperty reason;
+        private final StringProperty studentId, lastName, firstName, middleName, date, status, reason;
 
-        public Student(boolean selected, String studentId, String lastName, String firstName,
+        public Student(String studentId, String lastName, String firstName,
                        String middleName, String date, String status, String reason) {
-            this.selected = new SimpleBooleanProperty(selected);
+            this.selected = new SimpleBooleanProperty(false);
             this.studentId = new SimpleStringProperty(studentId);
             this.lastName = new SimpleStringProperty(lastName);
             this.firstName = new SimpleStringProperty(firstName);
@@ -251,23 +258,44 @@ public class TeacherMarkAttendanceCenterPanel {
             this.reason = new SimpleStringProperty(reason);
         }
 
-        public BooleanProperty selectedProperty() { return selected; }
-        public String getStudentId() { return studentId.get(); }
-        public StringProperty studentIdProperty() { return studentId; }
-        public String getLastName() { return lastName.get(); }
-        public StringProperty lastNameProperty() { return lastName; }
-        public String getFirstName() { return firstName.get(); }
-        public StringProperty firstNameProperty() { return firstName; }
-        public String getMiddleName() { return middleName.get(); }
-        public StringProperty middleNameProperty() { return middleName; }
-        public String getDate() { return date.get(); }
-        public StringProperty dateProperty() { return date; }
-        public String getStatus() { return status.get(); }
-        public StringProperty statusProperty() { return status; }
-        public String getReason() { return reason.get(); }
-        public StringProperty reasonProperty() { return reason; }
+        public BooleanProperty selectedProperty() {
+            return selected;
+        }
 
-        public void setStatus(String status) { this.status.set(status); }
-        public void setReason(String reason) { this.reason.set(reason); }
+        public String getStudentId() {
+            return studentId.get();
+        }
+
+        public String getLastName() {
+            return lastName.get();
+        }
+
+        public String getFirstName() {
+            return firstName.get();
+        }
+
+        public String getMiddleName() {
+            return middleName.get();
+        }
+
+        public String getDate() {
+            return date.get();
+        }
+
+        public String getStatus() {
+            return status.get();
+        }
+
+        public void setStatus(String status) {
+            this.status.set(status);
+        }
+
+        public String getReason() {
+            return reason.get();
+        }
+
+        public void setReason(String reason) {
+            this.reason.set(reason);
+        }
     }
 }
