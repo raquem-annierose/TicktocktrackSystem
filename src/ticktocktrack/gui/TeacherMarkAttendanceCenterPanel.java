@@ -106,7 +106,7 @@ public class TeacherMarkAttendanceCenterPanel {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, spacer, saveButton);
+        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, saveButton, spacer);
 
         courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldCourse, newCourse) -> {
             sectionComboBox.getItems().clear();
@@ -137,7 +137,6 @@ public class TeacherMarkAttendanceCenterPanel {
         });
 
         TableView<Student> table = new TableView<>();
-        table.setPrefWidth(950);
         table.setMaxWidth(950);
         table.setItems(filteredStudents);
         table.setEditable(true);
@@ -145,7 +144,7 @@ public class TeacherMarkAttendanceCenterPanel {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Student, String> idCol = new TableColumn<>("Student ID");
-        idCol.setPrefWidth(50);
+        idCol.setPrefWidth(100);
         idCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
 
         TableColumn<Student, String> lastNameCol = new TableColumn<>("Last Name");
@@ -170,7 +169,7 @@ public class TeacherMarkAttendanceCenterPanel {
         statusCol.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent", "Late", "Pending"));
 
         TableColumn<Student, String> reasonCol = new TableColumn<>("Reason");
-        reasonCol.setPrefWidth(250);
+        reasonCol.setPrefWidth(290);
         reasonCol.setCellValueFactory(new PropertyValueFactory<>("reason"));
         reasonCol.setCellFactory(TextFieldTableCell.forTableColumn());
         reasonCol.setOnEditCommit(event -> {
@@ -183,7 +182,7 @@ public class TeacherMarkAttendanceCenterPanel {
         ScrollPane sp = new ScrollPane(table);
         sp.setFitToWidth(true);
         sp.setFitToHeight(true);
-        sp.setPrefSize(950, 250);
+        sp.setMaxWidth(950);
 
         centerVBox.getChildren().addAll(searchCourseBox, sp);
         VBox.setVgrow(sp, Priority.ALWAYS);
