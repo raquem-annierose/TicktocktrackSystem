@@ -43,7 +43,7 @@ public class TeacherAddCourseCenterPanel {
         dialog.setLayoutY(230);
 
         // Title
-        Text title = new Text("Add Course");
+        Text title = new Text("Register Class");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
         title.setFill(Color.web("#02383E"));
 
