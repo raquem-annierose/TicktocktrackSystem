@@ -42,7 +42,7 @@ public class TeacherMarkAttendanceCenterPanel {
         }
 
         Map<String, Set<String>> courseSectionsMap = new LinkedHashMap<>();
-        List<String[]> courses = DatabaseViewClassList.getCourses();
+        List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
 
         for (String[] courseInfo : courses) {
             String courseName = courseInfo[0];
@@ -80,12 +80,26 @@ public class TeacherMarkAttendanceCenterPanel {
         saveButton.setStyle("-fx-font-size: 16px; -fx-padding: 10 20 10 20;");
         saveButton.setOnAction(e -> {
             try {
+                String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
+                String selectedSection = sectionComboBox.getSelectionModel().getSelectedItem();
+
+                if (selectedCourse == null || selectedSection == null) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please select a course and section.");
+                    alert.showAndWait();
+                    return;
+                }
+
                 for (Student student : students) {
                     DatabaseAttendance.saveAttendance(
                         student.getStudentId(),
                         student.getDate(),
                         student.getStatus(),
-                        student.getReason()
+                        student.getReason(),
+                        selectedCourse,
+                        selectedSection
                     );
                 }
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -103,10 +117,11 @@ public class TeacherMarkAttendanceCenterPanel {
             }
         });
 
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, spacer, saveButton);
+        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, saveButton, spacer);
 
         courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldCourse, newCourse) -> {
             sectionComboBox.getItems().clear();
@@ -137,7 +152,6 @@ public class TeacherMarkAttendanceCenterPanel {
         });
 
         TableView<Student> table = new TableView<>();
-        table.setPrefWidth(950);
         table.setMaxWidth(950);
         table.setItems(filteredStudents);
         table.setEditable(true);
@@ -145,7 +159,7 @@ public class TeacherMarkAttendanceCenterPanel {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Student, String> idCol = new TableColumn<>("Student ID");
-        idCol.setPrefWidth(50);
+        idCol.setPrefWidth(100);
         idCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
 
         TableColumn<Student, String> lastNameCol = new TableColumn<>("Last Name");
@@ -170,7 +184,7 @@ public class TeacherMarkAttendanceCenterPanel {
         statusCol.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent", "Late", "Pending"));
 
         TableColumn<Student, String> reasonCol = new TableColumn<>("Reason");
-        reasonCol.setPrefWidth(250);
+        reasonCol.setPrefWidth(290);
         reasonCol.setCellValueFactory(new PropertyValueFactory<>("reason"));
         reasonCol.setCellFactory(TextFieldTableCell.forTableColumn());
         reasonCol.setOnEditCommit(event -> {
@@ -183,7 +197,7 @@ public class TeacherMarkAttendanceCenterPanel {
         ScrollPane sp = new ScrollPane(table);
         sp.setFitToWidth(true);
         sp.setFitToHeight(true);
-        sp.setPrefSize(950, 250);
+        sp.setMaxWidth(950);
 
         centerVBox.getChildren().addAll(searchCourseBox, sp);
         VBox.setVgrow(sp, Priority.ALWAYS);

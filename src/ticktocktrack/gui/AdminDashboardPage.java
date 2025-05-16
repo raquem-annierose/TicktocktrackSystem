@@ -18,6 +18,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 
 public class AdminDashboardPage extends Application {
 	private Stage adminDashboardStage;
@@ -26,6 +28,15 @@ public class AdminDashboardPage extends Application {
 	 @Override
 	    public void start(Stage primaryStage) {
 	        this.adminDashboardStage = primaryStage;
+	        
+	        UsersModel currentUser = Session.getCurrentUser();
+	        if (currentUser == null) {
+	            System.err.println("No admin user logged in!");
+	            Platform.exit();
+	            return;
+	        }
+
+	        System.out.println("Logged in as: " + currentUser.getUsername());
 
 	        // Root pane
 	        StackPane root = new StackPane();
@@ -64,10 +75,10 @@ public class AdminDashboardPage extends Application {
         logoView.setLayoutY(14);
         
         // Admin text
-        Text adminText = new Text("Admin");
+        Text adminText = new Text(currentUser.getUsername());
         adminText.setFont(Font.font("Poppins Medium", 25));
         adminText.setFill(Color.web("#02383E"));
-        adminText.setLayoutX(1125);
+        adminText.setLayoutX(1050);
         adminText.setLayoutY(65);
         
         // User Icon
@@ -459,18 +470,9 @@ public class AdminDashboardPage extends Application {
 
     // Define the logout click handler
     private void onLogoutClicked(MouseEvent event) {
-        System.out.println("Logout clicked");
-
-        // Close the current window (AdminDashboardPage)
-        if (adminDashboardStage != null) {
-            adminDashboardStage.close();
-        }
-
-        // Launch the HomePage (login screen)
-        HomePage homePage = new HomePage();
-        Stage homeStage = new Stage();
-        homePage.start(homeStage);  // Show HomePage
+        Session.logoutAndGoHome(adminDashboardStage);
     }
+
 
     
     private Text selectedText; // Track the currently selected sidebar Text

@@ -18,6 +18,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 
 public class StudentDashboardPage extends Application {
 	private Stage studentDashboardStage;
@@ -28,6 +30,15 @@ public class StudentDashboardPage extends Application {
     public void start(Stage primaryStage) {
     	 // Store the reference to the primaryStage
         this.studentDashboardStage = primaryStage;
+        
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No admin user logged in!");
+            Platform.exit();
+            return;
+        }
+
+        System.out.println("Logged in as: " + currentUser.getUsername());
         
         // Root pane
         StackPane root = new StackPane();
@@ -67,7 +78,7 @@ public class StudentDashboardPage extends Application {
         
         // Notification
         notificationPane = new StudentNotificationPane();
-        notificationPane.getNotificationIconWrapper().setLayoutX(1030);
+        notificationPane.getNotificationIconWrapper().setLayoutX(990);
         notificationPane.getNotificationIconWrapper().setLayoutY(30);
 
         // Add a click event to show/hide the notification popup
@@ -82,10 +93,10 @@ public class StudentDashboardPage extends Application {
         });
         
      // Student text
-        Text studentText = new Text("Student");
+        Text studentText = new Text(currentUser.getUsername());
         studentText.setFont(Font.font("Poppins Medium", 25));
         studentText.setFill(Color.web("#02383E"));
-        studentText.setLayoutX(1100);
+        studentText.setLayoutX(1050);
         studentText.setLayoutY(65);
         
         // User Icon
@@ -451,17 +462,7 @@ public class StudentDashboardPage extends Application {
 
     // Define the logout click handler
     private void onLogoutClicked(MouseEvent event) {
-        System.out.println("Logout clicked");
-
-        // Close the current window (AdminDashboardPage)
-        if (studentDashboardStage != null) {
-        	studentDashboardStage.close();
-        }
-
-        // Launch the HomePage (login screen)
-        HomePage homePage = new HomePage();
-        Stage homeStage = new Stage();
-        homePage.start(homeStage);  // Show HomePage
+        Session.logoutAndGoHome(studentDashboardStage);
     }
 
     

@@ -43,20 +43,34 @@ public class TeacherViewClassStudents {
         TeacherViewClassListCenterPanel.updateCenterPanel(centerPanel);
     }
     private static void addTitle(String courseName) {
-        List<String[]> courses = DatabaseViewClassList.getCourses();
-        String section = null;
+    	 List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
+    	    String section = null;
+    	    String program = null;
 
-        for (String[] course : courses) {
-            if (course[0].equals(courseName)) {
-                section = course[1];
-                break;
-            }
-        }
+    	    // Find section and program for the course
+    	    for (String[] course : courses) {
+    	        if (course[0].equals(courseName)) {
+    	            section = course[1];
+    	            program = course[2];
+    	            break;
+    	        }
+    	    }
 
-        String fullTitle = "Students for " + courseName;
-        if (section != null) {
-            fullTitle += "\n (Section " + section + ")";
-        }
+    	    // Map program to short name (e.g., BSIT)
+    	    String programShort = "";
+    	    if (program != null) {
+    	        programShort = ticktocktrack.logic.ViewClassList.mapProgramToShortName(program);
+    	    }
+
+    	    // Compose title string with new format:
+    	    // Students for {course_name}
+    	    // {programShort} - Section {section}
+    	    String fullTitle = "Students for " + courseName + "\n";
+    	    if (programShort != null && !programShort.isEmpty() && section != null) {
+    	        fullTitle += programShort + " - Section " + section;
+    	    } else if (section != null) {
+    	        fullTitle += "Section " + section;
+    	    }
 
         Pane manualLayout = new Pane(); // Use Pane to set absolute positions
 
@@ -95,7 +109,7 @@ public class TeacherViewClassStudents {
         studentTable.setLayoutY(100);
 
         // Get the list of sections for the course
-        List<String[]> courses = DatabaseViewClassList.getCourses();
+        List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
         String section = null;
 
         // Find the correct section for the selected course

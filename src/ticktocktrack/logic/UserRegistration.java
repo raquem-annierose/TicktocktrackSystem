@@ -7,60 +7,54 @@ import javafx.scene.control.Alert.AlertType;
 
 public class UserRegistration {
 
-    // Method to register a faculty member
-    public static void registerFaculty(String username, String email, String role, String password, String confirmPassword) {
-        if (password.equals(confirmPassword)) {
-            String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+	public static boolean registerFaculty(String username, String email, String role, 
+            String password, String confirmPassword,
+            String firstName, String lastName) {
+		// Password check is already done in UI, so skip here
 
-            if (passwordHash != null) {
-                boolean isRegistered = false;
-                if (role.equals("Admin") || role.equals("Teacher")) {
-                    isRegistered = DatabaseRegistrationManager.registerUser(username, role, email, passwordHash, null, null, null, null, null, null);
-                }
+		String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+		if (passwordHash == null) {
+			return false;
+		}
 
-                if (isRegistered) {
-                    showAlert(AlertType.INFORMATION, "Registration Successful", "Faculty successfully registered!");
-                } else {
-                    showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
-                }
-            } else {
-                showAlert(AlertType.ERROR, "Error", "Error hashing the password.");
-            }
-        } else {
-            showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
-        }
-    }
+		boolean isRegistered = false;
+		if ("Admin".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role)) {
+			isRegistered = DatabaseRegistrationManager.registerUser(username, role, email, passwordHash,
+					firstName, null, lastName,
+					null, null, null);
+		}
 
+		return isRegistered;
+	}
+	
     public static void registerStudent(String username, String email, String password, String confirmPassword,
-            String firstName, String middleName, String lastName,
-            String yearLevel, String section, String program) {
-    	if (!password.equals(confirmPassword)) {
-    		showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
-    		return;
-    	}
+                                       String firstName, String middleName, String lastName,
+                                       String yearLevel, String program, String section) {
+        if (!password.equals(confirmPassword)) {
+            showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
+            return;
+        }
 
-    	String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+        String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+        if (passwordHash == null) {
+            showAlert(AlertType.ERROR, "Error", "Error hashing the password.");
+            return;
+        }
 
-    	if (passwordHash == null) {
-    		showAlert(AlertType.ERROR, "Error", "Error hashing the password.");
-    		return;
-    	}
-
-    	boolean isRegistered = DatabaseRegistrationManager.registerUser(
-    			username, "Student", email, passwordHash,
-    			firstName, middleName, lastName,
-    			yearLevel, section, program
-    			);
-
-    	if (isRegistered) {
-    		showAlert(AlertType.INFORMATION, "Registration Successful", "Student successfully registered!");
-    	} else {
-    		showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
-    	}
-    }
+        boolean isRegistered = DatabaseRegistrationManager.registerUser(
+        	    username, "Student", email, passwordHash,
+        	    firstName, middleName, lastName,
+        	    yearLevel, program, section 
+        	);
 
 
- // Method to show standard styled alerts with adjustable position
+        if (isRegistered) {
+            showAlert(AlertType.INFORMATION, "Registration Successful", "Student successfully registered!");
+        } else {
+            showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
+        }
+    }	
+
     private static void showAlert(AlertType alertType, String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(alertType);
@@ -68,26 +62,24 @@ public class UserRegistration {
             alert.setHeaderText(null);
             alert.setContentText(message);
 
-            // Optional: Set the owner window if you have one (can help positioning properly)
-            // alert.initOwner(mainStage);
-
-            // Show the alert first so we can adjust its position
-            alert.show();
-
-            // Now adjust position (example: center screen or custom coordinates)
+            // Center the alert BEFORE showing
             double screenWidth = javafx.stage.Screen.getPrimary().getVisualBounds().getWidth();
             double screenHeight = javafx.stage.Screen.getPrimary().getVisualBounds().getHeight();
+
+            alert.getDialogPane().applyCss();
+            alert.getDialogPane().layout();
 
             double alertWidth = alert.getDialogPane().getScene().getWindow().getWidth();
             double alertHeight = alert.getDialogPane().getScene().getWindow().getHeight();
 
-            // Example: center of the screen
             double centerX = (screenWidth - alertWidth) / 2;
             double centerY = (screenHeight - alertHeight) / 2;
 
-            // Set new position
-            alert.getDialogPane().getScene().getWindow().setX(centerX);
-            alert.getDialogPane().getScene().getWindow().setY(centerY);
+            alert.getDialogPane().getScene().getWindow().setX(700);
+            alert.getDialogPane().getScene().getWindow().setY(400);
+
+            // Show alert and wait for user to close
+            alert.showAndWait();
         });
     }
 

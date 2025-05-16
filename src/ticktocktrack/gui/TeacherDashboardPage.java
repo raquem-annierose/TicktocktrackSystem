@@ -18,18 +18,31 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 
 public class TeacherDashboardPage extends Application {
 	private Stage teacherDashboardStage;
 	private Pane centerContentPane;
 	private TeacherNotificationPane notificationPane; 
-	 // Declare the notificationDot as an instance variable to update its visibility later
+		 // Declare the notificationDot as an instance variable to update its visibility later
    
 	// Store reference to the currently selected text
     @Override
     public void start(Stage primaryStage) {
     	 // Store the reference to the primaryStage
         this.teacherDashboardStage = primaryStage;
+        
+        
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No admin user logged in!");
+            Platform.exit();
+            return;
+        }
+
+        System.out.println("Logged in as: " + currentUser.getUsername());
+
         
         // Root pane
         StackPane root = new StackPane();
@@ -67,7 +80,7 @@ public class TeacherDashboardPage extends Application {
         
         // Notification
         notificationPane = new TeacherNotificationPane();
-        notificationPane.getNotificationIconWrapper().setLayoutX(1030);
+        notificationPane.getNotificationIconWrapper().setLayoutX(990);
         notificationPane.getNotificationIconWrapper().setLayoutY(30);
 
         // Add a click event to show/hide the notification popup
@@ -83,11 +96,12 @@ public class TeacherDashboardPage extends Application {
 
         
      // Teacher text
-        Text teacherText = new Text("Teacher");
+        Text teacherText = new Text(currentUser.getUsername());
         teacherText.setFont(Font.font("Poppins Medium", 25));
         teacherText.setFill(Color.web("#02383E"));
-        teacherText.setLayoutX(1100);
+        teacherText.setLayoutX(1050);
         teacherText.setLayoutY(65);
+    
         
         // User Icon
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
@@ -391,7 +405,7 @@ public class TeacherDashboardPage extends Application {
         // Click event for Add Course text
         addCourseText.setOnMouseClicked(e -> {
             selectSidebarText(addCourseText); // Highlight selection
-            onAddCourseClicked(e); // Handle the click (define this method)
+            onRegisterClassClicked(e); // Handle the click (define this method)
         });
         
      // Line 3 image
@@ -534,18 +548,9 @@ public class TeacherDashboardPage extends Application {
 
     // Define the logout click handler
     private void onLogoutClicked(MouseEvent event) {
-        System.out.println("Logout clicked");
-
-        // Close the current window (AdminDashboardPage)
-        if (teacherDashboardStage != null) {
-            teacherDashboardStage.close();
-        }
-
-        // Launch the HomePage (login screen)
-        HomePage homePage = new HomePage();
-        Stage homeStage = new Stage();
-        homePage.start(homeStage);  // Show HomePage
+        Session.logoutAndGoHome(teacherDashboardStage);
     }
+
 
     
     private Text selectedText; // Track the currently selected sidebar Text
@@ -571,9 +576,11 @@ public class TeacherDashboardPage extends Application {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
+        // No need to pass currentUser explicitly
         Pane dashboardPanel = TeacherDashboardCenterPanel.createPanel();
         centerContentPane.getChildren().add(dashboardPanel);
     }
+
     private void onMarkAttendanceClicked(MouseEvent event) {
         System.out.println("Create Users clicked!");
         centerContentPane.getChildren().clear();
@@ -589,19 +596,32 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
     
-    private void onAddCourseClicked(MouseEvent event) {
-        System.out.println("Add Course clicked!");
-        selectSidebarText((Text) event.getSource()); // Highlight the selected text
+    private void onRegisterClassClicked(MouseEvent event) {
+        System.out.println("Register Class clicked!");
+        selectSidebarText((Text) event.getSource());
 
-        // Clear the center content pane
         centerContentPane.getChildren().clear();
 
-        // Create the Add Course dialog and add it to the center content pane
-        Pane addCourseDialog = TeacherAddCourseCenterPanel.createAddCourseDialog(centerContentPane);
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            // Optionally show an alert or redirect to login screen
+            return;
+        }
+
+        Integer teacherId = currentUser.getTeacherId();
+        if (teacherId == null) {
+            System.err.println("Current user is not a teacher.");
+            // Optionally handle error or show alert
+            return;
+        }
+
+        Pane addCourseDialog = TeacherRegisterClassCenterPanel.createAddCourseDialog(centerContentPane, teacherId);
         centerContentPane.getChildren().add(addCourseDialog);
     }
-    
-    private void onAttendanceSummaryClicked(MouseEvent event) {
+
+
+	private void onAttendanceSummaryClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
