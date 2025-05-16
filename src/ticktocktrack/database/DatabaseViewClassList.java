@@ -99,27 +99,58 @@ public class DatabaseViewClassList {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            String sql = """
-                DELETE FROM Classes
-                WHERE section = ? AND course_id IN (
-                    SELECT course_id FROM Courses WHERE course_name = ?
-                )
+            conn.setAutoCommit(false); // Begin transaction
+
+            String getClassIdSql = """
+                SELECT cl.class_id 
+                FROM Classes cl 
+                JOIN Courses c ON cl.course_id = c.course_id 
+                WHERE c.course_name = ? AND cl.section = ?
             """;
+            PreparedStatement getClassIdStmt = conn.prepareStatement(getClassIdSql);
+            getClassIdStmt.setString(1, courseName);
+            getClassIdStmt.setString(2, section);
+            ResultSet rs = getClassIdStmt.executeQuery();
 
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, section);
-            pstmt.setString(2, courseName);
-
-            int rowsAffected = pstmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-                System.out.println("Class deleted successfully.");
-            } else {
+            if (!rs.next()) {
                 System.out.println("No matching class found to delete.");
+                return;
             }
 
+            int classId = rs.getInt("class_id");
+
+            // 1. Delete Attendance
+            String deleteAttendanceSql = """
+                DELETE FROM Attendance 
+                WHERE enrollment_id IN (SELECT enrollment_id FROM Enrollments WHERE class_id = ?)
+            """;
+            PreparedStatement delAttendanceStmt = conn.prepareStatement(deleteAttendanceSql);
+            delAttendanceStmt.setInt(1, classId);
+            delAttendanceStmt.executeUpdate();
+
+            // 2. Delete Enrollments
+            String deleteEnrollmentsSql = "DELETE FROM Enrollments WHERE class_id = ?";
+            PreparedStatement delEnrollmentsStmt = conn.prepareStatement(deleteEnrollmentsSql);
+            delEnrollmentsStmt.setInt(1, classId);
+            delEnrollmentsStmt.executeUpdate();
+
+            // 3. Delete Class
+            String deleteClassSql = "DELETE FROM Classes WHERE class_id = ?";
+            PreparedStatement delClassStmt = conn.prepareStatement(deleteClassSql);
+            delClassStmt.setInt(1, classId);
+            int rowsDeleted = delClassStmt.executeUpdate();
+
+            conn.commit(); // Commit transaction
+            System.out.println(rowsDeleted > 0 ? "Class deleted successfully." : "No class deleted.");
+
+            // Cleanup
+            delAttendanceStmt.close();
+            delEnrollmentsStmt.close();
+            delClassStmt.close();
+            getClassIdStmt.close();
+
         } catch (SQLException e) {
-            System.err.println("Error deleting class: " + e.getMessage());
+            System.err.println("Error deleting course/class: " + e.getMessage());
         } finally {
             dbConn.closeConnection();
         }
