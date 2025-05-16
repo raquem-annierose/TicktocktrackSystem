@@ -11,39 +11,63 @@ import ticktocktrack.logic.ViewClassList;
 
 public class DatabaseViewClassList {
 
-	public static List<String[]> getCourses() {
-	    DatabaseConnection dbConn = new DatabaseConnection();
-	    List<String[]> courses = new ArrayList<>();
+    public static List<String[]> getCourses() {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        List<String[]> courses = new ArrayList<>();
 
-	    try {
-	        dbConn.connectToSQLServer();
-	        Connection conn = dbConn.getConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
 
-	        String sql = "SELECT course_name, section, program FROM Courses";
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        ResultSet rs = pstmt.executeQuery();
+            String sql = "SELECT course_name, section, program FROM Courses";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
 
-	        while (rs.next()) {
-	            String courseName = rs.getString("course_name");
-	            String section = rs.getString("section");
-	            String program = rs.getString("program");
-	            if (program == null) program = "N/A"; // Fallback
+            while (rs.next()) {
+                String courseName = rs.getString("course_name");
+                String section = rs.getString("section");
+                String program = rs.getString("program");
+                if (program == null) program = "N/A";
 
-	            // Map program to its abbreviation
-	            String programAbbreviation = ViewClassList.mapProgramToShortName(program);
-	            // Add course info with the abbreviation
-	            courses.add(new String[]{courseName, section, programAbbreviation});
-	        }
+                String programAbbreviation = ViewClassList.mapProgramToShortName(program);
+                courses.add(new String[]{courseName, section, programAbbreviation});
+            }
 
-	    } catch (SQLException e) {
-	        System.err.println("Error fetching courses: " + e.getMessage());
-	    } finally {
-	        dbConn.closeConnection();
-	    }
+        } catch (SQLException e) {
+            System.err.println("Error fetching courses: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
 
-	    return courses;
-	}
+        return courses;
+    }
 
+    public static List<String> fetchAvailableCourses() {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        List<String> courseList = new ArrayList<>();
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+
+            String sql = "SELECT course_name, section FROM Courses";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String courseName = rs.getString("course_name");
+                String section = rs.getString("section");
+                courseList.add(courseName + " - " + section);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching available courses: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+
+        return courseList;
+    }
 
     public static void deleteCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -101,7 +125,6 @@ public class DatabaseViewClassList {
         }
     }
 
- // Fetching students for a course
     public static List<Student> getStudentsForCourse(String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         List<Student> students = new ArrayList<>();
@@ -132,8 +155,6 @@ public class DatabaseViewClassList {
                         rs.getString("year_level"),
                         rs.getString("program")
                 );
-                
-                // ✅ Set email separately
                 student.setEmail(rs.getString("email"));
 
                 students.add(student);
