@@ -366,7 +366,7 @@ public class TeacherDashboardPage extends Application {
 
         
      // Create "Add Course" Text
-        Text addCourseText = new Text("Add Course");
+        Text addCourseText = new Text("Register Class");
         addCourseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size and weight
         addCourseText.setFill(Color.web("#02383E")); // Set initial text color
         addCourseText.setLayoutX(90); // x position
