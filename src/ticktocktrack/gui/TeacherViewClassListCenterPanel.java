@@ -108,7 +108,8 @@ public class TeacherViewClassListCenterPanel {
 
         Button editButton = createEditButton(courseName, section);
         Button deleteButton = createDeleteButton(courseName, section);
-        Button viewStudentsButton = createViewStudentsButton(courseName);
+        Button viewStudentsButton = createViewStudentsButton(courseName, section, program);
+
 
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
@@ -118,15 +119,16 @@ public class TeacherViewClassListCenterPanel {
         return courseBox;
     }
 
-    private static Button createViewStudentsButton(String courseName) {
+    private static Button createViewStudentsButton(String courseName, String section, String program) {
         Button viewStudentsButton = new Button("View Students");
         viewStudentsButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-        viewStudentsButton.setOnAction(event -> openStudentList(courseName));
+        viewStudentsButton.setOnAction(event -> openStudentList(courseName, section, program));
         return viewStudentsButton;
     }
 
-    private static void openStudentList(String courseName) {
-        TeacherViewClassStudents.showStudentList(courseName);
+
+    private static void openStudentList(String courseName, String section, String program) {
+        TeacherViewClassStudents.showStudentList(courseName, section, program);
     }
     
     public static void updateCenterPanel(Pane newPanel) {

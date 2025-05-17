@@ -23,7 +23,7 @@ public class TeacherViewClassStudents {
 
     private static Pane centerPanel;
 
-    public static void showStudentList(String courseName) {
+    public static void showStudentList(String courseName, String section, String program) {
         centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: #F0F8FF; -fx-border-color: transparent; -fx-border-width: 0;");
@@ -44,17 +44,17 @@ public class TeacherViewClassStudents {
     }
     private static void addTitle(String courseName) {
     	 List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
-    	    String section = null;
-    	    String program = null;
+    	 String section = null;
+    	 String program = null;
 
-    	    // Find section and program for the course
-    	    for (String[] course : courses) {
-    	        if (course[0].equals(courseName)) {
-    	            section = course[1];
-    	            program = course[2];
-    	            break;
-    	        }
-    	    }
+    	 // Find the correct section and program for the selected course
+    	 for (String[] course : courses) {
+    	     if (course[0].equals(courseName)) {
+    	         section = course[1]; // Section
+    	         program = course[2]; // Program
+    	         break;
+    	     }
+    	 }
 
     	    // Map program to short name (e.g., BSIT)
     	    String programShort = "";
@@ -111,18 +111,20 @@ public class TeacherViewClassStudents {
         // Get the list of sections for the course
         List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
         String section = null;
+        String program = null;
 
-        // Find the correct section for the selected course
+        // Find the correct section and program for the selected course
         for (String[] course : courses) {
             if (course[0].equals(courseName)) {
-                section = course[1]; // Get the section for the course
+                section = course[1]; // Section
+                program = course[2]; // Program
                 break;
             }
         }
 
         if (section != null) {
             // Fetch students for the specific course and section
-            List<Student> students = DatabaseViewClassList.getStudentsForCourse(courseName, section);
+        	List<Student> students = DatabaseViewClassList.getStudentsEnrolled(courseName, section, program);
 
             // Create a TableView to display students
             TableView<Student> tableView = new TableView<>();

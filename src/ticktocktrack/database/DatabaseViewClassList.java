@@ -52,7 +52,7 @@ public class DatabaseViewClassList {
 	            if (program == null) program = "N/A";
 
 	            String programAbbreviation = ViewClassList.mapProgramToShortName(program);
-	            courses.add(new String[]{courseName, section, programAbbreviation});
+	            courses.add(new String[]{courseName, section, program, programAbbreviation});
 	        }
 
 	    } catch (SQLException e) {
@@ -92,65 +92,111 @@ public class DatabaseViewClassList {
         return courseList;
     }
 
-    public static void deleteCourse(String courseName, String section) {
+    public static void deleteCourse(String courseName) {
         DatabaseConnection dbConn = new DatabaseConnection();
 
         try {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
+            conn.setAutoCommit(false);
 
-            conn.setAutoCommit(false); // Begin transaction
+            UsersModel currentUser = Session.getCurrentUser();
+            if (currentUser == null || currentUser.getTeacherId() == null) {
+                System.err.println("Error: No teacher is logged in.");
+                return;
+            }
+            int teacherId = currentUser.getTeacherId();
 
-            String getClassIdSql = """
-                SELECT cl.class_id 
-                FROM Classes cl 
-                JOIN Courses c ON cl.course_id = c.course_id 
-                WHERE c.course_name = ? AND cl.section = ?
+            // Get course_id for this course name and teacher
+            String getCourseIdSql = """
+                SELECT DISTINCT c.course_id
+                FROM Courses c
+                JOIN Classes cl ON c.course_id = cl.course_id
+                WHERE c.course_name = ? AND cl.teacher_id = ?
             """;
-            PreparedStatement getClassIdStmt = conn.prepareStatement(getClassIdSql);
-            getClassIdStmt.setString(1, courseName);
-            getClassIdStmt.setString(2, section);
-            ResultSet rs = getClassIdStmt.executeQuery();
+            PreparedStatement getCourseIdStmt = conn.prepareStatement(getCourseIdSql);
+            getCourseIdStmt.setString(1, courseName);
+            getCourseIdStmt.setInt(2, teacherId);
+            ResultSet rsCourse = getCourseIdStmt.executeQuery();
 
-            if (!rs.next()) {
-                System.out.println("No matching class found to delete.");
+            if (!rsCourse.next()) {
+                System.out.println("Course not found for this teacher.");
                 return;
             }
 
-            int classId = rs.getInt("class_id");
+            int courseId = rsCourse.getInt("course_id");
 
-            // 1. Delete Attendance
-            String deleteAttendanceSql = """
-                DELETE FROM Attendance 
-                WHERE enrollment_id IN (SELECT enrollment_id FROM Enrollments WHERE class_id = ?)
+            // Get all class_ids under this teacher and course_id
+            String getClassIdsSql = """
+                SELECT class_id FROM Classes
+                WHERE course_id = ? AND teacher_id = ?
             """;
-            PreparedStatement delAttendanceStmt = conn.prepareStatement(deleteAttendanceSql);
-            delAttendanceStmt.setInt(1, classId);
-            delAttendanceStmt.executeUpdate();
+            PreparedStatement getClassIdsStmt = conn.prepareStatement(getClassIdsSql);
+            getClassIdsStmt.setInt(1, courseId);
+            getClassIdsStmt.setInt(2, teacherId);
+            ResultSet rsClasses = getClassIdsStmt.executeQuery();
 
-            // 2. Delete Enrollments
-            String deleteEnrollmentsSql = "DELETE FROM Enrollments WHERE class_id = ?";
-            PreparedStatement delEnrollmentsStmt = conn.prepareStatement(deleteEnrollmentsSql);
-            delEnrollmentsStmt.setInt(1, classId);
-            delEnrollmentsStmt.executeUpdate();
+            List<Integer> classIds = new ArrayList<>();
+            while (rsClasses.next()) {
+                classIds.add(rsClasses.getInt("class_id"));
+            }
 
-            // 3. Delete Class
-            String deleteClassSql = "DELETE FROM Classes WHERE class_id = ?";
-            PreparedStatement delClassStmt = conn.prepareStatement(deleteClassSql);
-            delClassStmt.setInt(1, classId);
-            int rowsDeleted = delClassStmt.executeUpdate();
+            // Delete attendance and enrollments tied to those classes
+            for (int classId : classIds) {
+                String deleteAttendanceSql = """
+                    DELETE FROM Attendance
+                    WHERE enrollment_id IN (SELECT enrollment_id FROM Enrollments WHERE class_id = ?)
+                """;
+                try (PreparedStatement delAttendanceStmt = conn.prepareStatement(deleteAttendanceSql)) {
+                    delAttendanceStmt.setInt(1, classId);
+                    delAttendanceStmt.executeUpdate();
+                }
 
-            conn.commit(); // Commit transaction
-            System.out.println(rowsDeleted > 0 ? "Class deleted successfully." : "No class deleted.");
+                String deleteEnrollmentsSql = "DELETE FROM Enrollments WHERE class_id = ?";
+                try (PreparedStatement delEnrollmentsStmt = conn.prepareStatement(deleteEnrollmentsSql)) {
+                    delEnrollmentsStmt.setInt(1, classId);
+                    delEnrollmentsStmt.executeUpdate();
+                }
+            }
 
-            // Cleanup
-            delAttendanceStmt.close();
-            delEnrollmentsStmt.close();
-            delClassStmt.close();
-            getClassIdStmt.close();
+            // Delete classes tied to this teacher and course_id
+            try (PreparedStatement delClassesStmt = conn.prepareStatement(
+                    "DELETE FROM Classes WHERE course_id = ? AND teacher_id = ?")) {
+                delClassesStmt.setInt(1, courseId);
+                delClassesStmt.setInt(2, teacherId);
+                delClassesStmt.executeUpdate();
+            }
+
+            // Check if course is still used in other teachers' classes
+            String checkCourseUsageSql = """
+                SELECT COUNT(*) AS usage_count
+                FROM Classes
+                WHERE course_id = ?
+            """;
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkCourseUsageSql)) {
+                checkStmt.setInt(1, courseId);
+                ResultSet rsCheck = checkStmt.executeQuery();
+
+                if (rsCheck.next() && rsCheck.getInt("usage_count") == 0) {
+                    try (PreparedStatement delCourseStmt = conn.prepareStatement("DELETE FROM Courses WHERE course_id = ?")) {
+                        delCourseStmt.setInt(1, courseId);
+                        delCourseStmt.executeUpdate();
+                        System.out.println("Course also deleted from Courses table (no other usage).");
+                    }
+                } else {
+                    System.out.println("Course not deleted from Courses table (still used elsewhere).");
+                }
+            }
+
+            conn.commit();
 
         } catch (SQLException e) {
-            System.err.println("Error deleting course/class: " + e.getMessage());
+            System.err.println("Error deleting course: " + e.getMessage());
+            try {
+                dbConn.getConnection().rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Rollback failed: " + rollbackEx.getMessage());
+            }
         } finally {
             dbConn.closeConnection();
         }
@@ -273,5 +319,57 @@ public class DatabaseViewClassList {
 
         return students;
     }
+    
+    public static List<Student> getStudentsEnrolled(String courseName, String section, String program) {
+        List<Student> students = new ArrayList<>();
+        DatabaseConnection dbConn = new DatabaseConnection();
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+
+            String sql = """
+                SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, s.year_level, u.email
+                FROM Students s
+                JOIN Users u ON s.user_id = u.user_id
+                JOIN Enrollments e ON s.student_id = e.student_id
+                JOIN Classes cl ON e.class_id = cl.class_id
+                JOIN Courses c ON cl.course_id = c.course_id
+                WHERE c.course_name = ? AND cl.section = ? AND cl.program = ?
+                ORDER BY s.last_name, s.first_name
+                """;
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, courseName);
+            pstmt.setString(2, section);
+            pstmt.setString(3, program);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Student student = new Student();
+                student.setStudentId(rs.getInt("student_id"));
+                student.setUsername(rs.getString("username"));  // from Users table
+                student.setFirstName(rs.getString("first_name"));
+                student.setMiddleName(rs.getString("middle_name"));
+                student.setLastName(rs.getString("last_name"));
+                student.setYearLevel(rs.getString("year_level"));
+                student.setEmail(rs.getString("email"));  // from Users table
+
+                students.add(student);
+            }
+
+            rs.close();
+            pstmt.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching students enrolled: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+
+        return students;
+    }
+
     
 }

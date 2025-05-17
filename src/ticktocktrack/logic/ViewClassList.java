@@ -30,7 +30,7 @@ public class ViewClassList {
 
     // Delete a class by course name and section
     public static void deleteCourse(String courseName, String section) {
-        DatabaseViewClassList.deleteCourse(courseName, section);
+        DatabaseViewClassList.deleteCourse(courseName);
     }
 
 
