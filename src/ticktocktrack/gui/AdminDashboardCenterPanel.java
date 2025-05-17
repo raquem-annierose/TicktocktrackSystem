@@ -6,6 +6,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 import javafx.scene.paint.Color;
 
 public class AdminDashboardCenterPanel {
@@ -57,14 +59,17 @@ public class AdminDashboardCenterPanel {
         adminEffectsIconView.setFitHeight(140);
         adminEffectsIconView.setLayoutX(510); // Adjust X position
         adminEffectsIconView.setLayoutY(110);  // Adjust Y position
-
+        
+        UsersModel currentUser = Session.getCurrentUser();
+        String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Admin";
+        if (fullName.isEmpty()) fullName = "Admin";
 
         // Create the "Dashboard" Text
-        Text dashboardTitle = new Text("Welcome Admin!");
+        Text dashboardTitle = new Text("Welcome Admin \n" + fullName + "!");
         dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
         dashboardTitle.setFill(Color.web("#02383E"));
         dashboardTitle.setLayoutX(70);
-        dashboardTitle.setLayoutY(220);
+        dashboardTitle.setLayoutY(200);
 
         // Create 3 panels (box holders)
         double startX = 20;

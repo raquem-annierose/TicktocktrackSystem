@@ -6,6 +6,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 import javafx.scene.paint.Color;
 
 public class StudentDashboardCenterPanel {
@@ -49,14 +51,18 @@ public class StudentDashboardCenterPanel {
         studentEffectsView.setFitHeight(285); // Adjust the size
         studentEffectsView.setLayoutX(560);   // X position
         studentEffectsView.setLayoutY(6);     // Y position
+        
+        UsersModel currentUser = Session.getCurrentUser();
+        String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Student";
+        if (fullName.isEmpty()) fullName = "Student";
 
        
         // Create the "Student Dashboard" Text
-        Text dashboardTitle = new Text("Welcome Student!");
+        Text dashboardTitle = new Text("Welcome Student \n" + fullName + "!");
         dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
         dashboardTitle.setFill(Color.web("#02383E"));
         dashboardTitle.setLayoutX(70);
-        dashboardTitle.setLayoutY(220);
+        dashboardTitle.setLayoutY(200);
 
         // Create 3 panels (box holders) with present, absent, and excused days
         double startX = 50;

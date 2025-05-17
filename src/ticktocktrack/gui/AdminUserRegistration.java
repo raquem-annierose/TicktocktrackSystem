@@ -14,7 +14,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.paint.Color;
-import ticktocktrack.database.DatabaseRegistrationManager;
 import ticktocktrack.logic.UserRegistration;
 
 public class AdminUserRegistration {
@@ -104,6 +103,16 @@ public class AdminUserRegistration {
         return passwordField;
     }
     
+    private static void showAlert(AlertType alertType, String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(alertType);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+    
     public static class FacultyRegistrationPanel {
 
         public static Pane createPanel() {
@@ -121,22 +130,30 @@ public class AdminUserRegistration {
 
             double startX = 225;
             double startY = 100;
-            double gap = 80;
+            double gap = 70;
 
-            // Create and add email field
-            TextField emailField = createTextField("Email Address", startX, startY, 480, 60);
+            // Create and add first name field
+            TextField firstNameField = createTextField("First Name", startX, startY, 475/ 2, 50);
+            facultyRegistrationPanel.getChildren().add(firstNameField);
+
+            // Create and add last name field
+            TextField lastNameField = createTextField("Last Name", 235 * 2, startY, 475/ 2, 50);
+            facultyRegistrationPanel.getChildren().add(lastNameField);
+
+            // Create and add email field (shifted down)
+            TextField emailField = createTextField("Email Address", startX, startY + gap * 1, 480, 50);
             facultyRegistrationPanel.getChildren().add(emailField);
 
-            // Create and add username field
-            TextField usernameField = createTextField("Username", startX, startY + gap * 1, 480, 60);
+            // Create and add username field (shifted down)
+            TextField usernameField = createTextField("Username", startX, startY + gap * 2, 480, 50);
             facultyRegistrationPanel.getChildren().add(usernameField);
 
-            // Create and add role ComboBox
+            // Create and add role ComboBox (shifted down)
             ComboBox<String> roleComboBox = new ComboBox<>();
             roleComboBox.getItems().addAll("Admin", "Teacher");
             roleComboBox.setLayoutX(startX);
-            roleComboBox.setLayoutY(startY + gap * 2);
-            roleComboBox.setPrefSize(480, 60);
+            roleComboBox.setLayoutY(startY + gap * 3);
+            roleComboBox.setPrefSize(480, 50);
             roleComboBox.setPromptText("Role");
 
             String comboBoxBaseStyle = ""
@@ -151,33 +168,41 @@ public class AdminUserRegistration {
             roleComboBox.setStyle(comboBoxBaseStyle);
             facultyRegistrationPanel.getChildren().add(roleComboBox);
 
-            // Create and add password field
-            PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 3, 480, 60);
+            // Create and add password field (shifted down)
+            PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 4, 480, 50);
             facultyRegistrationPanel.getChildren().add(passwordField);
 
-            // Create and add confirm password field
-            PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX, startY + gap * 4, 480, 60);
+            // Create and add confirm password field (shifted down)
+            PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX, startY + gap * 5, 480, 50);
             facultyRegistrationPanel.getChildren().add(confirmPasswordField);
 
-            // Create and add Done button
+            // Create and add Done button (shifted down)
             Button doneButton = createDoneButton(800, 490);
             facultyRegistrationPanel.getChildren().add(doneButton);
 
             doneButton.setOnAction(e -> {
+                System.out.println("Done button clicked");
+                String firstName = firstNameField.getText();
+                String lastName = lastNameField.getText();
                 String username = usernameField.getText();
                 String email = emailField.getText();
                 String role = roleComboBox.getValue();
                 String password = passwordField.getText();
                 String confirmPassword = confirmPasswordField.getText();
 
-                if (password.equals(confirmPassword)) {
-                    UserRegistration.registerFaculty(username, email, role, password, confirmPassword);
+                if (!password.equals(confirmPassword)) {
+                    showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
+                    return;
+                }
+
+                boolean registered = UserRegistration.registerFaculty(username, email, role, password, confirmPassword, firstName, lastName);
+                if (registered) {
                     showAlert(AlertType.INFORMATION, "Registration Successful", "Faculty successfully registered!");
                 } else {
-                    // Show error message if passwords do not match
-                    showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
+                    showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
                 }
             });
+
 
             return facultyRegistrationPanel;
         }
@@ -318,9 +343,6 @@ public class AdminUserRegistration {
         }
     }
 
-	public static void showAlert(AlertType error, String string, String string2) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }

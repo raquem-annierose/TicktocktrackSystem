@@ -5,38 +5,44 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import ticktocktrack.database.DatabaseViewClassList;
-import ticktocktrack.database.DatabaseAddCourse;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 import ticktocktrack.gui.TeacherViewClassListCenterPanel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ViewClassList {
 
-    public static List<String[]> getCourses() {
-        return DatabaseViewClassList.getCourses();
+	public static List<String[]> getCourses() {
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user session found.");
+            return new ArrayList<>();
+        }
+        return DatabaseViewClassList.getCoursesByTeacherId();
     }
 
+    // Update a class with new course and section info
     public static void editCourse(String oldCourseName, String oldSection, String newCourseName, String newSection) {
         DatabaseViewClassList.updateCourse(oldCourseName, oldSection, newCourseName, newSection);
     }
 
+    // Delete a class by course name and section
     public static void deleteCourse(String courseName, String section) {
         DatabaseViewClassList.deleteCourse(courseName, section);
     }
 
-    public static void addNewCourse(String courseName, String section, String program) {
-        DatabaseAddCourse.addCourse(courseName, section, program);
-    }
 
-    // ========== HANDLER Methods ==========S
+    // ====== GUI event handlers ======
 
     public static void handleEditCourse(String oldCourseName, String oldSection) {
         TextField courseNameField = new TextField(oldCourseName);
         TextField sectionField = new TextField(oldSection);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Edit Course");
-        alert.setHeaderText("Edit the course:");
+        alert.setTitle("Edit Class");
+        alert.setHeaderText("Edit the class details:");
         alert.getDialogPane().setContent(new VBox(10, courseNameField, sectionField));
 
         ButtonType saveButton = new ButtonType("Save");
@@ -53,16 +59,28 @@ public class ViewClassList {
 
     public static void handleDeleteCourse(String courseName, String section) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete Course");
-        confirm.setHeaderText("Are you sure you want to delete?");
-        confirm.setContentText(courseName + " - " + section);
+        confirm.setTitle("Delete Class");
+        confirm.setHeaderText("Are you sure you want to delete the class?\n" + courseName + " - " + section);
 
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            deleteCourse(courseName, section);
-            TeacherViewClassListCenterPanel.updateClassListPanel();
-        }
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                deleteCourse(courseName, section);
+                TeacherViewClassListCenterPanel.updateClassListPanel();
+            }
+        });
     }
-    
+
+    // Paging logic to move between pages in GUI
+
+    public static void goToNextPage() {
+        TeacherViewClassListCenterPanel.incrementPage();
+    }
+
+    public static void goToPreviousPage() {
+        TeacherViewClassListCenterPanel.decrementPage();
+    }
+
+    // Map program to short name (if used in GUI)
     public static String mapProgramToShortName(String programName) {
         if (programName == null) {
             return "N/A"; // Return "N/A" if programName is null
@@ -102,14 +120,4 @@ public class ViewClassList {
         return shortName;
     }
 
-
-
-   
-    public static void goToNextPage() {
-        TeacherViewClassListCenterPanel.incrementPage();
-    }
-
-    public static void goToPreviousPage() {
-        TeacherViewClassListCenterPanel.decrementPage();
-    }
 }

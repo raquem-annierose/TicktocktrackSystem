@@ -6,6 +6,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import ticktocktrack.database.Session;
+import ticktocktrack.database.UsersModel;
 import javafx.scene.paint.Color;
 
 public class TeacherDashboardCenterPanel {
@@ -43,13 +45,16 @@ public class TeacherDashboardCenterPanel {
         teacherEffectsView.setLayoutY(-5);     // Y position
 
       
+        UsersModel currentUser = Session.getCurrentUser();
+        String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Teacher";
+        if (fullName.isEmpty()) fullName = "Teacher";
 
-        // Create the "Teacher Dashboard" Text
-        Text dashboardTitle = new Text("Welcome Teacher!");
+        Text dashboardTitle = new Text("Welcome Teacher \n" + fullName + "!");
         dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
         dashboardTitle.setFill(Color.web("#02383E"));
         dashboardTitle.setLayoutX(70);
-        dashboardTitle.setLayoutY(220);
+        dashboardTitle.setLayoutY(200);
+
 
         // Panel for Number of Classes (Default 0)
         Pane classPanel = createBoxPanel(50, 290, 300, 120, "Total Classes", 0); // Default 0 classes
