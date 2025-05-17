@@ -3,7 +3,6 @@ package ticktocktrack.gui;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.scene.image.Image;
@@ -114,9 +113,6 @@ public class TeacherNotificationPane {
     private void showExpandedNotification(Notification notification) {
         Stage dialog = new Stage();
 
-        StackPane backgroundPane = new StackPane();
-        backgroundPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
-
         VBox contentBox = new VBox(10);
         contentBox.setPadding(new Insets(20));
         contentBox.setStyle("-fx-background-color: white; -fx-background-radius: 10px;");
@@ -130,15 +126,13 @@ public class TeacherNotificationPane {
         timeLabel.setFont(Font.font("Poppins", 12));
         timeLabel.setTextFill(Color.GRAY);
 
-        // Removed the red exit button here
-
         BorderPane dialogPane = new BorderPane();
         // No close button added to the top anymore
         dialogPane.setCenter(contentBox);
 
         contentBox.getChildren().addAll(messageLabel, timeLabel);
 
-        StackPane root = new StackPane(backgroundPane, dialogPane);
+        StackPane root = new StackPane(dialogPane);
         Scene scene = new Scene(root, 400, 200);
         dialog.setScene(scene);
         dialog.show();
