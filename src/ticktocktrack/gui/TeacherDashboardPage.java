@@ -18,8 +18,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import ticktocktrack.database.Session;
-import ticktocktrack.database.UsersModel;
+import ticktocktrack.logic.Session;
+import ticktocktrack.logic.UsersModel;
 
 public class TeacherDashboardPage extends Application {
 	private Stage teacherDashboardStage;
@@ -582,19 +582,51 @@ public class TeacherDashboardPage extends Application {
     }
 
     private void onMarkAttendanceClicked(MouseEvent event) {
-        System.out.println("Create Users clicked!");
+        System.out.println("Mark Attendance clicked!");
+        selectSidebarText((Text) event.getSource()); // If you want sidebar highlighting like in view class list
+
         centerContentPane.getChildren().clear();
-        Pane createUsersPanel = TeacherMarkAttendanceCenterPanel.createPanel();
-        centerContentPane.getChildren().add(createUsersPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer teacherId = currentUser.getTeacherId();
+        if (teacherId == null) {
+            System.err.println("Current user is not a teacher.");
+            return;
+        }
+
+        // Assuming your createPanel method has a signature like createPanel(int teacherId, String optionalParam)
+        // If the actual method expects course or section instead, adjust accordingly.
+        Pane markAttendancePanel = TeacherMarkAttendanceCenterPanel.createPanel(null, null, teacherId);
+        centerContentPane.getChildren().add(markAttendancePanel);
     }
+
     
-    private void  onViewClassListClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
-        selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+    private void onViewClassListClicked(MouseEvent event) {
+        System.out.println("View Class List clicked!");
+        selectSidebarText((Text) event.getSource());
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = TeacherViewClassListCenterPanel.createPanel();
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer teacherId = currentUser.getTeacherId();
+        if (teacherId == null) {
+            System.err.println("Current user is not a teacher.");
+            return;
+        }
+
+        Pane dashboardPanel = TeacherViewClassListCenterPanel.createPanel(teacherId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
+
     
     private void onRegisterClassClicked(MouseEvent event) {
         System.out.println("Register Class clicked!");

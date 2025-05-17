@@ -8,9 +8,8 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import ticktocktrack.database.DatabaseRegisterClass;
-import ticktocktrack.database.Student;
 import ticktocktrack.database.DatabaseViewClassList;
-
+import ticktocktrack.logic.Student;
 
 import java.util.List;
 import java.util.Set;
@@ -57,13 +56,17 @@ public class TeacherEnrollmentStudent {
         doneBtn.setStyle("-fx-background-color: #00695C; -fx-text-fill: white;");
         doneBtn.setOnAction(e -> {
             for (Student student : selectedListView.getItems()) {
-                boolean success = DatabaseRegisterClass.enrollStudentInClass(student.getStudentId(), classId);
+                boolean success = DatabaseRegisterClass.enrollStudentInClass(
+                    student.getStudentId(),  // directly use int, no parsing
+                    classId
+                );
                 if (success) {
                     System.out.println("Enrolled: " + student.getFullName());
                 }
             }
             dialog.close();
         });
+
 
         layout.getChildren().addAll(
                 new Text("Select students to enroll in Section " + section + ":"),

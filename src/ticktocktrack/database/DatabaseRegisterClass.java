@@ -6,160 +6,97 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ticktocktrack.logic.Student;
+
 public class DatabaseRegisterClass {
 
-    public static boolean addCourse(String courseName) {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
+	 public static boolean addClass(int teacherId, String courseName, String section, String program) {
+	        DatabaseConnection dbConn = new DatabaseConnection();
+	        try {
+	            dbConn.connectToSQLServer();
+	            Connection conn = dbConn.getConnection();
+	            String sql = "INSERT INTO Classes (teacher_id, course_name, section, program) VALUES (?, ?, ?, ?)";
+	            PreparedStatement pstmt = conn.prepareStatement(sql);
+	            pstmt.setInt(1, teacherId);
+	            pstmt.setString(2, courseName);
+	            pstmt.setString(3, section);
+	            pstmt.setString(4, program);
 
-            String sql = "INSERT INTO Courses (course_name) VALUES (?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, courseName);
+	            int rowsInserted = pstmt.executeUpdate();
+	            return rowsInserted > 0;
+	        } catch (SQLException e) {
+	            System.err.println("Error inserting class: " + e.getMessage());
+	            return false;
+	        } finally {
+	            dbConn.closeConnection();
+	        }
+	    }  // <-- Closing brace for addCla
+        
+	 public static int getClassId(String courseName, int teacherId, String section, String program) {
+		    DatabaseConnection dbConn = new DatabaseConnection();
+		    try {
+		        dbConn.connectToSQLServer();
+		        Connection conn = dbConn.getConnection();
 
-            int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0;
-        } catch (SQLException e) {
-            System.err.println("Error inserting course: " + e.getMessage());
-            return false;
-        } finally {
-            dbConn.closeConnection();
-        }
-    }
+		        String sql = """
+		            SELECT class_id
+		            FROM Classes
+		            WHERE course_name = ? AND teacher_id = ? AND section = ? AND program = ?
+		        """;
 
-    public static boolean addClass(int courseId, int teacherId, String section, String program) {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
+		        PreparedStatement pstmt = conn.prepareStatement(sql);
+		        pstmt.setString(1, courseName);    // courseName is a string, so use setString
+		        pstmt.setInt(2, teacherId);
+		        pstmt.setString(3, section);
+		        pstmt.setString(4, program);
 
-            String sql = "INSERT INTO Classes (course_id, teacher_id, section, program) VALUES (?, ?, ?, ?)";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, courseId);
-            pstmt.setInt(2, teacherId);
-            pstmt.setString(3, section);
-            pstmt.setString(4, program);
+		        ResultSet rs = pstmt.executeQuery();
+		        if (rs.next()) {
+		            return rs.getInt("class_id");
+		        }
+		    } catch (SQLException e) {
+		        System.err.println("Error retrieving class ID: " + e.getMessage());
+		    } finally {
+		        dbConn.closeConnection();
+		    }
+		    return -1; // Not found
+		}
 
-            int rowsInserted = pstmt.executeUpdate();
-            return rowsInserted > 0;
-        } catch (SQLException e) {
-            System.err.println("Error inserting class: " + e.getMessage());
-            return false;
-        } finally {
-            dbConn.closeConnection();
-        }
-    }
+	 public static boolean classExists(int teacherId, String courseName, String section, String program) {
+		    DatabaseConnection dbConn = new DatabaseConnection();
+		    try {
+		        dbConn.connectToSQLServer();
+		        Connection conn = dbConn.getConnection();
 
-    public static int getClassId(int courseId, int teacherId, String section, String program) {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
+		        String sql = """
+		            SELECT COUNT(*) AS count
+		            FROM Classes
+		            WHERE teacher_id = ? AND course_name = ? AND section = ? AND program = ?
+		        """;
 
-            String sql = "SELECT class_id FROM Classes WHERE course_id = ? AND teacher_id = ? AND section = ? AND program = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, courseId);
-            pstmt.setInt(2, teacherId);
-            pstmt.setString(3, section);
-            pstmt.setString(4, program);
+		        PreparedStatement pstmt = conn.prepareStatement(sql);
+		        pstmt.setInt(1, teacherId);
+		        pstmt.setString(2, courseName);
+		        pstmt.setString(3, section);
+		        pstmt.setString(4, program);
 
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("class_id");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving class ID: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
-        return -1;
-    }
+		        ResultSet rs = pstmt.executeQuery();
+		        if (rs.next()) {
+		            return rs.getInt("count") > 0;
+		        }
+		    } catch (SQLException e) {
+		        System.err.println("Error checking if class exists: " + e.getMessage());
+		    } finally {
+		        dbConn.closeConnection();
+		    }
+		    return false;
+		}
 
-    public static boolean courseExists(String courseName) {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
 
-            String sql = "SELECT COUNT(*) FROM Courses WHERE course_name = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, courseName);
 
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            System.err.println("Error checking if course exists: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
-        return false;
-    }
 
-    public static List<Student> getAllStudents() {
-        List<Student> students = new ArrayList<>();
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
-
-            String sql = """
-                SELECT s.student_id, s.user_id, u.username, u.email, 
-                       s.first_name, s.middle_name, s.last_name,
-                       s.section, s.year_level, s.program
-                FROM Students s
-                JOIN Users u ON s.user_id = u.user_id
-            """;
-
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                Student student = new Student();
-                student.setStudentId(rs.getInt("student_id"));
-                student.setUserId(rs.getInt("user_id"));
-                student.setUsername(rs.getString("username"));
-                student.setEmail(rs.getString("email"));
-                student.setFirstName(rs.getString("first_name"));
-                student.setMiddleName(rs.getString("middle_name"));
-                student.setLastName(rs.getString("last_name"));
-                student.setSection(rs.getString("section"));
-                student.setYearLevel(rs.getString("year_level"));
-                student.setProgram(rs.getString("program"));
-                students.add(student);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving students: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
-        return students;
-    }
-
-    public static int getCourseId(String courseName) {
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
-
-            String sql = "SELECT course_id FROM Courses WHERE course_name = ?";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, courseName);
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("course_id");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving course ID: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
-        return -1;
-    }
-    
+  
+   
     public static Set<Integer> getEnrolledStudentIds(int classId) {
         Set<Integer> ids = new HashSet<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -230,7 +167,7 @@ public class DatabaseRegisterClass {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Student student = new Student();
-                student.setStudentId(rs.getInt("student_id"));
+                student.setStudentId(rs.getInt("student_id"));  // <-- change here
                 student.setUserId(rs.getInt("user_id"));
                 student.setUsername(rs.getString("username"));
                 student.setEmail(rs.getString("email"));

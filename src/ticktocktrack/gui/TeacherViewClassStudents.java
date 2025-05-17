@@ -4,133 +4,90 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import ticktocktrack.database.DatabaseViewClassList;
-import ticktocktrack.database.Student;
+import ticktocktrack.logic.Student;
+import ticktocktrack.logic.ViewClassList;
 
 import java.util.List;
 
 public class TeacherViewClassStudents {
+	
+	private final Pane centerPanel;
 
-    private static Pane centerPanel;
-
-    public static void showStudentList(String courseName, String section, String program) {
-        centerPanel = new Pane();
+    public TeacherViewClassStudents(String courseName, String section, String program, int teacherId) {
+    	centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
-        centerPanel.setStyle("-fx-background-color: #F0F8FF; -fx-border-color: transparent; -fx-border-width: 0;");
+        centerPanel.setStyle("-fx-background-color: #F0F8FF; -fx-border-color: transparent;");
 
         String shadowPath = TeacherViewClassStudents.class.getResource("/resources/SHADOW.png").toExternalForm();
         ImageView shadowView = new ImageView(new Image(shadowPath));
         shadowView.setFitWidth(1300);
         shadowView.setFitHeight(250);
         shadowView.setLayoutY(-115);
-
-        // ✅ Add shadowView FIRST so it's in the background
         centerPanel.getChildren().add(shadowView);
 
-        addTitle(courseName);
-        addStudentTable(courseName);
-
-        TeacherViewClassListCenterPanel.updateCenterPanel(centerPanel);
+        addTitle(courseName, section, program);
+        addStudentTable(courseName, section, program, teacherId); ;
     }
-    private static void addTitle(String courseName) {
-    	 List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
-    	 String section = null;
-    	 String program = null;
 
-    	 // Find the correct section and program for the selected course
-    	 for (String[] course : courses) {
-    	     if (course[0].equals(courseName)) {
-    	         section = course[1]; // Section
-    	         program = course[2]; // Program
-    	         break;
-    	     }
-    	 }
+    public Pane getView() {
+        return centerPanel;
+    }
 
-    	    // Map program to short name (e.g., BSIT)
-    	    String programShort = "";
-    	    if (program != null) {
-    	        programShort = ticktocktrack.logic.ViewClassList.mapProgramToShortName(program);
-    	    }
+    private void addTitle(String courseName, String section, String program) {
+        String programShort = (program != null) ? ViewClassList.mapProgramToShortName(program) : "";
 
-    	    // Compose title string with new format:
-    	    // Students for {course_name}
-    	    // {programShort} - Section {section}
-    	    String fullTitle = "Students for " + courseName + "\n";
-    	    if (programShort != null && !programShort.isEmpty() && section != null) {
-    	        fullTitle += programShort + " - Section " + section;
-    	    } else if (section != null) {
-    	        fullTitle += "Section " + section;
-    	    }
+        String fullTitle = "Students for " + courseName + "\n";
+        if (!programShort.isEmpty() && section != null) {
+            fullTitle += programShort + " - Section " + section;
+        } else if (section != null) {
+            fullTitle += "Section " + section;
+        }
 
-        Pane manualLayout = new Pane(); // Use Pane to set absolute positions
-
-        // Title Text
         Text title = new Text(fullTitle);
-        title.setFont(javafx.scene.text.Font.font("Poppins", javafx.scene.text.FontWeight.BOLD, 28));
-        title.setFill(javafx.scene.paint.Color.web("#02383E"));
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 28));
+        title.setFill(Color.web("#02383E"));
         title.setLayoutX(30);
         title.setLayoutY(50);
 
-        // Search Field
         TextField searchField = new TextField();
         searchField.setPromptText("Search Student");
-        searchField.setPrefWidth(215); // Reduced width
+        searchField.setPrefWidth(215);
         searchField.setStyle("-fx-font-size: 14px; -fx-padding: 8 12; -fx-background-radius: 20px;");
-        searchField.setLayoutX(620); // Manually position X
-        searchField.setLayoutY(42);  // Manually position Y
+        searchField.setLayoutX(620);
+        searchField.setLayoutY(42);
 
-        // Add Student Button
         Button addStudentBtn = new Button("+ Add Student");
         addStudentBtn.setStyle("-fx-background-color: #5D9CA2; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-background-radius: 8;");
-        addStudentBtn.setPrefHeight(40);
-        addStudentBtn.setPrefWidth(140);
-        addStudentBtn.setLayoutX(860); // Next to search field
+        addStudentBtn.setPrefSize(140, 40);
+        addStudentBtn.setLayoutX(860);
         addStudentBtn.setLayoutY(40);
         addStudentBtn.setCursor(javafx.scene.Cursor.HAND);
 
-        manualLayout.getChildren().addAll(title, searchField, addStudentBtn);
-
-        centerPanel.getChildren().add(manualLayout);
+        centerPanel.getChildren().addAll(title, searchField, addStudentBtn);
     }
 
-    private static void addStudentTable(String courseName) {
+    private void addStudentTable(String courseName, String section, String program, int teacherId) {
         VBox studentTable = new VBox(10);
         studentTable.setLayoutX(30);
         studentTable.setLayoutY(100);
 
-        // Get the list of sections for the course
-        List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
-        String section = null;
-        String program = null;
+        // Get students for this specific class and teacher
+        List<Student> students = DatabaseViewClassList.getStudentsEnrolledForTeacher(courseName, section, program, teacherId);
 
-        // Find the correct section and program for the selected course
-        for (String[] course : courses) {
-            if (course[0].equals(courseName)) {
-                section = course[1]; // Section
-                program = course[2]; // Program
-                break;
-            }
-        }
-
-        if (section != null) {
-            // Fetch students for the specific course and section
-        	List<Student> students = DatabaseViewClassList.getStudentsEnrolled(courseName, section, program);
-
-            // Create a TableView to display students
-            TableView<Student> tableView = new TableView<>();
+        if (!students.isEmpty()) {
             ObservableList<Student> studentData = FXCollections.observableArrayList(students);
 
-            // Column for row numbers
+            TableView<Student> tableView = new TableView<>();
+
             TableColumn<Student, String> numberCol = new TableColumn<>("#");
             numberCol.setCellValueFactory(cellData -> {
                 int index = tableView.getItems().indexOf(cellData.getValue()) + 1;
@@ -139,53 +96,35 @@ public class TeacherViewClassStudents {
             numberCol.setPrefWidth(30);
             numberCol.setStyle("-fx-alignment: CENTER;");
 
-         // Username column
             TableColumn<Student, String> usernameCol = new TableColumn<>("Username");
-            usernameCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty("@" + cellData.getValue().getUsername()));
+            usernameCol.setCellValueFactory(cellData -> new SimpleStringProperty("@" + cellData.getValue().getUsername()));
             usernameCol.setPrefWidth(250);
-            usernameCol.setStyle("-fx-border-color: transparent;");
 
-            // Name column (Last, First Middle)
             TableColumn<Student, String> nameCol = new TableColumn<>("Student Name (LN, FN, MN)");
             nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(
-                    cellData.getValue().getLastName() + ", " +
-                    cellData.getValue().getFirstName() + " " +
-                    cellData.getValue().getMiddleName()
+                cellData.getValue().getLastName() + ", " +
+                cellData.getValue().getFirstName() + " " +
+                cellData.getValue().getMiddleName()
             ));
             nameCol.setPrefWidth(380);
-            nameCol.setStyle("-fx-border-color: transparent;");
 
-            // Year level column
             TableColumn<Student, String> yearLevelCol = new TableColumn<>("Year Level");
             yearLevelCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getYearLevel()));
             yearLevelCol.setPrefWidth(120);
-            yearLevelCol.setStyle("-fx-border-color: transparent;");
 
-            // ✅ Email column (NEW)
             TableColumn<Student, String> emailCol = new TableColumn<>("Email");
             emailCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
             emailCol.setPrefWidth(200);
-            emailCol.setStyle("-fx-border-color: transparent;");
 
-            // Table styling
-            tableView.setPrefHeight(500);
-            tableView.setStyle("-fx-border-color: transparent; -fx-border-width: 0;");
-
-            // Add all columns to TableView
             tableView.getColumns().addAll(numberCol, usernameCol, nameCol, yearLevelCol, emailCol);
-
-            // Set data
             tableView.setItems(studentData);
+            tableView.setPrefHeight(500);
 
             studentTable.getChildren().add(tableView);
         } else {
-            Text noStudents = new Text("No students found for the selected course.");
-            studentTable.getChildren().add(noStudents);
+            studentTable.getChildren().add(new Text("No students found for the selected course."));
         }
 
         centerPanel.getChildren().add(studentTable);
     }
-
-
 }

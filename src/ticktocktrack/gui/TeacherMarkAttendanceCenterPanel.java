@@ -12,15 +12,16 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
 import ticktocktrack.database.DatabaseAttendance;
 import ticktocktrack.database.DatabaseViewClassList;
-import ticktocktrack.database.Session;
-import ticktocktrack.database.UsersModel;
+import ticktocktrack.logic.CourseInfo;
+import ticktocktrack.logic.Session;
+import ticktocktrack.logic.Student;
+import ticktocktrack.logic.UsersModel;
 
 import java.util.*;
 
@@ -30,11 +31,8 @@ public class TeacherMarkAttendanceCenterPanel {
     private static String lastSelectedCourse = null;
     private static String lastSelectedSection = null;
 
-    public static BorderPane createPanel() {
-        return createPanel(null, null);
-    }
-
-    public static BorderPane createPanel(String defaultCourse, String defaultSection) {
+    @SuppressWarnings({ "unchecked", "unchecked" })
+	public static BorderPane createPanel(String defaultCourse, String defaultSection, int teacherId) {
         BorderPane mainPane = new BorderPane();
         mainPane.setPrefSize(1300, 750);
         mainPane.setStyle("-fx-background-color: white;");
@@ -51,22 +49,34 @@ public class TeacherMarkAttendanceCenterPanel {
             System.out.println("Shadow image not found or error loading");
         }
 
+        List<String> programSectionList = new ArrayList<>();
         Map<String, Set<String>> courseSectionsMap = new LinkedHashMap<>();
-        List<String[]> courses = DatabaseViewClassList.getCoursesByTeacherId();
 
-        for (String[] courseInfo : courses) {
-            String courseName = courseInfo[0];
-            String section = courseInfo[1];
-            courseSectionsMap.putIfAbsent(courseName, new LinkedHashSet<>());
-            courseSectionsMap.get(courseName).add(section);
+        CourseInfo[] courses = DatabaseAttendance.getCoursesForTeacher(teacherId);
+        if (courses != null) {
+            for (CourseInfo courseInfo : courses) {
+                String courseName = courseInfo.courseName;
+                String section = courseInfo.section;
+                String program = courseInfo.program;
+
+                courseSectionsMap.putIfAbsent(courseName, new LinkedHashSet<>());
+                String combined = section + " - " + program;
+                courseSectionsMap.get(courseName).add(combined);
+            }
+        } else {
+            System.out.println("No courses found for teacher ID: " + teacherId);
         }
+
+
+
 
         ObservableList<Student> students = FXCollections.observableArrayList();
         FilteredList<Student> filteredStudents = new FilteredList<>(students, p -> true);
 
         VBox centerVBox = new VBox(10);
         centerVBox.setPadding(new Insets(20, 50, 20, 50));
-
+        
+      
         HBox searchCourseBox = new HBox(20);
         searchCourseBox.setPadding(new Insets(1, 0, 10, 4));
         searchCourseBox.setAlignment(Pos.CENTER_LEFT);
@@ -85,39 +95,69 @@ public class TeacherMarkAttendanceCenterPanel {
         sectionComboBox.setPrefWidth(120);
         sectionComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
 
-        Button saveButton = new Button("Save Attendance");
-        saveButton.setStyle("-fx-font-size: 16px; -fx-padding: 10 20 10 20;");
-        saveButton.setOnAction(e -> {
-            try {
-                for (Student student : students) {
-                	DatabaseAttendance.saveAttendance(
-                		    student.getStudentId(),
-                		    student.getDate(),
-                		    student.getStatus(),
-                		    student.getReason(),
-                		    courseComboBox.getValue(),
-                		    sectionComboBox.getValue()
-                		);
-                }
-                new Alert(Alert.AlertType.INFORMATION, "Attendance saved successfully.").showAndWait();
-            } catch (Exception ex) {
-                new Alert(Alert.AlertType.ERROR, "Failed to save attendance: " + ex.getMessage()).showAndWait();
-                ex.printStackTrace();
-            }
-        });
-
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        Button saveAttendanceButton = new Button("Save Attendance");
+        saveAttendanceButton.setStyle(
+            "-fx-font-size: 14px; " +
+            "-fx-padding: 8 20; " +
+            "-fx-background-radius: 15; " +
+            "-fx-background-color: #5A7D9A; " +  // Whale color
+            "-fx-text-fill: white; " +
+            "-fx-border-color: transparent; " +  // Remove red border
+            "-fx-border-width: 0px; " +
+            "-fx-focus-color: transparent; " +   // Removes orange focus
+            "-fx-faint-focus-color: transparent;" // Removes faint focus glow
+        );
 
-        // Add only searchField, courseComboBox, sectionComboBox, saveButton (clearButton removed)
-        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, saveButton, spacer);
+        // Add spacing to left
+        HBox.setMargin(saveAttendanceButton, new Insets(0, 0, 0, 10));
+
+        // Hover effect
+        saveAttendanceButton.setOnMouseEntered(e -> {
+            saveAttendanceButton.setStyle(
+                "-fx-font-size: 14px; " +
+                "-fx-padding: 8 20; " +
+                "-fx-background-radius: 15; " +
+                "-fx-background-color: #6F91A8; " +  // Slightly lighter whale on hover
+                "-fx-text-fill: white; " +
+                "-fx-border-color: transparent; " +
+                "-fx-border-width: 0px; " +
+                "-fx-focus-color: transparent; " +
+                "-fx-faint-focus-color: transparent;"
+            );
+        });
+
+        saveAttendanceButton.setOnMouseExited(e -> {
+            saveAttendanceButton.setStyle(
+                "-fx-font-size: 14px; " +
+                "-fx-padding: 8 20; " +
+                "-fx-background-radius: 15; " +
+                "-fx-background-color: #5A7D9A; " +  // Original whale color
+                "-fx-text-fill: white; " +
+                "-fx-border-color: transparent; " +
+                "-fx-border-width: 0px; " +
+                "-fx-focus-color: transparent; " +
+                "-fx-faint-focus-color: transparent;"
+            );
+        });
+
+        // Button action
+        saveAttendanceButton.setOnAction(e -> {
+            saveAttendance(students, courseComboBox.getValue(), sectionComboBox.getValue());
+        });
+
+
+        searchCourseBox.getChildren().addAll(searchField, courseComboBox, sectionComboBox, saveAttendanceButton, spacer);
+
 
         courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             sectionComboBox.getItems().clear();
             if (newVal != null) {
-                Set<String> sections = courseSectionsMap.get(newVal);
-                if (sections != null) {
-                    sectionComboBox.getItems().addAll(sections);
+                Set<String> combinedSections = courseSectionsMap.get(newVal);
+                if (combinedSections != null) {
+                    sectionComboBox.getItems().addAll(combinedSections);
                     sectionComboBox.getSelectionModel().selectFirst();
                 }
             }
@@ -132,51 +172,45 @@ public class TeacherMarkAttendanceCenterPanel {
             String filter = newVal == null ? "" : newVal.toLowerCase().trim();
             filteredStudents.setPredicate(student -> {
                 if (filter.isEmpty()) return true;
-                return student.getStudentId().toLowerCase().contains(filter)
-                        || student.getLastName().toLowerCase().contains(filter)
-                        || student.getFirstName().toLowerCase().contains(filter)
-                        || student.getMiddleName().toLowerCase().contains(filter);
+
+                String studentIdStr = String.valueOf(student.getStudentId());
+                return studentIdStr.toLowerCase().contains(filter)
+                        || (student.getLastName() != null && student.getLastName().toLowerCase().contains(filter))
+                        || (student.getFirstName() != null && student.getFirstName().toLowerCase().contains(filter))
+                        || (student.getMiddleName() != null && student.getMiddleName().toLowerCase().contains(filter));
             });
+
         });
+
 
         TableView<Student> table = new TableView<>();
         table.setMaxWidth(950);
         table.setItems(filteredStudents);
         table.setEditable(true);
+ 
         table.setStyle("-fx-font-size: 14px;");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<Student, String> idCol = new TableColumn<>("Student ID");
-        idCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+        table.getColumns().addAll(
+        	    createColumn("Student ID", "studentId"),
+        	    createColumn("Last Name", "lastName"),
+        	    createColumn("First Name", "firstName"),
+        	    createColumn("Middle Name", "middleName"),
+        	    createColumn("Date", "date"),
+        	    createEditableStatusColumn(),   // Editable status column here
+        	    createReasonColumnWithDialog()  // Custom column
+        	);
 
-        TableColumn<Student, String> lastNameCol = new TableColumn<>("Last Name");
-        lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
 
-        TableColumn<Student, String> firstNameCol = new TableColumn<>("First Name");
-        firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-
-        TableColumn<Student, String> middleNameCol = new TableColumn<>("Middle Name");
-        middleNameCol.setCellValueFactory(new PropertyValueFactory<>("middleName"));
-
-        TableColumn<Student, String> dateCol = new TableColumn<>("Date");
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        TableColumn<Student, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusCol.setCellFactory(ComboBoxTableCell.forTableColumn("Present", "Absent", "Late", "Pending"));
-        statusCol.setOnEditCommit(e -> e.getRowValue().setStatus(e.getNewValue()));
-
-        TableColumn<Student, String> reasonCol = new TableColumn<>("Reason");
-        reasonCol.setCellValueFactory(new PropertyValueFactory<>("reason"));
-        reasonCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        reasonCol.setOnEditCommit(e -> e.getRowValue().setReason(e.getNewValue()));
-
-        table.getColumns().addAll(idCol, lastNameCol, firstNameCol, middleNameCol, dateCol, statusCol, reasonCol);
-
+        
         ScrollPane sp = new ScrollPane(table);
         sp.setFitToWidth(true);
         sp.setFitToHeight(true);
         sp.setMaxWidth(950);
+     
+        
+        
+
 
         centerVBox.getChildren().addAll(searchCourseBox, sp);
         VBox.setVgrow(sp, Priority.ALWAYS);
@@ -192,7 +226,6 @@ public class TeacherMarkAttendanceCenterPanel {
                             students.clear();
                             if (lastSelectedCourse != null && lastSelectedSection != null) {
                                 loadStudents(lastSelectedCourse, lastSelectedSection, students);
-                                System.out.println("Auto-cleared and reloaded for new day: " + today);
                             }
                             lastRefreshDate = today;
                         });
@@ -219,97 +252,177 @@ public class TeacherMarkAttendanceCenterPanel {
         return mainPane;
     }
     
+    private static TableColumn<Student, String> createEditableStatusColumn() {
+        TableColumn<Student, String> statusCol = new TableColumn<>("Status");
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+       
+        ObservableList<String> statusOptions = FXCollections.observableArrayList(
+        	    "Present", "Excused", "Late", "Absent", "Pending"
+        	);
+
+
+
+        // Use ComboBoxTableCell to allow selection from predefined statuses
+        statusCol.setCellFactory(ComboBoxTableCell.forTableColumn(statusOptions));
+        statusCol.setEditable(true);
+
+        // When edit is committed, update the Student object's status property
+        statusCol.setOnEditCommit(event -> {
+            Student student = event.getRowValue();
+            String newStatus = event.getNewValue();
+            student.setStatus(newStatus);
+            // Optionally, refresh the table or persist the change immediately if you want
+        });
+
+        return statusCol;
+    }
+    
+    private static TableColumn<Student, String> createColumn(String title, String property) {
+        TableColumn<Student, String> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        return col;
+    }
 
     private static void loadStudentsBasedOnSelection(ComboBox<String> courseComboBox,
-                                                     ComboBox<String> sectionComboBox,
-                                                     ObservableList<Student> students) {
-        String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
-        String selectedSection = sectionComboBox.getSelectionModel().getSelectedItem();
+            ComboBox<String> sectionComboBox,
+            ObservableList<Student> students) {
 
-        if (selectedCourse != null && selectedSection != null) {
+    String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
+    String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
+
+    if (selectedCombined != null) {
+        String[] parts = selectedCombined.split(" - ");
+        if(parts.length == 2) {
+            String section = parts[0];
+            String program = parts[1];
+
+            // Optional check
+            if (!program.equals(selectedCourse)) {
+                // Handle mismatch if needed
+            }
+
             lastSelectedCourse = selectedCourse;
-            lastSelectedSection = selectedSection;
-            loadStudents(selectedCourse, selectedSection, students);
-        } else {
-            students.clear();
+            lastSelectedSection = section;
+
+            loadStudents(program, section, students);
+            return;
         }
     }
+    students.clear();
+}
 
-    private static void loadStudents(String courseName, String section, ObservableList<Student> students) {
+    
+    private static void loadStudents(String program, String section, ObservableList<Student> students) {
         students.clear();
+        List<Student> loadedStudents = DatabaseAttendance.getStudentsByProgramSection(program, section);
+        for (Student s : loadedStudents) {
+            // Automatically assign today's date here
+            s.setDate(java.time.LocalDate.now().toString());
+            students.add(s);
+        }
+    }
+
+
+
+    
+    private static TableColumn<Student, Void> createReasonColumnWithDialog() {
+        TableColumn<Student, Void> col = new TableColumn<>("Reason");
+        col.setCellFactory(param -> new TableCell<>() {
+            private final Button btn = new Button("View");
+
+            {
+                btn.setStyle("-fx-font-size: 12px; -fx-padding: 5 10; -fx-background-color: #4285f4; -fx-text-fill: white; -fx-background-radius: 15;");
+                btn.setOnAction(event -> {
+                    Student student = getTableView().getItems().get(getIndex());
+                    String reason = student.getReason() != null ? student.getReason() : "No reason provided";
+                    String approval = student.getApprovalStatus() != null ? student.getApprovalStatus() : "No approval status";
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Reason & Approval");
+                    alert.setHeaderText("Attendance Details");
+                    alert.setContentText("Reason: " + reason + "\nApproval Status: " + approval);
+                    alert.showAndWait();
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+        return col;
+    }
+    
+    private static void saveAttendance(ObservableList<Student> students, String course, String combinedSection) {
+        if (combinedSection == null || course == null) return;
+
+        // Split combinedSection into section and program
+        String[] parts;
+        if (combinedSection.contains(" - ")) { // normal hyphen-minus surrounded by spaces
+            parts = combinedSection.split(" - ", 2);
+        } else if (combinedSection.contains(" – ")) { // en dash with spaces
+            parts = combinedSection.split(" – ", 2);
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid section format: " + combinedSection);
+            alert.showAndWait();
+            return;
+        }
+
+        if (parts.length != 2) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid section format: " + combinedSection);
+            alert.showAndWait();
+            return;
+        }
+
+        String sectionFromSection = parts[0].trim();  // e.g. "1"
+        String programFromSection = parts[1].trim();  // e.g. "BSIT – BS in Information Technology"
+
         try {
-            String today = java.time.LocalDate.now().toString();
+            for (Student student : students) {
+                String studentProgram = student.getProgram() != null && !student.getProgram().isEmpty()
+                                        ? student.getProgram()
+                                        : programFromSection;
 
-            // Get user ID from the current session
-            UsersModel currentUser = Session.getCurrentUser();
-            int userId = (currentUser != null) ? currentUser.getUserId() : 0;
+                String studentSection = student.getSection() != null && !student.getSection().isEmpty()
+                                        ? student.getSection()
+                                        : sectionFromSection;
 
-            // Now fetch students with this user ID
-            students.addAll(DatabaseAttendance.fetchStudentsWithAttendanceForDate(userId, courseName, section, today));
+                if (studentProgram.isEmpty() || studentSection.isEmpty()) {
+                    System.err.println("Skipping student " + student.getStudentId() + " due to missing program or section");
+                    continue;
+                }
 
-            System.out.println("Loaded students: " + students.size() + " for date: " + today);
+                int studentId = student.getStudentId();
+
+                DatabaseAttendance.saveAttendance(
+                    studentId,
+                    student.getDate(),
+                    student.getStatus(),
+                    student.getReason(),
+                    studentProgram,
+                    course,
+                    studentSection
+                );
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Attendance saved successfully.");
+            alert.showAndWait();
         } catch (Exception e) {
-            System.out.println("Error loading students: " + e.getMessage());
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save attendance: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 
 
-    public static class Student {
-        private final BooleanProperty selected;
-        private final StringProperty studentId, lastName, firstName, middleName, date, status, reason;
 
-        public Student(String studentId, String lastName, String firstName,
-                       String middleName, String date, String status, String reason) {
-            this.selected = new SimpleBooleanProperty(false);
-            this.studentId = new SimpleStringProperty(studentId);
-            this.lastName = new SimpleStringProperty(lastName);
-            this.firstName = new SimpleStringProperty(firstName);
-            this.middleName = new SimpleStringProperty(middleName);
-            this.date = new SimpleStringProperty(date);
-            this.status = new SimpleStringProperty(status);
-            this.reason = new SimpleStringProperty(reason);
-        }
 
-        public BooleanProperty selectedProperty() {
-            return selected;
-        }
 
-        public String getStudentId() {
-            return studentId.get();
-        }
 
-        public String getLastName() {
-            return lastName.get();
-        }
-
-        public String getFirstName() {
-            return firstName.get();
-        }
-
-        public String getMiddleName() {
-            return middleName.get();
-        }
-
-        public String getDate() {
-            return date.get();
-        }
-
-        public String getStatus() {
-            return status.get();
-        }
-
-        public void setStatus(String status) {
-            this.status.set(status);
-        }
-
-        public String getReason() {
-            return reason.get();
-        }
-
-        public void setReason(String reason) {
-            this.reason.set(reason);
-        }
-    }
 
 }

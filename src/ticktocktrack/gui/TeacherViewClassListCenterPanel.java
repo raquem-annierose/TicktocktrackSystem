@@ -11,20 +11,25 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.geometry.Pos;
+import ticktocktrack.database.DatabaseViewClassList;
+import ticktocktrack.logic.CourseInfo;
 import ticktocktrack.logic.ViewClassList;
 
 import java.util.List;
 
 public class TeacherViewClassListCenterPanel {
 
-    private static Pane centerPanel;
+	private static Pane centerPanel;
     private static VBox classListPanel;
     private static int currentPage = 0;
     private static final int ROWS_PER_PAGE = 3;
     private static final int COLUMNS_PER_ROW = 3;
+    private static int teacherId;
 
-    public static Pane createPanel() {
-        centerPanel = new Pane();
+ // Call this method to create the entire panel
+    public static Pane createPanel(int teacherId) {
+    	TeacherViewClassListCenterPanel.teacherId = teacherId; // assign here
+    	centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
 
@@ -34,7 +39,7 @@ public class TeacherViewClassListCenterPanel {
 
         return centerPanel;
     }
-
+    
     private static void addShadowImage() {
         String shadowPath = TeacherViewClassListCenterPanel.class.getResource("/resources/SHADOW.png").toExternalForm();
         ImageView shadowView = new ImageView(new Image(shadowPath));
@@ -60,15 +65,19 @@ public class TeacherViewClassListCenterPanel {
         classListPanel.setLayoutX(50);
         classListPanel.setLayoutY(130);
 
-        updateClassListPanel();
+        updateClassListPanel(teacherId);
 
-        centerPanel.getChildren().add(classListPanel);
+        
     }
+    
+ 
+    // Call this to refresh the class list display with pagination
 
-    public static void updateClassListPanel() {
+    public static void updateClassListPanel(int teacherId) {
         classListPanel.getChildren().clear();
 
-        List<String[]> courses = ViewClassList.getCourses();
+        List<CourseInfo> courses = DatabaseViewClassList.getClassesByTeacher(teacherId);
+
         int startIndex = currentPage * (ROWS_PER_PAGE * COLUMNS_PER_ROW);
         int endIndex = Math.min(startIndex + (ROWS_PER_PAGE * COLUMNS_PER_ROW), courses.size());
 
@@ -77,8 +86,8 @@ public class TeacherViewClassListCenterPanel {
         int boxCount = 0;
 
         for (int i = startIndex; i < endIndex; i++) {
-            String[] course = courses.get(i);
-            VBox courseBox = createCourseBox(course[0], course[1], course[2]);
+            CourseInfo course = courses.get(i);
+            VBox courseBox = createCourseBox(course.courseName, course.section, course.program);
             row.getChildren().add(courseBox);
             boxCount++;
 
@@ -95,7 +104,13 @@ public class TeacherViewClassListCenterPanel {
         }
 
         classListPanel.getChildren().add(createNavButtons(courses.size()));
+
+        if (!centerPanel.getChildren().contains(classListPanel)) {
+            centerPanel.getChildren().add(classListPanel);
+        }
     }
+
+
 
     private static VBox createCourseBox(String courseName, String section, String program) {
         VBox courseBox = new VBox(10);
@@ -108,7 +123,7 @@ public class TeacherViewClassListCenterPanel {
 
         Button editButton = createEditButton(courseName, section);
         Button deleteButton = createDeleteButton(courseName, section);
-        Button viewStudentsButton = createViewStudentsButton(courseName, section, program);
+        Button viewStudentsButton = createViewStudentsButton(courseName, section, program, teacherId);
 
 
         HBox buttonBox = new HBox(10);
@@ -119,17 +134,19 @@ public class TeacherViewClassListCenterPanel {
         return courseBox;
     }
 
-    private static Button createViewStudentsButton(String courseName, String section, String program) {
+    private static Button createViewStudentsButton(String courseName, String section, String program, int teacherId) {
         Button viewStudentsButton = new Button("View Students");
         viewStudentsButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-        viewStudentsButton.setOnAction(event -> openStudentList(courseName, section, program));
+        viewStudentsButton.setOnAction(event -> openStudentList(courseName, section, program, teacherId));
         return viewStudentsButton;
     }
 
-
-    private static void openStudentList(String courseName, String section, String program) {
-        TeacherViewClassStudents.showStudentList(courseName, section, program);
+    private static void openStudentList(String courseName, String section, String program, int teacherId) {
+        TeacherViewClassStudents panel = new TeacherViewClassStudents(courseName, section, program, teacherId);
+        TeacherViewClassListCenterPanel.updateCenterPanel(panel.getView());
     }
+
+
     
     public static void updateCenterPanel(Pane newPanel) {
         centerPanel.getChildren().clear();
@@ -139,14 +156,15 @@ public class TeacherViewClassListCenterPanel {
     private static Button createEditButton(String oldCourseName, String oldSection) {
         Button editButton = new Button("Edit");
         editButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
-        editButton.setOnAction(event -> ViewClassList.handleEditCourse(oldCourseName, oldSection));
+        editButton.setOnAction(event -> ViewClassList.handleEditCourse(oldCourseName, oldSection, teacherId));
         return editButton;
     }
+
 
     private static Button createDeleteButton(String courseName, String section) {
         Button deleteButton = new Button("Delete");
         deleteButton.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white;");
-        deleteButton.setOnAction(event -> ViewClassList.handleDeleteCourse(courseName, section));
+        deleteButton.setOnAction(event -> ViewClassList.handleDeleteCourse(courseName, section, teacherId));
         return deleteButton;
     }
 
@@ -173,11 +191,11 @@ public class TeacherViewClassListCenterPanel {
     // ==== Para ma-access ng logic ====
     public static void incrementPage() {
         currentPage++;
-        updateClassListPanel();
+        updateClassListPanel(teacherId);
     }
 
     public static void decrementPage() {
         currentPage--;
-        updateClassListPanel();
+        updateClassListPanel(teacherId);
     }
 }

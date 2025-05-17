@@ -5,58 +5,40 @@ import ticktocktrack.database.DatabaseRegisterClass;
 
 public class RegisterClass {
 
-	public static boolean createCourse(String courseName) {
+
+	public static boolean createClass(String courseName, String section, String program) {
+	    UsersModel currentUser = Session.getCurrentUser();
+	    if (currentUser == null) {
+	        showAlert(Alert.AlertType.ERROR, "Error", "No user logged in.");
+	        return false;
+	    }
+
+	    Integer teacherId = currentUser.getTeacherId();
+	    if (teacherId == null) {
+	        showAlert(Alert.AlertType.ERROR, "Error", "Current user is not a teacher.");
+	        return false;
+	    }
+
 	    if (courseName == null || courseName.trim().isEmpty()) {
 	        showAlert(Alert.AlertType.ERROR, "Error", "Course name is required.");
 	        return false;
 	    }
 
-	    if (DatabaseRegisterClass.courseExists(courseName)) {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Course already exists!");
+	    // ❗ Check if class already exists
+	    if (DatabaseRegisterClass.classExists(teacherId, courseName, section, program)) {
+	        showAlert(Alert.AlertType.WARNING, "Duplicate Class", "A class with the same Course Name, Section, and Program already exists.");
 	        return false;
 	    }
 
-	    boolean success = DatabaseRegisterClass.addCourse(courseName);
-	    if (success) {
-	        showAlert(Alert.AlertType.INFORMATION, "Success", "Course added successfully!");
-	        return true;
-	    } else {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Failed to add course.");
+	    boolean success = DatabaseRegisterClass.addClass(teacherId, courseName, section, program);
+	    if (!success) {
+	        showAlert(Alert.AlertType.ERROR, "Error", "Failed to create class.");
 	        return false;
 	    }
+
+	    showAlert(Alert.AlertType.INFORMATION, "Success", "Class created successfully.");
+	    return true;
 	}
-
-	
-	public static boolean createClass(String courseName, int teacherId, String section, String program) {
-	    if (courseName == null || courseName.trim().isEmpty()) {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Course name is required.");
-	        return false;
-	    }
-
-	    // Ensure course exists
-	    if (!DatabaseRegisterClass.courseExists(courseName)) {
-	        if (!DatabaseRegisterClass.addCourse(courseName)) {
-	            showAlert(Alert.AlertType.ERROR, "Error", "Failed to add course.");
-	            return false;
-	        }
-	    }
-
-	    int courseId = DatabaseRegisterClass.getCourseId(courseName);
-	    if (courseId == -1) {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Course not found after creation.");
-	        return false;
-	    }
-
-	    boolean success = DatabaseRegisterClass.addClass(courseId, teacherId, section, program);
-	    if (success) {
-	        showAlert(Alert.AlertType.INFORMATION, "Success", "Class added successfully!");
-	        return true;
-	    } else {
-	        showAlert(Alert.AlertType.ERROR, "Error", "Failed to add class.");
-	        return false;
-	    }
-	}
-
 
 
     public static void showAlert(Alert.AlertType type, String title, String message) {

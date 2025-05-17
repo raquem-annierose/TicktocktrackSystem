@@ -2,8 +2,6 @@ package ticktocktrack.logic;
 
 import ticktocktrack.database.DatabaseConnection;
 import ticktocktrack.database.DatabaseRegistrationManager;
-import ticktocktrack.database.Session;
-import ticktocktrack.database.UsersModel;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;

@@ -3,6 +3,7 @@ package ticktocktrack.gui;
 import java.util.List;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
@@ -15,8 +16,10 @@ import javafx.scene.text.Text;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import ticktocktrack.database.DatabaseRegisterClass;
-import ticktocktrack.database.Student;
 import ticktocktrack.logic.RegisterClass;
+import ticktocktrack.logic.Session;
+import ticktocktrack.logic.Student;
+import ticktocktrack.logic.UsersModel;
 
 public class TeacherRegisterClassCenterPanel {
 
@@ -83,6 +86,8 @@ public class TeacherRegisterClassCenterPanel {
         Button createBtn = new Button("Create");
         createBtn.setDisable(true);
         createBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #aaa;");
+        
+        
 
         createBtn.setOnAction(e -> {
             String courseName = courseField.getText().trim();
@@ -90,27 +95,28 @@ public class TeacherRegisterClassCenterPanel {
             String program = programComboBox.getValue();
 
             if (program != null && !program.isEmpty() && !courseName.isEmpty() && !section.isEmpty()) {
-                // Step 1 & 2: Create course and class via RegisterClass logic
-                boolean classCreated = RegisterClass.createClass(courseName, teacherId, section, program);
+                boolean classCreated = RegisterClass.createClass(courseName, section, program);
 
                 if (classCreated) {
-                    // Step 3: Retrieve IDs
-                    int courseId = DatabaseRegisterClass.getCourseId(courseName);
-                    int classId = DatabaseRegisterClass.getClassId(courseId, teacherId, section, program);
+                    int classId = DatabaseRegisterClass.getClassId(courseName, teacherId, section, program);
 
                     if (classId != -1) {
-                        // Step 4: Get students list
-                        List<Student> students = DatabaseRegisterClass.getAllStudents();
-
-                        // Step 5: Show student selection dialog (You need to implement this method)
-                        TeacherEnrollmentStudent.showStudentSelectionDialog(students, courseName, section, classId, program);
+                        List<Student> students = DatabaseRegisterClass.getUnenrolledStudents(classId);
+                        TeacherEnrollmentStudent.showStudentSelectionDialog(
+                            students, courseName, section, classId, program
+                        );
+                    } else {
+                        RegisterClass.showAlert(Alert.AlertType.ERROR, "Error", "Failed to retrieve class ID.");
                     }
                 }
             } else {
-                // Optional: Show alert if input is missing
-                RegisterClass.showAlert(javafx.scene.control.Alert.AlertType.ERROR, "Missing Input", "Please fill all fields.");
+                RegisterClass.showAlert(Alert.AlertType.ERROR, "Missing Input", "Please fill in all fields.");
             }
         });
+
+
+
+
 
         // Enable Create button if all fields are filled
         courseField.textProperty().addListener((obs, oldVal, newVal) -> 
@@ -136,6 +142,14 @@ public class TeacherRegisterClassCenterPanel {
         createBtn.setDisable(!enabled);
         createBtn.setStyle(enabled ? "-fx-background-color: transparent; -fx-text-fill: #0097A7;" 
                                   : "-fx-background-color: transparent; -fx-text-fill: #aaa;");
+    }
+    
+    private static void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     

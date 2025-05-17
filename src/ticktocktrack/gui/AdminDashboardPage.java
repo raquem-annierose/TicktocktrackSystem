@@ -18,8 +18,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import ticktocktrack.database.Session;
-import ticktocktrack.database.UsersModel;
+import ticktocktrack.logic.Session;
+import ticktocktrack.logic.UsersModel;
 
 public class AdminDashboardPage extends Application {
 	private Stage adminDashboardStage;

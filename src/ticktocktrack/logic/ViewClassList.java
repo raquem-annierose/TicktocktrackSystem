@@ -5,8 +5,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import ticktocktrack.database.DatabaseViewClassList;
-import ticktocktrack.database.Session;
-import ticktocktrack.database.UsersModel;
 import ticktocktrack.gui.TeacherViewClassListCenterPanel;
 
 import java.util.ArrayList;
@@ -30,13 +28,13 @@ public class ViewClassList {
 
     // Delete a class by course name and section
     public static void deleteCourse(String courseName, String section) {
-        DatabaseViewClassList.deleteCourse(courseName);
+        DatabaseViewClassList.deleteCourse(courseName, section);
     }
 
 
     // ====== GUI event handlers ======
 
-    public static void handleEditCourse(String oldCourseName, String oldSection) {
+    public static void handleEditCourse(String oldCourseName, String oldSection, int teacherId) {
         TextField courseNameField = new TextField(oldCourseName);
         TextField sectionField = new TextField(oldSection);
 
@@ -52,12 +50,12 @@ public class ViewClassList {
         alert.showAndWait().ifPresent(response -> {
             if (response == saveButton) {
                 editCourse(oldCourseName, oldSection, courseNameField.getText(), sectionField.getText());
-                TeacherViewClassListCenterPanel.updateClassListPanel();
+                TeacherViewClassListCenterPanel.updateClassListPanel(teacherId);
             }
         });
     }
 
-    public static void handleDeleteCourse(String courseName, String section) {
+    public static void handleDeleteCourse(String courseName, String section, int teacherId) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Class");
         confirm.setHeaderText("Are you sure you want to delete the class?\n" + courseName + " - " + section);
@@ -65,7 +63,7 @@ public class ViewClassList {
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 deleteCourse(courseName, section);
-                TeacherViewClassListCenterPanel.updateClassListPanel();
+                TeacherViewClassListCenterPanel.updateClassListPanel(teacherId);
             }
         });
     }
@@ -104,6 +102,7 @@ public class ViewClassList {
         programMap.put("BSBA major in Marketing Management", "BSBA-MM");
         programMap.put("BS in Entrepreneurship", "BSENTREP");
         programMap.put("BS in Information Technology", "BSIT");
+        programMap.put("Diploma Information Technology", "DIT");
         programMap.put("BS in Applied Mathematics", "BSAM");
         programMap.put("Bachelor in Secondary Education major in English", "BSED-ENGLISH");
         programMap.put("Bachelor in Secondary Education major in Mathematics", "BSED-MATH");
