@@ -14,92 +14,89 @@ import ticktocktrack.logic.UsersModel;
 import ticktocktrack.logic.ViewClassList;
 
 public class DatabaseViewClassList {
-	
-	
-	public static List<CourseInfo> getClassesByTeacher(int teacherId) {
-	    DatabaseConnection dbConn = new DatabaseConnection();
-	    List<CourseInfo> classList = new ArrayList<>();
+    
+    
+    public static List<CourseInfo> getClassesByTeacher(int teacherId) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        List<CourseInfo> classList = new ArrayList<>();
 
-	    String query = "SELECT course_name, section, program FROM Classes WHERE teacher_id = ?";
+        String query = "SELECT course_name, section, program FROM Classes WHERE teacher_id = ?";
 
-	    try {
-	        dbConn.connectToSQLServer(); // Establish connection
-	        Connection conn = dbConn.getConnection();
-	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-	            stmt.setInt(1, teacherId);
-	            ResultSet rs = stmt.executeQuery();
+        try {
+            dbConn.connectToSQLServer(); // Establish connection
+            Connection conn = dbConn.getConnection();
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, teacherId);
+                ResultSet rs = stmt.executeQuery();
 
-	            while (rs.next()) {
-	                String courseName = rs.getString("course_name");
-	                String section = rs.getString("section");
-	                String program = rs.getString("program");
-	                classList.add(new CourseInfo(courseName, section, program));
-	            }
-	        }
-	    } catch (SQLException e) {
-	        System.err.println("Error fetching classes for teacher ID " + teacherId + ": " + e.getMessage());
-	    } finally {
-	        dbConn.closeConnection();
-	    }
+                while (rs.next()) {
+                    String courseName = rs.getString("course_name");
+                    String section = rs.getString("section");
+                    String program = rs.getString("program");
+                    classList.add(new CourseInfo(courseName, section, program));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching classes for teacher ID " + teacherId + ": " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
 
-	    return classList;
-	}
+        return classList;
+    }
 
 
+    
+    public static List<String[]> getCoursesByTeacherId() {
+        DatabaseConnection dbConn = new DatabaseConnection();
 
-	
-	public static List<String[]> getCoursesByTeacherId() {
-	    DatabaseConnection dbConn = new DatabaseConnection();
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("Error: No user is logged in.");
+            return new ArrayList<>();
+        }
 
-	    UsersModel currentUser = Session.getCurrentUser();
-	    if (currentUser == null) {
-	        System.err.println("Error: No user is logged in.");
-	        return new ArrayList<>();
-	    }
+        Integer teacherId = currentUser.getTeacherId();  // assuming getTeacherId() returns Integer or int wrapper
+        if (teacherId == null) {
+            System.err.println("Error: teacherId is null. The logged in user is not a teacher.");
+            return new ArrayList<>();
+        }
 
-	    Integer teacherId = currentUser.getTeacherId();  // assuming getTeacherId() returns Integer or int wrapper
-	    if (teacherId == null) {
-	        System.err.println("Error: teacherId is null. The logged in user is not a teacher.");
-	        return new ArrayList<>();
-	    }
+        List<String[]> courses = new ArrayList<>();
 
-	    List<String[]> courses = new ArrayList<>();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
 
-	    try {
-	        dbConn.connectToSQLServer();
-	        Connection conn = dbConn.getConnection();
+            String sql = "SELECT c.course_name, cl.section, cl.program " +
+                         "FROM Classes cl " +
+                         "JOIN Courses c ON cl.course_id = c.course_id " +
+                         "WHERE cl.teacher_id = ?";
 
-	        String sql = """
-	            SELECT c.course_name, cl.section, cl.program
-	            FROM Classes cl
-	            JOIN Courses c ON cl.course_id = c.course_id
-	            WHERE cl.teacher_id = ?
-	        """;
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, teacherId);
 
-	        PreparedStatement pstmt = conn.prepareStatement(sql);
-	        pstmt.setInt(1, teacherId);
+            ResultSet rs = pstmt.executeQuery();
 
-	        ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String courseName = rs.getString("course_name");
+                String section = rs.getString("section");
+                String program = rs.getString("program");
+                if (program == null) program = "N/A";
 
-	        while (rs.next()) {
-	            String courseName = rs.getString("course_name");
-	            String section = rs.getString("section");
-	            String program = rs.getString("program");
-	            if (program == null) program = "N/A";
+                String programAbbreviation = ViewClassList.mapProgramToShortName(program);
+                courses.add(new String[]{courseName, section, program, programAbbreviation});
+            }
 
-	            String programAbbreviation = ViewClassList.mapProgramToShortName(program);
-	            courses.add(new String[]{courseName, section, program, programAbbreviation});
-	        }
+        } catch (SQLException e) {
+            System.err.println("Error fetching teacher courses: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
 
-	    } catch (SQLException e) {
-	        System.err.println("Error fetching teacher courses: " + e.getMessage());
-	    } finally {
-	        dbConn.closeConnection();
-	    }
-
-	    return courses;
-	}
-	
+        return courses;
+    }
+    
 
     public static List<String> fetchAvailableCourses() {
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -145,10 +142,8 @@ public class DatabaseViewClassList {
             int teacherId = currentUser.getTeacherId();
 
             // Find the class_id based on courseName, section, and teacherId
-            String findClassSql = """
-                SELECT class_id FROM Classes
-                WHERE course_name = ? AND section = ? AND teacher_id = ?
-            """;
+            String findClassSql = "SELECT class_id FROM Classes " +
+                                  "WHERE course_name = ? AND section = ? AND teacher_id = ?";
 
             try (PreparedStatement findClassStmt = conn.prepareStatement(findClassSql)) {
                 findClassStmt.setString(1, courseName);
@@ -165,12 +160,9 @@ public class DatabaseViewClassList {
                 int classId = rs.getInt("class_id");
 
                 // Delete attendance entries related to this class
-                String deleteAttendanceSql = """
-                    DELETE FROM Attendance
-                    WHERE enrollment_id IN (
-                        SELECT enrollment_id FROM Enrollments WHERE class_id = ?
-                    )
-                """;
+                String deleteAttendanceSql = "DELETE FROM Attendance " +
+                                             "WHERE enrollment_id IN ( " +
+                                             "SELECT enrollment_id FROM Enrollments WHERE class_id = ? )";
                 try (PreparedStatement delAttendanceStmt = conn.prepareStatement(deleteAttendanceSql)) {
                     delAttendanceStmt.setInt(1, classId);
                     delAttendanceStmt.executeUpdate();
@@ -259,14 +251,12 @@ public class DatabaseViewClassList {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
 
-        String query = """
-            SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, u.email, s.year_level
-            FROM Students s
-            JOIN Users u ON s.user_id = u.user_id
-            JOIN Enrollments e ON s.student_id = e.student_id
-            JOIN Classes c ON e.class_id = c.class_id
-            WHERE c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?
-        """;
+        String query = "SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, u.email, s.year_level " +
+                       "FROM Students s " +
+                       "JOIN Users u ON s.user_id = u.user_id " +
+                       "JOIN Enrollments e ON s.student_id = e.student_id " +
+                       "JOIN Classes c ON e.class_id = c.class_id " +
+                       "WHERE c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
 
         try {
             dbConn.connectToSQLServer();
@@ -300,4 +290,4 @@ public class DatabaseViewClassList {
   
 
     
-}
+}  

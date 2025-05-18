@@ -10,93 +10,80 @@ import ticktocktrack.logic.Student;
 
 public class DatabaseRegisterClass {
 
-	 public static boolean addClass(int teacherId, String courseName, String section, String program) {
-	        DatabaseConnection dbConn = new DatabaseConnection();
-	        try {
-	            dbConn.connectToSQLServer();
-	            Connection conn = dbConn.getConnection();
-	            String sql = "INSERT INTO Classes (teacher_id, course_name, section, program) VALUES (?, ?, ?, ?)";
-	            PreparedStatement pstmt = conn.prepareStatement(sql);
-	            pstmt.setInt(1, teacherId);
-	            pstmt.setString(2, courseName);
-	            pstmt.setString(3, section);
-	            pstmt.setString(4, program);
+    public static boolean addClass(int teacherId, String courseName, String section, String program) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            String sql = "INSERT INTO Classes (teacher_id, course_name, section, program) VALUES (?, ?, ?, ?)";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, teacherId);
+            pstmt.setString(2, courseName);
+            pstmt.setString(3, section);
+            pstmt.setString(4, program);
 
-	            int rowsInserted = pstmt.executeUpdate();
-	            return rowsInserted > 0;
-	        } catch (SQLException e) {
-	            System.err.println("Error inserting class: " + e.getMessage());
-	            return false;
-	        } finally {
-	            dbConn.closeConnection();
-	        }
-	    }  // <-- Closing brace for addCla
-        
-	 public static int getClassId(String courseName, int teacherId, String section, String program) {
-		    DatabaseConnection dbConn = new DatabaseConnection();
-		    try {
-		        dbConn.connectToSQLServer();
-		        Connection conn = dbConn.getConnection();
+            int rowsInserted = pstmt.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            System.err.println("Error inserting class: " + e.getMessage());
+            return false;
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
 
-		        String sql = """
-		            SELECT class_id
-		            FROM Classes
-		            WHERE course_name = ? AND teacher_id = ? AND section = ? AND program = ?
-		        """;
+    public static int getClassId(String courseName, int teacherId, String section, String program) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
 
-		        PreparedStatement pstmt = conn.prepareStatement(sql);
-		        pstmt.setString(1, courseName);    // courseName is a string, so use setString
-		        pstmt.setInt(2, teacherId);
-		        pstmt.setString(3, section);
-		        pstmt.setString(4, program);
+            String sql = "SELECT class_id FROM Classes WHERE course_name = ? AND teacher_id = ? AND section = ? AND program = ?";
 
-		        ResultSet rs = pstmt.executeQuery();
-		        if (rs.next()) {
-		            return rs.getInt("class_id");
-		        }
-		    } catch (SQLException e) {
-		        System.err.println("Error retrieving class ID: " + e.getMessage());
-		    } finally {
-		        dbConn.closeConnection();
-		    }
-		    return -1; // Not found
-		}
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, courseName);
+            pstmt.setInt(2, teacherId);
+            pstmt.setString(3, section);
+            pstmt.setString(4, program);
 
-	 public static boolean classExists(int teacherId, String courseName, String section, String program) {
-		    DatabaseConnection dbConn = new DatabaseConnection();
-		    try {
-		        dbConn.connectToSQLServer();
-		        Connection conn = dbConn.getConnection();
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("class_id");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving class ID: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return -1; // Not found
+    }
 
-		        String sql = """
-		            SELECT COUNT(*) AS count
-		            FROM Classes
-		            WHERE teacher_id = ? AND course_name = ? AND section = ? AND program = ?
-		        """;
+    public static boolean classExists(int teacherId, String courseName, String section, String program) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
 
-		        PreparedStatement pstmt = conn.prepareStatement(sql);
-		        pstmt.setInt(1, teacherId);
-		        pstmt.setString(2, courseName);
-		        pstmt.setString(3, section);
-		        pstmt.setString(4, program);
+            String sql = "SELECT COUNT(*) AS count FROM Classes WHERE teacher_id = ? AND course_name = ? AND section = ? AND program = ?";
 
-		        ResultSet rs = pstmt.executeQuery();
-		        if (rs.next()) {
-		            return rs.getInt("count") > 0;
-		        }
-		    } catch (SQLException e) {
-		        System.err.println("Error checking if class exists: " + e.getMessage());
-		    } finally {
-		        dbConn.closeConnection();
-		    }
-		    return false;
-		}
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, teacherId);
+            pstmt.setString(2, courseName);
+            pstmt.setString(3, section);
+            pstmt.setString(4, program);
 
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("count") > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking if class exists: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return false;
+    }
 
-
-
-  
-   
     public static Set<Integer> getEnrolledStudentIds(int classId) {
         Set<Integer> ids = new HashSet<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -120,8 +107,6 @@ public class DatabaseRegisterClass {
         return ids;
     }
 
-
-    
     public static boolean enrollStudentInClass(int studentId, int classId) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -142,7 +127,6 @@ public class DatabaseRegisterClass {
         }
     }
 
-
     public static List<Student> getUnenrolledStudents(int classId) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -150,16 +134,14 @@ public class DatabaseRegisterClass {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            String sql = """
-                SELECT s.student_id, s.user_id, u.username, u.email,
-                       s.first_name, s.middle_name, s.last_name,
-                       s.year_level, s.program, s.section
-                FROM Students s
-                JOIN Users u ON s.user_id = u.user_id
-                WHERE s.student_id NOT IN (
-                    SELECT e.student_id FROM Enrollments e WHERE e.class_id = ?
-                )
-            """;
+            String sql = "SELECT s.student_id, s.user_id, u.username, u.email, " +
+                         "s.first_name, s.middle_name, s.last_name, " +
+                         "s.year_level, s.program, s.section " +
+                         "FROM Students s " +
+                         "JOIN Users u ON s.user_id = u.user_id " +
+                         "WHERE s.student_id NOT IN ( " +
+                         "    SELECT e.student_id FROM Enrollments e WHERE e.class_id = ? " +
+                         ")";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, classId);
@@ -167,7 +149,7 @@ public class DatabaseRegisterClass {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Student student = new Student();
-                student.setStudentId(rs.getInt("student_id"));  // <-- change here
+                student.setStudentId(rs.getInt("student_id"));
                 student.setUserId(rs.getInt("user_id"));
                 student.setUsername(rs.getString("username"));
                 student.setEmail(rs.getString("email"));
@@ -186,5 +168,4 @@ public class DatabaseRegisterClass {
         }
         return students;
     }
-
 }

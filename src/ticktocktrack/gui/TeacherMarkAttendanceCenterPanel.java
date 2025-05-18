@@ -327,7 +327,7 @@ public class TeacherMarkAttendanceCenterPanel {
     
     private static TableColumn<Student, Void> createReasonColumnWithDialog() {
         TableColumn<Student, Void> col = new TableColumn<>("Reason");
-        col.setCellFactory(param -> new TableCell<>() {
+        col.setCellFactory(param -> new TableCell<Student, Void>() {
             private final Button btn = new Button("View");
 
             {
