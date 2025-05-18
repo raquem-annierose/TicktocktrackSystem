@@ -493,27 +493,70 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
     private void onViewMyAttendanceClicked(MouseEvent event) {
-        System.out.println("View My Attendance Clicked!");
+        System.out.println("View My Attendance clicked!");
+        selectSidebarText((Text) event.getSource());
         centerContentPane.getChildren().clear();
-        Pane createUsersPanel = StudentViewMyAttendanceCenterPanel.createPanel();
-        centerContentPane.getChildren().add(createUsersPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer studentId = currentUser.getStudentId();
+        if (studentId == null) {
+            System.err.println("Current user is not a student.");
+            return;
+        }
+
+        Pane attendancePanel = StudentViewMyAttendanceCenterPanel.createPanel(studentId);
+        centerContentPane.getChildren().add(attendancePanel);
     }
+
     
     private void onAttendanceStatusClicked(MouseEvent event) {
-        System.out.println("Attendance Status Clicked!");
-        selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+        System.out.println("Attendance Status clicked!");
+        selectSidebarText((Text) event.getSource());
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = StudentAttendanceStatusCenterPanel.createPanel();
-        centerContentPane.getChildren().add(dashboardPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer studentId = currentUser.getStudentId();
+        if (studentId == null) {
+            System.err.println("Current user is not a student.");
+            return;
+        }
+
+        Pane statusPanel = StudentAttendanceStatusCenterPanel.createPanel(studentId);
+        centerContentPane.getChildren().add(statusPanel);
     }
+
     
     private void onSubmitExcuseClicked(MouseEvent event) {
-        System.out.println("Submit Excuse Clicked!");
-        selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+        System.out.println("Submit Excuse clicked!");
+        selectSidebarText((Text) event.getSource());
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = StudentSubmitExcuseCenterPanel.createPanel();
-        centerContentPane.getChildren().add(dashboardPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer studentId = currentUser.getStudentId();
+        if (studentId == null) {
+            System.err.println("Current user is not a student.");
+            return;
+        }
+
+        Pane excusePanel = StudentSubmitExcuseCenterPanel.createPanel(studentId);
+        centerContentPane.getChildren().add(excusePanel);
     }
+
     
    
     public static void main(String[] args) {

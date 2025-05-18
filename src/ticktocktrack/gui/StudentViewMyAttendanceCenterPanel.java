@@ -25,7 +25,7 @@ public class StudentViewMyAttendanceCenterPanel {
     private static final ImageView studentImageView = new ImageView();
     private static final Label statusLabel = new Label();
 
-    public static Pane createPanel() {
+    public static Pane createPanel(int studentId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: white;");

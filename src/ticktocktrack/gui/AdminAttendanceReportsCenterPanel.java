@@ -10,7 +10,7 @@ import javafx.scene.text.Text;
 
 public class AdminAttendanceReportsCenterPanel {
 
-	 public static Pane createPanel() {
+	 public static Pane createPanel(int adminId) {
 	        // Create the center panel
 	        Pane centerPanel = new Pane();
 	        centerPanel.setPrefSize(1300, 750);

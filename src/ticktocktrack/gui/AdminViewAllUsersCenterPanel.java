@@ -15,7 +15,8 @@ import javafx.scene.paint.Color;
 
 public class AdminViewAllUsersCenterPanel {
 
-    public static Pane createPanel() {
+    @SuppressWarnings("deprecation")
+	public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setLayoutX(0);
@@ -50,14 +51,14 @@ public class AdminViewAllUsersCenterPanel {
         adminTable.setPrefSize(950, 450);
         adminTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<User, String> adminId = new TableColumn<>("ID");
-        adminId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<User, String> adminId1 = new TableColumn<>("ID");
+        adminId1.setCellValueFactory(new PropertyValueFactory<>("id"));
         TableColumn<User, String> adminUsername = new TableColumn<>("Username");
         adminUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         TableColumn<User, String> adminRole = new TableColumn<>("Role");
         adminRole.setCellValueFactory(new PropertyValueFactory<>("role"));
 
-        adminTable.getColumns().addAll(adminId, adminUsername, adminRole);
+        adminTable.getColumns().addAll(adminId1, adminUsername, adminRole);
 
         ObservableList<User> adminData = FXCollections.observableArrayList(
             new User("A001", "adminUser", "Admin")
