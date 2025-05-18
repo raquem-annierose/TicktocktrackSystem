@@ -142,9 +142,15 @@ public class TeacherViewClassListCenterPanel {
     }
 
     private static void openStudentList(String courseName, String section, String program, int teacherId) {
-        TeacherViewClassStudents panel = new TeacherViewClassStudents(courseName, section, program, teacherId);
+        int classId = 0;
+        TeacherViewClassStudents panel =new TeacherViewClassStudents(courseName, section, program, teacherId);
+
+
         TeacherViewClassListCenterPanel.updateCenterPanel(panel.getView());
     }
+
+
+
 
 
     

@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ticktocktrack.logic.CourseInfo;
 import ticktocktrack.logic.Session;
@@ -295,4 +297,195 @@ public class DatabaseViewClassList {
             System.err.println("Database error during unenrollment: " + e.getMessage());
         }
     }
+    
+    
+    public static List<Student> getUnenrolledStudentsWithEnrollmentId(int classId) {
+        List<Student> students = new ArrayList<>();
+        DatabaseConnection dbConn = new DatabaseConnection();
+
+
+        String sql = """
+            SELECT s.student_id, s.user_id, u.username, u.email,
+                   s.first_name, s.middle_name, s.last_name,
+                   s.year_level, s.section, s.program
+            FROM Students s
+            JOIN Users u ON s.user_id = u.user_id
+            WHERE s.student_id NOT IN (
+                SELECT student_id FROM Enrollments WHERE class_id = ?
+            )
+            """;
+
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, classId);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    Student s = new Student();
+                    s.setStudentId(rs.getInt("student_id"));
+                    s.setUserId(rs.getInt("user_id"));
+                    s.setUsername(rs.getString("username"));
+                    s.setEmail(rs.getString("email"));
+                    s.setFirstName(rs.getString("first_name"));
+                    s.setMiddleName(rs.getString("middle_name"));
+                    s.setLastName(rs.getString("last_name"));
+                    s.setYearLevel(rs.getString("year_level"));
+                    s.setSection(rs.getString("section"));
+                    s.setProgram(rs.getString("program"));
+
+
+                    students.add(s);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching unenrolled students: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return students;
+    }
+
+
+
+
+
+
+   
+    public static int getClassId(String courseName, String section, String program, int teacherId) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        int classId = -1; // default invalid
+
+
+        String sql = "SELECT class_id FROM Classes WHERE course_name = ? AND section = ? AND program = ? AND teacher_id = ?";
+
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, courseName);
+                pstmt.setString(2, section);
+                pstmt.setString(3, program);
+                pstmt.setInt(4, teacherId);
+
+
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    classId = rs.getInt("class_id");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting classId: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return classId;
+    }
+   
+ // Example of a method to check if a username exists, assuming DatabaseConnection manages connection pooling or returns a Connection
+    public static boolean checkUsernameExists(String username) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        String sql = "SELECT COUNT(*) FROM Users WHERE username = ?";
+        boolean exists = false;
+
+
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+
+                pstmt.setString(1, username);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        exists = rs.getInt(1) > 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking username existence: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+
+
+        return exists;
+    }
+
+
+
+
+   
+    public static Set<Integer> getEnrolledStudentIds(int classId) {
+        Set<Integer> enrolledStudentIds = new HashSet<>();
+        DatabaseConnection dbConn = new DatabaseConnection();
+
+
+        String sql = "SELECT student_id FROM Enrollments WHERE class_id = ?";
+
+
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, classId);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    enrolledStudentIds.add(rs.getInt("student_id"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching enrolled student IDs for classId " + classId + ": " + e.getMessage());
+            // Return empty set on error
+        } finally {
+            dbConn.closeConnection();
+        }
+
+
+        return enrolledStudentIds;
+    }
+   
+    public static boolean enrollStudents(int classId, List<Student> students) {
+        if (students == null || students.isEmpty()) {
+            return false; // Nothing to enroll
+        }
+       
+        DatabaseConnection dbConn = new DatabaseConnection();
+        String insertSql = "INSERT INTO Enrollments (class_id, student_id) VALUES (?, ?)";
+       
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            conn.setAutoCommit(false);
+           
+            try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                for (Student s : students) {
+                    stmt.setInt(1, classId);
+                    stmt.setInt(2, s.getStudentId());
+                    stmt.addBatch();
+                }
+                int[] results = stmt.executeBatch();
+                conn.commit();
+                // Check if all inserts were successful (no executeBatch returns 0)
+                for (int res : results) {
+                    if (res == 0) {
+                        return false;
+                    }
+                }
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Enrollment failed: " + e.getMessage());
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Database connection error: " + e.getMessage());
+            return false;
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
 }

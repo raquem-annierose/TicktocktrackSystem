@@ -25,8 +25,10 @@ import java.util.stream.Collectors;
 public class TeacherViewClassStudents {
 
     private final Pane centerPanel;
-    private Button trashButton;
-    private final Map<Student, SimpleBooleanProperty> selectedMap = new HashMap<>();
+    private static Button trashButton;
+    private static TableView<Student> studentTableView;  // Make it a field for refresh
+
+    private final static Map<Student, SimpleBooleanProperty> selectedMap = new HashMap<>();
     private ObservableList<Student> studentData;
 
     private String courseName;
@@ -51,15 +53,16 @@ public class TeacherViewClassStudents {
         shadowView.setLayoutY(-115);
         centerPanel.getChildren().add(shadowView);
 
-        addTitle();
-        addStudentTable();
+        addTitle(courseName, section, program, teacherId);
+        addStudentTable(courseName, section, program, teacherId);
+
     }
 
     public Pane getView() {
         return centerPanel;
     }
 
-    private void addTitle() {
+    private void addTitle(String courseName, String section, String program, int teacherId) {
         String programShort = (program != null) ? ViewClassList.mapProgramToShortName(program) : "";
 
         String fullTitle = "Students for " + courseName + "\n";
@@ -88,6 +91,27 @@ public class TeacherViewClassStudents {
         addStudentBtn.setLayoutX(820);
         addStudentBtn.setLayoutY(40);
         addStudentBtn.setCursor(javafx.scene.Cursor.HAND);
+        
+        addStudentBtn.setOnAction(e -> {
+            int classId = DatabaseViewClassList.getClassId(courseName, section, program, teacherId);
+            if (classId == -1) {
+                System.err.println("Invalid class ID for course/section/program/teacher");
+                return;
+            }
+            List<Student> students = DatabaseViewClassList.getUnenrolledStudentsWithEnrollmentId(classId);
+            if (students == null) {
+                System.err.println("Failed to fetch unenrolled students for class ID: " + classId);
+                return;
+            }
+            // Corrected parameter order here:
+            boolean success = TeacherAddStudent.showAddStudentSelectionDialog(students, courseName, section, program, classId, teacherId);
+
+
+            if (success) {
+                refreshStudentTable(courseName, section, program, teacherId);
+            }
+        });
+
 
         Image trashImage = new Image("/resources/trashbin_icon.png");
         ImageView trashIcon = new ImageView(trashImage);
@@ -121,6 +145,8 @@ public class TeacherViewClassStudents {
                     studentData.removeAll(toUnenroll);
                     toUnenroll.forEach(selectedMap::remove);
                     trashButton.setVisible(false);
+                    
+                    refreshStudentTable(courseName, section, program, teacherId);
                 }
             });
         });
@@ -128,17 +154,22 @@ public class TeacherViewClassStudents {
         centerPanel.getChildren().addAll(title, searchField, addStudentBtn, trashButton);
     }
 
-    private void addStudentTable() {
+    private void addStudentTable(String courseName, String section, String program, int teacherId) {
         VBox studentTable = new VBox(10);
         studentTable.setLayoutX(30);
         studentTable.setLayoutY(100);
 
         List<Student> students = DatabaseViewClassList.getStudentsEnrolledForTeacher(courseName, section, program, teacherId);
-
+        
+        studentTableView = new TableView<>();  
+        
         if (!students.isEmpty()) {
+        	studentTableView = new TableView<>();
+
             studentData = FXCollections.observableArrayList(students);
-            TableView<Student> tableView = new TableView<>();
-            tableView.setEditable(true);
+            studentTableView = new TableView<>(); 
+            studentTableView.setEditable(true);
+
 
             for (Student s : studentData) {
                 selectedMap.put(s, new SimpleBooleanProperty(false));
@@ -153,7 +184,8 @@ public class TeacherViewClassStudents {
 
             TableColumn<Student, String> numberCol = new TableColumn<>("#");
             numberCol.setCellValueFactory(cellData -> {
-                int index = tableView.getItems().indexOf(cellData.getValue()) + 1;
+            	int index = studentTableView.getItems().indexOf(cellData.getValue()) + 1;
+
                 return new SimpleStringProperty(String.valueOf(index));
             });
             numberCol.setPrefWidth(30);
@@ -186,14 +218,47 @@ public class TeacherViewClassStudents {
                 });
             }
 
-            tableView.getColumns().addAll(selectCol, numberCol, usernameCol, nameCol, yearLevelCol, emailCol);
-            tableView.setItems(studentData);
-            tableView.setPrefHeight(500);
-            studentTable.getChildren().add(tableView);
+            studentTableView.getColumns().addAll(selectCol, numberCol, usernameCol, nameCol, yearLevelCol, emailCol);
+
+            studentTableView.setItems(studentData);
+            studentTableView.setPrefHeight(500);
+
+
+            studentTable.getChildren().add(studentTableView);
+
         } else {
             studentTable.getChildren().add(new Text("No students found for the selected course."));
         }
 
-        centerPanel.getChildren().add(studentTable);
+        centerPanel.getChildren().add( studentTable);
     }
+    
+    public static void refreshStudentTable(String courseName, String section, String program, int teacherId) {
+        List<Student> students = DatabaseViewClassList.getStudentsEnrolledForTeacher(courseName, section, program, teacherId);
+        ObservableList<Student> updatedStudentData = FXCollections.observableArrayList(students);
+
+        if (studentTableView != null) {
+            studentTableView.setItems(updatedStudentData);
+
+            
+            // Clear and repopulate selectedMap
+            selectedMap.clear();
+            for (Student s : updatedStudentData) {
+                selectedMap.put(s, new SimpleBooleanProperty(false));
+            }
+
+            // Re-add listeners to each checkbox
+            for (SimpleBooleanProperty prop : selectedMap.values()) {
+                prop.addListener((obs, oldVal, newVal) -> {
+                    boolean anySelected = selectedMap.values().stream().anyMatch(SimpleBooleanProperty::get);
+                    trashButton.setVisible(anySelected);
+                });
+            }
+        } else {
+            System.err.println("studentTableView is null - cannot refresh.");
+        }
+    }
+
+
+
 }
