@@ -287,6 +287,7 @@ public class DatabaseAttendance {
             }
 
             conn.commit();
+            NotificationDAO.sendAttendanceNotification(studentId, status);
 
         } catch (SQLException ex) {
             ex.printStackTrace();

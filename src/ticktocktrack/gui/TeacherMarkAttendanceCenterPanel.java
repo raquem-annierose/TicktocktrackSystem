@@ -23,6 +23,9 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
+import ticktocktrack.database.NotificationDAO;
+
+
 import java.util.*;
 
 public class TeacherMarkAttendanceCenterPanel {
@@ -412,6 +415,8 @@ public class TeacherMarkAttendanceCenterPanel {
                     course,
                     studentSection
                 );
+                NotificationDAO.sendAttendanceNotification(studentId, student.getStatus());
+
             }
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Attendance saved successfully.");

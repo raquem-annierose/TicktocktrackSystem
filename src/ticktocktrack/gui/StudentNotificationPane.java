@@ -12,63 +12,56 @@ import javafx.scene.layout.StackPane;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.text.TextAlignment;
+
+import ticktocktrack.database.NotificationDAO;
+import ticktocktrack.logic.Notification;
+import ticktocktrack.logic.UsersModel;
+import ticktocktrack.logic.Session;
+
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class StudentNotificationPane {
-
+    private int userId;
     private Popup notificationPopup;
     private ImageView notificationIcon;
     private StackPane notificationIconWrapper;
-
-    // List to hold notifications
+    private VBox notificationHolder;
+    // Declare the notifications list as a class field
     private ObservableList<Notification> notifications;
-    private VBox notificationHolder; // Holder for notifications
 
     public StudentNotificationPane() {
+        UsersModel currentUser = Session.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new IllegalStateException("No user is logged in. Notifications cannot be loaded.");
+        }
+
+        this.userId = currentUser.getUserId();
+        System.out.println("DEBUG: Initializing StudentNotificationPane for userId = " + userId);
+
+        // Initialize the list
         notifications = FXCollections.observableArrayList();
 
-        // Sample notifications (database later)
-        notifications.add(new Notification(
-            "Mr. Campos has marked you absent in English 101.", 
-            LocalDateTime.now(), 
-            "Absent"
-        ));
-        notifications.add(new Notification(
-            "Mr. Sigme has marked you present in Mathematics 202.", 
-            LocalDateTime.now(), 
-            "Present"
-        ));
-        notifications.add(new Notification(
-            "Ms. Skibidi has marked you excused in Biology 303.", 
-            LocalDateTime.now(), 
-            "Excused"
-        ));
-        notifications.add(new Notification(
-            "Mr. Ramos is requesting an excuse letter for your absence in Chemistry 204.", 
-            LocalDateTime.now(), 
-            "Absent"
-        ));
-        notifications.add(new Notification(
-            "You have accumulated 5 absences in History 101. Further absences may lead to disciplinary action.", 
-            LocalDateTime.now(), 
-            "Absent"
-        ));
-
+        // Create popup and holder
         notificationPopup = new Popup();
         notificationHolder = new VBox(10);
         notificationHolder.setPadding(new Insets(10));
         notificationHolder.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #20B2AA; -fx-border-width: 2px;");
         notificationHolder.setPrefWidth(280);
 
-        // Dynamically add notifications
+        // Load notifications from database
+        loadNotificationsFromDatabase();
+
+        // Add loaded notifications to the GUI holder
         for (Notification notification : notifications) {
             addNotificationToHolder(notification);
         }
         notificationPopup.getContent().add(notificationHolder);
 
-        // Notification icon
+        // Setup icon
         String notificationIconPath = getClass().getResource("/resources/Student_Dashboard/Student_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(notificationIconPath));
         notificationIcon.setFitWidth(50);
@@ -80,6 +73,7 @@ public class StudentNotificationPane {
         notificationIconWrapper.setMaxSize(50, 50);
         notificationIconWrapper.setCursor(Cursor.HAND);
 
+        // Toggle popup on click
         notificationIconWrapper.setOnMouseClicked(e -> {
             if (notificationPopup.isShowing()) {
                 notificationPopup.hide();
@@ -91,6 +85,22 @@ public class StudentNotificationPane {
         });
     }
 
+    private void loadNotificationsFromDatabase() {
+        System.out.println("DEBUG: Loading notifications for userId = " + userId);
+        List<Notification> dbNotifications = NotificationDAO.getNotificationsForUser(userId);
+
+        if (dbNotifications != null) {
+            for (Notification n : dbNotifications) {
+                System.out.println("DEBUG: Notification loaded -> [Message: " + n.getMessage() +
+                        ", Type: " + n.getStatus() + ", Date: " + n.getDateSent() + "]");
+            }
+            System.out.println("DEBUG: Total notifications loaded: " + dbNotifications.size());
+            notifications.addAll(dbNotifications);
+        } else {
+            System.out.println("DEBUG: No notifications returned from DAO (null)");
+        }
+    }
+
     public void addNotification(String message, LocalDateTime dateSent, String status) {
         Notification newNotification = new Notification(message, dateSent, status);
         notifications.add(newNotification);
@@ -98,14 +108,16 @@ public class StudentNotificationPane {
     }
 
     private void addNotificationToHolder(Notification notification) {
-        // Create label
-        Label notificationLabel = new Label("â€¢ " + notification.getMessage());
+        // Create notification message label
+        Label notificationLabel = new Label("• " + notification.getMessage());
+        // Correct font setting
         notificationLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         notificationLabel.setWrapText(true);
-        notificationLabel.setMaxWidth(240); // Important: makes long text wrap instead of stretching
+        notificationLabel.setMaxWidth(240);
+        // Fix TextAlignment
         notificationLabel.setTextAlignment(TextAlignment.LEFT);
 
-        // Date below message (small)
+        // Date and status label
         Label dateLabel = new Label(notification.getTimeAgo() + " | Status: " + notification.getStatus());
         dateLabel.setFont(javafx.scene.text.Font.font("Poppins", 10));
         dateLabel.setStyle("-fx-text-fill: gray;");
@@ -114,16 +126,26 @@ public class StudentNotificationPane {
 
         HBox notificationBox = new HBox(content);
         notificationBox.setPadding(new Insets(5));
-        notificationBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);");
+        notificationBox.setStyle(
+                "-fx-background-color: #f9f9f9; " +
+                "-fx-border-radius: 5px; " +
+                "-fx-background-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);"
+        );
 
         addHoverEffect(notificationBox);
-
         notificationHolder.getChildren().add(notificationBox);
     }
 
     private void addHoverEffect(HBox notificationBox) {
-        notificationBox.setOnMouseEntered(e -> notificationBox.setStyle("-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);"));
-        notificationBox.setOnMouseExited(e -> notificationBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);"));
+        notificationBox.setOnMouseEntered(e -> 
+            notificationBox.setStyle("-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);")
+        );
+        notificationBox.setOnMouseExited(e -> 
+            notificationBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);")
+        );
     }
 
     public StackPane getNotificationIconWrapper() {
@@ -146,53 +168,5 @@ public class StudentNotificationPane {
         return notificationPopup.isShowing();
     }
 
-    // Notification class with additional fields
-    public static class Notification {
-        private String message;
-        private LocalDateTime dateSent;
-        private String status;
-
-        public Notification(String message, LocalDateTime dateSent, String status) {
-            this.message = message;
-            this.dateSent = dateSent;
-            this.status = status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public LocalDateTime getDateSent() {
-            return dateSent;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        // Calculate time ago
-        public String getTimeAgo() {
-            Duration duration = Duration.between(dateSent, LocalDateTime.now());
-            long seconds = duration.getSeconds();
-
-            if (seconds < 60) {
-                return seconds + " seconds ago";
-            } else if (seconds < 3600) {
-                return (seconds / 60) + " minutes ago";
-            } else if (seconds < 86400) {
-                return (seconds / 3600) + " hours ago";
-            } else if (seconds < 2592000) {
-                return (seconds / 86400) + " days ago";
-            } else if (seconds < 31536000) {
-                return (seconds / 2592000) + " months ago";
-            } else {
-                return (seconds / 31536000) + " years ago";
-            }
-        }
-
-        public String getDateSentFormatted() {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
-            return dateSent.format(formatter);
-        }
-    }
 }
+    

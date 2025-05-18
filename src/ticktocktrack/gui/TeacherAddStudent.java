@@ -65,7 +65,7 @@ public class TeacherAddStudent {
         Set<Integer> enrolledStudentIds = (enrolledStudentIdsOriginal == null) ? new HashSet<>() : new HashSet<>(enrolledStudentIdsOriginal);
        
      // Now the cell factory, capturing enrolledStudentIds and studentsVBox (make them effectively final)
-        selectedListView.setCellFactory(listView -> new javafx.scene.control.ListCell<>() {
+        selectedListView.setCellFactory(listView -> new javafx.scene.control.ListCell<Student>() {
             private final HBox content;
             private final Text nameText;
             private final Button removeBtn;
