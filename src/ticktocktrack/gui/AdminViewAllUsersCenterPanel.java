@@ -16,7 +16,7 @@ import javafx.scene.paint.Color;
 public class AdminViewAllUsersCenterPanel {
 
     @SuppressWarnings("deprecation")
-	public static Pane createPanel(int adminId) {
+    public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setLayoutX(0);
@@ -42,6 +42,20 @@ public class AdminViewAllUsersCenterPanel {
         roleSwitcher.setLayoutY(55);
         roleSwitcher.setPrefWidth(150);
         roleSwitcher.setPrefHeight(35);
+
+        // ===== Modern ComboBox styling =====
+        String comboBoxStyle =
+            "-fx-background-color: white;" +
+            "-fx-font-size: 11px;" +
+            "-fx-padding: 6 12 6 12;" +
+            "-fx-background-radius: 10;" +
+            "-fx-border-radius: 10;" +
+            "-fx-border-color: black;" +
+            "-fx-border-width: 0.9;" +
+            "-fx-font-family: 'Poppins';" +
+            "-fx-font-weight: normal;" +
+            "-fx-text-fill: black;";
+        roleSwitcher.setStyle(comboBoxStyle);
 
         // ===== Tables =====
         // Admin Table
@@ -102,12 +116,16 @@ public class AdminViewAllUsersCenterPanel {
         stuUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         TableColumn<Student, String> stuYear = new TableColumn<>("Year");
         stuYear.setCellValueFactory(new PropertyValueFactory<>("year"));
+        TableColumn<Student, String> stuProgram = new TableColumn<>("Program");
+        stuProgram.setCellValueFactory(new PropertyValueFactory<>("program"));
+        TableColumn<Student, String> stuSection = new TableColumn<>("Section");
+        stuSection.setCellValueFactory(new PropertyValueFactory<>("section"));
 
-        studentTable.getColumns().addAll(stuId, stuUsername, stuYear);
+        studentTable.getColumns().addAll(stuId, stuUsername, stuYear, stuProgram, stuSection);
 
         ObservableList<Student> studentData = FXCollections.observableArrayList(
-            new Student("S001", "studentMike", "1st Year"),
-            new Student("S002", "studentJane", "2nd Year")
+            new Student("S001", "studentMike", "1st Year", "Computer Science", "A"),
+            new Student("S002", "studentJane", "2nd Year", "Information Tech", "B")
         );
         FilteredList<Student> studentFiltered = new FilteredList<>(studentData, p -> true);
         studentTable.setItems(studentFiltered);
@@ -129,6 +147,7 @@ public class AdminViewAllUsersCenterPanel {
         // Dynamic filtering for all tables
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             String query = newVal.toLowerCase();
+
             switch (roleSwitcher.getValue()) {
                 case "Admin":
                     adminFiltered.setPredicate(user -> user.getUsername().toLowerCase().contains(query));
@@ -137,7 +156,12 @@ public class AdminViewAllUsersCenterPanel {
                     facultyFiltered.setPredicate(user -> user.getUsername().toLowerCase().contains(query));
                     break;
                 case "Student":
-                    studentFiltered.setPredicate(student -> student.getUsername().toLowerCase().contains(query));
+                    studentFiltered.setPredicate(student -> 
+                        student.getUsername().toLowerCase().contains(query) ||
+                        student.getYear().toLowerCase().contains(query) ||
+                        student.getProgram().toLowerCase().contains(query) ||
+                        student.getSection().toLowerCase().contains(query)
+                    );
                     break;
             }
         });
@@ -168,16 +192,22 @@ public class AdminViewAllUsersCenterPanel {
         private String id;
         private String username;
         private String year;
+        private String program;
+        private String section;
 
-        public Student(String id, String username, String year) {
+        public Student(String id, String username, String year, String program, String section) {
             this.id = id;
             this.username = username;
             this.year = year;
+            this.program = program;
+            this.section = section;
         }
 
         public String getId() { return id; }
         public String getUsername() { return username; }
         public String getYear() { return year; }
+        public String getProgram() { return program; }
+        public String getSection() { return section; }
     }
 
     // Search Bar Method (Responsive)
