@@ -501,36 +501,97 @@ public class AdminDashboardPage extends Application {
         Pane dashboardPanel = AdminDashboardCenterPanel.createPanel();
         centerContentPane.getChildren().add(dashboardPanel);
     }
+    
     private void onCreateUsersClicked(MouseEvent event) {
         System.out.println("Create Users clicked!");
+
+        selectSidebarText((Text) event.getSource());
+
         centerContentPane.getChildren().clear();
-        Pane createUsersPanel = AdminCreateUsersCenterPanel.createPanel();
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer adminId = currentUser.getAdminId();
+        if (adminId == null) {
+            System.err.println("Current user is not an admin.");
+            return;
+        }
+
+        Pane createUsersPanel = AdminCreateUsersCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(createUsersPanel);
     }
+
+
     
     private void onViewAllUsersClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = AdminViewAllUsersCenterPanel.createPanel();
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer adminId = currentUser.getAdminId();
+        if (adminId == null) {
+            System.err.println("Current user is not an admin.");
+            return;
+        }
+
+        Pane dashboardPanel = AdminViewAllUsersCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
+
     
     private void onAttendanceReportsClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = AdminAttendanceReportsCenterPanel.createPanel();
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer adminId = currentUser.getAdminId();
+        if (adminId == null) {
+            System.err.println("Current user is not an admin.");
+            return;
+        }
+
+        Pane dashboardPanel = AdminAttendanceReportsCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
+
     
     private void onManageAccountsClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = AdminManageAccountsCenterPanel.createPanel();
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+
+        Integer adminId = currentUser.getAdminId();
+        if (adminId == null) {
+            System.err.println("Current user is not an admin.");
+            return;
+        }
+
+        Pane dashboardPanel = AdminManageAccountsCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
+
 
     public static void main(String[] args) {
         launch(args);

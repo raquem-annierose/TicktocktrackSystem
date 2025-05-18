@@ -12,7 +12,7 @@ import javafx.scene.Cursor;
 public class AdminCreateUsersCenterPanel {
 	
 	
-    public static Pane createPanel() {
+    public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setLayoutX(0);

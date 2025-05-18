@@ -653,21 +653,55 @@ public class TeacherDashboardPage extends Application {
     }
 
 
-	private void onAttendanceSummaryClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
+    private void onAttendanceSummaryClicked(MouseEvent event) {
+        System.out.println("Attendance Summary clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = TeacherAttendanceSummaryCenterPanel.createPanel();
-        centerContentPane.getChildren().add(dashboardPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            // Optionally show an alert or redirect to login screen
+            return;
+        }
+
+        Integer teacherId = currentUser.getTeacherId();
+        if (teacherId == null) {
+            System.err.println("Current user is not a teacher.");
+            // Optionally handle error or show alert
+            return;
+        }
+
+        Pane summaryPanel = TeacherAttendanceSummaryCenterPanel.createPanel(teacherId);
+        centerContentPane.getChildren().add(summaryPanel);
     }
+
     
     private void onIndividualReportsClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
+        System.out.println("Individual Reports clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
+
         centerContentPane.getChildren().clear();
-        Pane dashboardPanel = TeacherIndividualReportsCenterPanel.createPanel();
-        centerContentPane.getChildren().add(dashboardPanel);
+
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            // Optionally show an alert or redirect to login screen
+            return;
+        }
+
+        Integer teacherId = currentUser.getTeacherId();
+        if (teacherId == null) {
+            System.err.println("Current user is not a teacher.");
+            // Optionally handle error or show alert
+            return;
+        }
+
+        Pane individualReportPanel = TeacherIndividualReportsCenterPanel.createPanel(teacherId);
+        centerContentPane.getChildren().add(individualReportPanel);
     }
+
 
     public static void main(String[] args) {
         launch(args);

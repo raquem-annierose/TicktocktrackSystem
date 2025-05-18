@@ -10,7 +10,7 @@ import javafx.scene.paint.Color;
 
 public class StudentAttendanceStatusCenterPanel {
 
-    public static Pane createPanel() {
+    public static Pane createPanel(int studentId) {
         // Create the center panel
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
