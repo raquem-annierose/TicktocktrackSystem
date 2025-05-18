@@ -229,7 +229,7 @@ public class StudentDashboardPage extends Application {
         dashboardText.setFont(Font.font("Poppins", 18));
         dashboardText.setFill(Color.web("#20B2AA"));
         dashboardText.setLayoutX(90);
-        dashboardText.setLayoutY(60);
+        dashboardText.setLayoutY(180);
 
         // Set the default selected text when the app launches
         selectedText = dashboardText;
@@ -389,10 +389,9 @@ public class StudentDashboardPage extends Application {
         sidePanel.getChildren().addAll( dashboardIcon, line1, viewAttendanceIcon, viewAttendanceText, line2, attendanceStatusIcon, attendanceStatusText,   line3, submitExcuseIcon, submitExcuseText);
 
         // Overlay all to root
-        overlayPane.getChildren().addAll(topPanel, sidePanel, centerContentPane, userIcon, notificationPane.getNotificationIconWrapper());
+        overlayPane.getChildren().addAll(topPanel, sidePanel, centerContentPane, userIcon, dashboardText, notificationPane.getNotificationIconWrapper());
 
-        // Set dashboard as default selected
-        selectSidebarText(dashboardText);
+      
         // Add click handler
         dashboardText.setOnMouseClicked(this::onDashboardClicked);
     }
