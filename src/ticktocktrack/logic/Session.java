@@ -33,4 +33,10 @@ public class Session {
         Stage homeStage = new Stage();
         homePage.start(homeStage);
     }
+    
+    public static int getSenderUserId() {
+        return currentUser != null ? currentUser.getUserId() : -1;
+    }
+
 }
+

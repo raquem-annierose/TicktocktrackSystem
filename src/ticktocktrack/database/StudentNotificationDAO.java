@@ -10,49 +10,58 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 import ticktocktrack.logic.Notification;
+import ticktocktrack.logic.Session;
 
 
 public class StudentNotificationDAO {
 
-    public static void sendAttendanceNotification(int studentId, String attendanceStatus) {
-        int studentUserId = getUserIdByStudentId(studentId);
+	public static void sendAttendanceNotification(int studentId, String attendanceStatus) {
+	    int studentUserId = getUserIdByStudentId(studentId);
+	    if (studentUserId == -1) {
+	        System.err.println("Error: No user_id found for student_id " + studentId);
+	        return;
+	    }
 
-        System.out.println("DEBUG: Retrieved user_id for student_id " + studentId + " is " + studentUserId);
+	    int senderUserId = Session.getCurrentUser().getUserId(); 
+	    String senderRole = Session.getCurrentUser().getRole();
 
-        if (studentUserId == -1) {
-            System.err.println("Error: No user_id found for student_id " + studentId);
-            return;
-        }
+	    // Get sender full name + role
+	    String senderDisplayName = getSenderFullNameAndRole(senderUserId, senderRole);
 
-        String message = "Your attendance has been marked as: " + attendanceStatus;
-        String type = "Attendance";
+	    // Compose customized message
+	    String message = senderDisplayName + " marked you as " + attendanceStatus;
 
-        String sql = "INSERT INTO Notifications (recipient_user_id, message, notification_type, date_sent, is_read) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+	    String type = "Attendance";
 
-        DatabaseConnection dbConn = new DatabaseConnection();
+	    String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
+	                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try {
-            dbConn.connectToSQLServer();
+	    DatabaseConnection dbConn = new DatabaseConnection();
 
-            try (Connection conn = dbConn.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	    try {
+	        dbConn.connectToSQLServer();
 
-                System.out.println("Sending notification to userId: " + studentUserId);
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-                pstmt.setInt(1, studentUserId);
-                pstmt.setString(2, message);
-                pstmt.setString(3, type);
-                pstmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                pstmt.setBoolean(5, false); // Unread
+	            pstmt.setInt(1, studentUserId);
+	            pstmt.setInt(2, senderUserId);
+	            pstmt.setString(3, message);
+	            pstmt.setString(4, type);
+	            pstmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+	            pstmt.setBoolean(6, false);
 
-                pstmt.executeUpdate();
-            }
+	            pstmt.executeUpdate();
+	        }
+	        
+	        
+	    } catch (SQLException e) {
+	        System.err.println("Error sending notification: " + e.getMessage());
+	    }
+	}
 
-        } catch (SQLException e) {
-            System.err.println("Error sending notification: " + e.getMessage());
-        }
-    }
+
+
 
     // Helper method to resolve user_id from student_id
     public static int getUserIdByStudentId(int studentId) {
@@ -78,6 +87,62 @@ public class StudentNotificationDAO {
         }
 
         return -1;
+    }
+    
+    private static String getSenderFullNameAndRole(int userId, String role) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        String fullName = "";
+        String table = ""; 
+        String firstNameCol = "first_name";
+        String lastNameCol = "last_name";
+
+        // Determine which table to query for the sender's name
+        switch (role.toLowerCase()) {
+            case "teacher":
+                table = "Teachers";
+                break;
+            case "admin":
+                table = "Admins";
+                break;
+            case "student":
+                table = "Students";
+                break;
+            default:
+                table = "Users"; // fallback to Users table if no role matched
+        }
+
+        String sql = "";
+
+        if (table.equals("Users")) {
+            // Just get username from Users table
+            sql = "SELECT username FROM Users WHERE user_id = ?";
+        } else {
+            // Get first and last name from the role-specific table joined with Users
+            sql = "SELECT " + firstNameCol + ", " + lastNameCol + " FROM " + table + " WHERE user_id = ?";
+        }
+
+        try {
+            dbConn.connectToSQLServer();
+
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setInt(1, userId);
+
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    if (table.equals("Users")) {
+                        fullName = rs.getString("username");
+                    } else {
+                        fullName = rs.getString(firstNameCol) + " " + rs.getString(lastNameCol);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching sender name: " + e.getMessage());
+        }
+
+        return role + " " + fullName; // e.g. "Teacher John Smith"
     }
 
     // New method to fetch notifications for a given user
