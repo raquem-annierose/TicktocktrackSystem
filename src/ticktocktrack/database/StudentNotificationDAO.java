@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import ticktocktrack.logic.Notification;
 
 
-public class NotificationDAO {
+public class StudentNotificationDAO {
 
     public static void sendAttendanceNotification(int studentId, String attendanceStatus) {
         int studentUserId = getUserIdByStudentId(studentId);
@@ -110,14 +110,14 @@ public class NotificationDAO {
                     notifications.add(new Notification(message, dateSent, status));
                     count++;
 
-                    System.out.println("DEBUG: Retrieved Notification #" + count + " — Message: " + message + ", Status: " + status + ", Date: " + dateSent);
+                    System.out.println("DEBUG: Retrieved Notification #" + count + " ï¿½ Message: " + message + ", Status: " + status + ", Date: " + dateSent);
                 }
 
                 System.out.println("DEBUG: Total notifications retrieved: " + count);
             }
 
         } catch (SQLException e) {
-            System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId + " — " + e.getMessage());
+            System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId + " ï¿½ " + e.getMessage());
         }
 
         return notifications;

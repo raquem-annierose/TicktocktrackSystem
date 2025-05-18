@@ -23,7 +23,7 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
-import ticktocktrack.database.NotificationDAO;
+import ticktocktrack.database.StudentNotificationDAO;
 
 
 import java.util.*;
@@ -415,7 +415,7 @@ public class TeacherMarkAttendanceCenterPanel {
                     course,
                     studentSection
                 );
-                NotificationDAO.sendAttendanceNotification(studentId, student.getStatus());
+                StudentNotificationDAO.sendAttendanceNotification(studentId, student.getStatus());
 
             }
 

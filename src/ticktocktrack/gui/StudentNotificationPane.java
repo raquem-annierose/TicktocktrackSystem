@@ -13,7 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.text.TextAlignment;
 
-import ticktocktrack.database.NotificationDAO;
+import ticktocktrack.database.StudentNotificationDAO;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.UsersModel;
 import ticktocktrack.logic.Session;
@@ -87,7 +87,7 @@ public class StudentNotificationPane {
 
     private void loadNotificationsFromDatabase() {
         System.out.println("DEBUG: Loading notifications for userId = " + userId);
-        List<Notification> dbNotifications = NotificationDAO.getNotificationsForUser(userId);
+        List<Notification> dbNotifications = StudentNotificationDAO.getNotificationsForUser(userId);
 
         if (dbNotifications != null) {
             for (Notification n : dbNotifications) {
@@ -109,7 +109,7 @@ public class StudentNotificationPane {
 
     private void addNotificationToHolder(Notification notification) {
         // Create notification message label
-        Label notificationLabel = new Label("• " + notification.getMessage());
+        Label notificationLabel = new Label("ï¿½ " + notification.getMessage());
         // Correct font setting
         notificationLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         notificationLabel.setWrapText(true);
