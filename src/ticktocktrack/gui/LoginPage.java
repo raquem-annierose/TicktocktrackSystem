@@ -2,6 +2,7 @@ package ticktocktrack.gui;
 
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.Cursor;
 import javafx.scene.control.TextField;
@@ -43,12 +44,84 @@ public class LoginPage extends Application {
         usernameField.setPrefHeight(51);
         usernameField.setStyle("-fx-background-color: transparent; -fx-border-color: #02383E; -fx-border-radius: 5px; -fx-padding: 5px;");
 
-        // Password Field
+     
+     // 1. Create plain TextField (for showing password), hidden by default
+        TextField passwordTextField = new TextField();
+        passwordTextField.setPrefWidth(314);
+        passwordTextField.setPrefHeight(51);
+        passwordTextField.setStyle(
+            "-fx-background-color: transparent; " +
+            "-fx-border-color: #02383E; " +
+            "-fx-border-radius: 5px;"
+        );
+        passwordTextField.setVisible(false);  // hidden initially
+        passwordTextField.setManaged(false);
+
+        // 2. Create PasswordField (for masking), visible by default
         PasswordField passwordField = new PasswordField();
         passwordField.setPrefWidth(314);
         passwordField.setPrefHeight(51);
-        passwordField.setStyle("-fx-background-color: transparent; -fx-border-color: #02383E; -fx-border-radius: 5px; -fx-padding: 5px;");
+        passwordField.setStyle(
+            "-fx-background-color: transparent; " +
+            "-fx-border-color: #02383E; " +
+            "-fx-border-radius: 5px;"
+        );
+        passwordField.setVisible(true);
+        passwordField.setManaged(true);
 
+        // 3. Sync text both ways
+        passwordTextField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // 4. Eye icon toggle
+        ImageView passwordLogo = new ImageView(new Image(getClass().getResourceAsStream("/resources/EyeIcon.png")));
+        passwordLogo.setFitWidth(24);
+        passwordLogo.setFitHeight(24);
+        passwordLogo.setPreserveRatio(true);
+        passwordLogo.setCursor(Cursor.HAND);
+        passwordLogo.setVisible(false);  // hide initially
+        passwordLogo.setManaged(false);
+
+        // 5. Show/hide icon when text is typed (bind to one listener)
+        ChangeListener<String> showIconListener = (obs, oldText, newText) -> {
+            boolean hasText = !newText.isEmpty();
+            passwordLogo.setVisible(hasText);
+            passwordLogo.setManaged(hasText);
+        };
+        passwordTextField.textProperty().addListener(showIconListener);
+        passwordField.textProperty().addListener(showIconListener);
+
+        // 6. Toggle logic on icon click
+        passwordLogo.setOnMouseClicked(event -> {
+            boolean showPassword = !passwordTextField.isVisible();
+
+            passwordTextField.setVisible(showPassword);
+            passwordTextField.setManaged(showPassword);
+            passwordField.setVisible(!showPassword);
+            passwordField.setManaged(!showPassword);
+
+            if (showPassword) {
+                passwordTextField.requestFocus();
+                passwordTextField.positionCaret(passwordTextField.getText().length());
+            } else {
+                passwordField.requestFocus();
+                passwordField.positionCaret(passwordField.getText().length());
+            }
+        });
+
+        // 7. Wrap everything in an AnchorPane
+        AnchorPane passwordContainer = new AnchorPane();
+        passwordContainer.setPrefWidth(314);
+        passwordContainer.setPrefHeight(51);
+        
+        
+        
+        passwordContainer.getChildren().addAll(passwordField, passwordTextField, passwordLogo);
+
+        // Position the eye icon to the right and vertically centered
+        AnchorPane.setRightAnchor(passwordLogo, 5.0);
+        AnchorPane.setTopAnchor(passwordLogo, (51 - 24) / 2.0);
+
+        
         // Login Button (rectangle)
         Rectangle loginButton = new Rectangle(180, 50);
         loginButton.setFill(Color.WHITE);
@@ -62,14 +135,31 @@ public class LoginPage extends Application {
 
         // AnchorPane root
         AnchorPane root = new AnchorPane();
-        root.getChildren().addAll(imageView, usernameField, passwordField, loginButton, loginText);
+        root.getChildren().addAll(imageView, usernameField, passwordContainer, loginButton, loginText);
 
         // Set positions
         AnchorPane.setTopAnchor(usernameField, 289.0);
         AnchorPane.setLeftAnchor(usernameField, 258.0);
+        
+     // Position password container (below username field)
+        AnchorPane.setTopAnchor(passwordContainer, 435.0); // Adjust spacing as desired
+        AnchorPane.setLeftAnchor(passwordContainer, 258.0);
+        
+     // Position the icon inside the container (right, vertically centered)
+        AnchorPane.setRightAnchor(passwordLogo, 10.0); // 10px from right edge
+        AnchorPane.setTopAnchor(passwordLogo, 13.0);  // vertically centered
 
-        AnchorPane.setTopAnchor(passwordField, 435.0);
-        AnchorPane.setLeftAnchor(passwordField, 258.0);
+     // Anchor password field elements
+        AnchorPane.setLeftAnchor(passwordField, 0.0);
+        AnchorPane.setRightAnchor(passwordField, 0.0);
+        AnchorPane.setTopAnchor(passwordField, 0.0);
+        AnchorPane.setBottomAnchor(passwordField, 0.0);
+
+        AnchorPane.setLeftAnchor(passwordTextField, 0.0);
+        AnchorPane.setRightAnchor(passwordTextField, 0.0);
+        AnchorPane.setTopAnchor(passwordTextField, 0.0);
+        AnchorPane.setBottomAnchor(passwordTextField, 0.0);
+
 
         // Create the Scene
         Scene scene = new Scene(root, 1300, 750, Color.BLACK);
