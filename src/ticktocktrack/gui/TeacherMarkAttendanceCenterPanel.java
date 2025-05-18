@@ -30,6 +30,8 @@ public class TeacherMarkAttendanceCenterPanel {
     private static String lastRefreshDate = "";
     private static String lastSelectedCourse = null;
     private static String lastSelectedSection = null;
+    private static String lastSelectedProgram = null;
+
 
     @SuppressWarnings({ "unchecked", "unchecked" })
 	public static BorderPane createPanel(String defaultCourse, String defaultSection, int teacherId) {
@@ -225,7 +227,8 @@ public class TeacherMarkAttendanceCenterPanel {
                         Platform.runLater(() -> {
                             students.clear();
                             if (lastSelectedCourse != null && lastSelectedSection != null) {
-                                loadStudents(lastSelectedCourse, lastSelectedSection, students);
+                            	loadStudents(lastSelectedCourse, lastSelectedProgram, lastSelectedSection, students); // ✅
+
                             }
                             lastRefreshDate = today;
                         });
@@ -290,33 +293,34 @@ public class TeacherMarkAttendanceCenterPanel {
     String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
     String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
 
-    if (selectedCombined != null) {
+    if (selectedCombined != null && selectedCourse != null) {
         String[] parts = selectedCombined.split(" - ");
-        if(parts.length == 2) {
+        if (parts.length == 2) {
             String section = parts[0];
             String program = parts[1];
 
-            // Optional check
             if (!program.equals(selectedCourse)) {
-                // Handle mismatch if needed
+                // Optional mismatch check
             }
 
             lastSelectedCourse = selectedCourse;
+            lastSelectedProgram = program;
             lastSelectedSection = section;
 
-            loadStudents(program, section, students);
+            // ✅ Use method that includes course name
+            loadStudents(selectedCourse, program, section, students);
             return;
         }
     }
     students.clear();
 }
 
+
     
-    private static void loadStudents(String program, String section, ObservableList<Student> students) {
+    private static void loadStudents(String course, String program, String section, ObservableList<Student> students) {
         students.clear();
-        List<Student> loadedStudents = DatabaseAttendance.getStudentsByProgramSection(program, section);
+        List<Student> loadedStudents = DatabaseAttendance.getStudentsEnrolled(course, program, section);
         for (Student s : loadedStudents) {
-            // Automatically assign today's date here
             s.setDate(java.time.LocalDate.now().toString());
             students.add(s);
         }

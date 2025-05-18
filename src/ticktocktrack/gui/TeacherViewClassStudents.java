@@ -89,7 +89,7 @@ public class TeacherViewClassStudents {
         addStudentBtn.setLayoutY(40);
         addStudentBtn.setCursor(javafx.scene.Cursor.HAND);
 
-        Image trashImage = new Image("file:C:\\Users\\kal\\Downloads\\icons8-trash-24.png");
+        Image trashImage = new Image("/resources/trashbin_icon.png");
         ImageView trashIcon = new ImageView(trashImage);
         trashIcon.setFitWidth(24);
         trashIcon.setFitHeight(24);
