@@ -19,6 +19,8 @@ import ticktocktrack.logic.UsersModel;
 import ticktocktrack.logic.Session;
 
 import java.time.LocalDateTime;
+import javafx.scene.control.ScrollPane;
+
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -45,12 +47,27 @@ public class StudentNotificationPane {
         // Initialize the list
         notifications = FXCollections.observableArrayList();
 
-        // Create popup and holder
+     // Create popup and holder
         notificationPopup = new Popup();
+
         notificationHolder = new VBox(10);
         notificationHolder.setPadding(new Insets(10));
-        notificationHolder.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #20B2AA; -fx-border-width: 2px;");
-        notificationHolder.setPrefWidth(280);
+        notificationHolder.setStyle("-fx-background-color: #FFFFFF;");
+        notificationHolder.setPrefWidth(260);  // Adjust width inside ScrollPane
+
+        ScrollPane scrollPane = new ScrollPane(notificationHolder);
+        scrollPane.setPrefWidth(280); // Set fixed width
+        scrollPane.setPrefHeight(300); // Set fixed height
+        scrollPane.setFitToWidth(true); // Makes VBox expand to width of ScrollPane
+
+        scrollPane.setStyle(
+            "-fx-background-color: transparent; " +
+            "-fx-border-color: #20B2AA; " +
+            "-fx-border-width: 2px;"
+        );
+
+        notificationPopup.getContent().add(scrollPane);
+
 
         // Load notifications from database
         loadNotificationsFromDatabase();
