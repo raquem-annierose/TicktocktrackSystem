@@ -218,8 +218,7 @@ public class LoginPage extends Application {
  // Handle login click
     private void handleLoginClick(String username, String password, Stage primaryStage) {
         // Print the username and password for debugging
-        System.out.println("Username: " + username);
-        System.out.println("Password: " + password);
+       
 
         // Call authenticate method from Login class
         String role = loginLogic.authenticate(username, password);
