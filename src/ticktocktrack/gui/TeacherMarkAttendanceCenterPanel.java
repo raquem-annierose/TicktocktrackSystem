@@ -249,9 +249,11 @@ public class TeacherMarkAttendanceCenterPanel {
         } else if (!courseSectionsMap.isEmpty()) {
             String firstCourse = courseSectionsMap.keySet().iterator().next();
             courseComboBox.getSelectionModel().select(firstCourse);
-            Set<String> firstSections = courseSectionsMap.get(firstCourse);
-            if (firstSections != null && !firstSections.isEmpty()) {
-                sectionComboBox.getSelectionModel().select(firstSections.iterator().next());
+            Set<String> sections = courseSectionsMap.get(firstCourse);
+            if (sections != null && !sections.isEmpty()) {
+                String firstSectionProgram = sections.iterator().next();
+                sectionComboBox.getItems().setAll(sections);
+                sectionComboBox.getSelectionModel().select(firstSectionProgram);
             }
         }
 
@@ -414,7 +416,18 @@ public class TeacherMarkAttendanceCenterPanel {
                     studentProgram,
                     course,
                     studentSection
+                    
                 );
+                DatabaseAttendance.updateStudentAttendance(
+                	    student.getStudentId(),
+                	    student.getDate(),
+                	    student.getStatus(),
+                	    studentProgram,
+                	    course,
+                	    studentSection
+                	);
+
+                
                 StudentNotificationDAO.sendAttendanceNotification(studentId, student.getStatus());
 
             }
