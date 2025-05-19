@@ -9,6 +9,8 @@ import javafx.scene.text.Text;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import javafx.scene.paint.Color;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import ticktocktrack.database.DatabaseRegisterClass;
 
@@ -50,6 +52,18 @@ public class TeacherDashboardCenterPanel {
         UsersModel currentUser = Session.getCurrentUser();
         String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Teacher";
         if (fullName.isEmpty()) fullName = "Teacher";
+        
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+        String formattedDate = currentDate.format(formatter);
+        
+        Text dateText = new Text(formattedDate);
+        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
+        dateText.setFill(Color.web("#02383E"));
+        dateText.setLayoutX(70);
+        dateText.setLayoutY(101);
+        
+        
 
         Text dashboardTitle = new Text("Welcome Teacher \n" + fullName + "!");
         dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
@@ -67,7 +81,7 @@ public class TeacherDashboardCenterPanel {
 
 
         // Add panels to the center panel
-        centerPanel.getChildren().addAll(shadowView,  teacherBgView, teacherEffectsView, dashboardTitle, classPanel, studentsPanel);
+        centerPanel.getChildren().addAll(shadowView,  teacherBgView, teacherEffectsView, dashboardTitle, dateText, classPanel, studentsPanel);
 
         return centerPanel;
     }
