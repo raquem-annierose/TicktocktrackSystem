@@ -74,8 +74,8 @@ public class LoginPage extends Application {
 
         // 4. Eye icon toggle
         ImageView passwordLogo = new ImageView(new Image(getClass().getResourceAsStream("/resources/EyeIcon.png")));
-        passwordLogo.setFitWidth(24);
-        passwordLogo.setFitHeight(24);
+        passwordLogo.setFitWidth(30);
+        passwordLogo.setFitHeight(27);
         passwordLogo.setPreserveRatio(true);
         passwordLogo.setCursor(Cursor.HAND);
         passwordLogo.setVisible(false);  // hide initially
