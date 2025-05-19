@@ -168,4 +168,57 @@ public class DatabaseRegisterClass {
         }
         return students;
     }
+    
+    public static int getTotalClassesByTeacher(int teacherId) {
+        int total = 0;
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+
+            String sql = "SELECT COUNT(*) AS total FROM Classes WHERE teacher_id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, teacherId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                total = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error counting classes: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return total;
+    }
+    
+    public static int getTotalUniqueStudentsByTeacher(int teacherId) {
+        int total = 0;
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+
+            String sql = 
+            	    "SELECT COUNT(DISTINCT e.student_id) AS total " +
+            	    "FROM Enrollments e " +
+            	    "JOIN Classes c ON e.class_id = c.class_id " +
+            	    "WHERE c.teacher_id = ?";
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, teacherId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                total = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error counting students: " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return total;
+    }
+
+
 }

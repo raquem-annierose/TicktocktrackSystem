@@ -10,6 +10,8 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import javafx.scene.paint.Color;
 
+import ticktocktrack.database.DatabaseRegisterClass;
+
 public class TeacherDashboardCenterPanel {
 
     public static Pane createPanel() {
@@ -56,11 +58,13 @@ public class TeacherDashboardCenterPanel {
         dashboardTitle.setLayoutY(200);
 
 
-        // Panel for Number of Classes (Default 0)
-        Pane classPanel = createBoxPanel(50, 290, 300, 120, "Total Classes", 0); // Default 0 classes
+        int teacherId = (currentUser != null) ? currentUser.getUserId() : -1;
+        int totalClasses = DatabaseRegisterClass.getTotalClassesByTeacher(teacherId);
+        int totalStudents = DatabaseRegisterClass.getTotalUniqueStudentsByTeacher(teacherId);
 
-        // Panel for Number of Students (Default 0)
-        Pane studentsPanel = createBoxPanel(400, 290, 300, 120, "Number of Students", 0); // Default 0 students
+        Pane classPanel = createBoxPanel(50, 290, 300, 120, "Total Classes", totalClasses);
+        Pane studentsPanel = createBoxPanel(400, 290, 300, 120, "Number of Students", totalStudents);
+
 
         // Add panels to the center panel
         centerPanel.getChildren().addAll(shadowView,  teacherBgView, teacherEffectsView, dashboardTitle, classPanel, studentsPanel);
