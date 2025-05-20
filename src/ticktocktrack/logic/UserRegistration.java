@@ -1,6 +1,9 @@
 package ticktocktrack.logic;
 
 import ticktocktrack.database.DatabaseRegistrationManager;
+
+import java.sql.Connection;
+
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -10,22 +13,26 @@ public class UserRegistration {
 	public static boolean registerFaculty(String username, String email, String role, 
             String password, String confirmPassword,
             String firstName, String lastName) {
-		// Password check is already done in UI, so skip here
 
-		String passwordHash = DatabaseRegistrationManager.hashPassword(password);
-		if (passwordHash == null) {
-			return false;
-		}
+    String passwordHash = DatabaseRegistrationManager.hashPassword(password);
+    if (passwordHash == null) {
+        return false;
+    }
 
-		boolean isRegistered = false;
-		if ("Admin".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role)) {
-			isRegistered = DatabaseRegistrationManager.registerUser(username, role, email, passwordHash,
-					firstName, null, lastName,
-					null, null, null);
-		}
+    boolean isRegistered = false;
+    if ("Admin".equalsIgnoreCase(role) || "Teacher".equalsIgnoreCase(role)) {
+        try (Connection connection = DatabaseRegistrationManager.getConnection()) {
+            int currentAdminId = DatabaseRegistrationManager.getCurrentAdminId(connection);
+            isRegistered = DatabaseRegistrationManager.registerFaculty(username, role, email, passwordHash,
+                    firstName, lastName, currentAdminId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-		return isRegistered;
-	}
+    return isRegistered;
+}
+
 	
     public static void registerStudent(String username, String email, String password, String confirmPassword,
                                        String firstName, String middleName, String lastName,

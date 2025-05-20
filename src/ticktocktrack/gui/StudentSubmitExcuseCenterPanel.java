@@ -229,7 +229,7 @@ public class StudentSubmitExcuseCenterPanel {
                     String.format("%02d", Integer.parseInt(dayBox.getValue()));
 
                 // Use TeacherNotificationDAO to get teacher ID
-                int teacherId = TeacherNotificationDAO.getTeacherUserIdByName(teacherField.getText().trim());
+                int teacherId = TeacherNotificationDAO.getTeacherIdByName(teacherField.getText().trim());
                 if (teacherId == -1) {
                     new Alert(Alert.AlertType.ERROR, "Invalid teacher name.").showAndWait();
                     return;

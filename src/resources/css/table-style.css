@@ -1,3 +1,183 @@
+/* Role bar colors */
+.role-bar.admin {
+    -fx-background-color: #fbc02d; /* Yellow */
+}
+
+.role-bar.teacher {
+    -fx-background-color: #2196f3; /* Blue */
+}
+
+.role-bar.student {
+    -fx-background-color: #9c27b0; /* Violet / Purple */
+}
+
+/* Style the ComboBox visible area background */
+.program-combo-box {
+    -fx-background-color: #E6E0F8;
+    -fx-border-color: #9c27b0; /* purple border example */
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Style the text field inside the ComboBox */
+.program-combo-box .combo-box-base {
+    -fx-background-color: transparent;
+}
+
+/* Style the dropdown list popup */
+.program-combo-box .list-view {
+    -fx-background-color: #E6E0F8;
+    -fx-border-color: #9c27b0;
+}
+
+/* Style each cell in the dropdown list */
+.program-combo-box .list-cell {
+    -fx-background-color: transparent;
+}
+
+/* Hover effect on list cells */
+.program-combo-box .list-cell:hover {
+    -fx-background-color: #C7B7F1;
+}
+
+/* Selected item in the list */
+.program-combo-box .list-cell:filled:selected, 
+.program-combo-box .list-cell:filled:selected:hover {
+    -fx-background-color: #9c27b0;
+    -fx-text-fill: white;
+}
+
+/* Style the arrow button (optional) */
+.program-combo-box .arrow-button {
+    -fx-background-color: #9c27b0;
+}
+
+
+
+/* Buttons */
+.btn {
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-padding: 8 15;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.btn-save {
+    -fx-background-color: #4caf50; /* Green */
+}
+
+.btn-save:hover {
+    -fx-background-color: #45a049;
+}
+
+.btn-cancel {
+    -fx-background-color: #f44336; /* Red */
+}
+
+.btn-cancel:hover {
+    -fx-background-color: #e53935;
+}
+
+/* Input fields */
+.input-field {
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #ccc;
+    -fx-padding: 6 8 6 8;
+    -fx-font-size: 14px;
+}
+
+/* Role label style */
+.role-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+    -fx-font-size: 14px;
+}
+
+
+/* Buttons */
+.btn {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 10 18;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 2, 0.3, 0, 1);
+}
+
+.btn-save {
+    -fx-background-color: #4CAF50;
+}
+
+.btn-save:hover {
+    -fx-background-color: #45a049;
+}
+
+.btn-cancel {
+    -fx-background-color: #f44336;
+}
+
+.btn-cancel:hover {
+    -fx-background-color: #d32f2f;
+}
+
+/* Role bar colors */
+.role-bar.admin {
+    -fx-background-color: #FFC107; /* Yellow */
+}
+
+.role-bar.teacher {
+    -fx-background-color: #2196F3; /* Blue */
+}
+
+.role-bar.student {
+    -fx-background-color: #9C27B0; /* Violet */
+}
+
+/* Center labels and inputs inside GridPane cells */
+.grid-pane .label {
+    -fx-alignment: center-right; /* keep labels right-aligned */
+    -fx-padding: 0 10 0 0;
+}
+
+/* Center form container inside VBox */
+.hbox {
+    -fx-alignment: center;
+}
+
+/* Role-specific border colors for input fields */
+.input-field.admin {
+    -fx-border-color: #fbc02d; /* Yellow */
+}
+
+.input-field.teacher {
+    -fx-border-color: #2196f3; /* Blue */
+}
+
+.input-field.student {
+    -fx-border-color: #9c27b0; /* Violet */
+}
+
+/* Optionally add a focused border glow for input fields */
+.input-field.admin:focused {
+    -fx-border-color: #fbc02d;
+    -fx-effect: dropshadow(gaussian, #fbc02d, 5, 0.7, 0, 0);
+}
+
+.input-field.teacher:focused {
+    -fx-border-color: #2196f3;
+    -fx-effect: dropshadow(gaussian, #2196f3, 5, 0.7, 0, 0);
+}
+
+.input-field.student:focused {
+    -fx-border-color: #9c27b0;
+    -fx-effect: dropshadow(gaussian, #9c27b0, 5, 0.7, 0, 0);
+}
+
+/* Table styling you already have */
 .table-view .column-header-background {
     -fx-background-color: linear-gradient(to right, #e0f7fa, #b2ebf2);
     -fx-border-color: transparent;

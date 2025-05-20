@@ -1,10 +1,10 @@
-package ticktocktrack.database;
+package ticktocktrack.logic;
 
 import java.util.List;
 
-import ticktocktrack.logic.UsersModel;
+import ticktocktrack.database.UserDAO;
 
-public class DatabaseViewAllUsers {
+public class ViewAllUsers {
 
     public static void main(String[] args) {
 

@@ -102,6 +102,24 @@ public class TeacherNotificationDAO {
         }
         return -1;
     }
+    
+    public static int getTeacherIdByName(String fullName) {
+        String sql = "SELECT teacher_id FROM Teachers WHERE CONCAT(first_name, ' ', last_name) = ?";
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, fullName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return rs.getInt("teacher_id");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving teacher_id for name '" + fullName + "': " + e.getMessage());
+        }
+        return -1;
+    }
 
     /**
      * Helper to compose sender's display name including role.
@@ -169,7 +187,7 @@ public class TeacherNotificationDAO {
                         notifications.add(new Notification(message, dateSent, status));
                         count++;
                         System.out.println("DEBUG: Retrieved Notification #" + count
-                                         + " – Message: " + message
+                                         + " ï¿½ Message: " + message
                                          + ", Status: " + status
                                          + ", Date: " + dateSent);
                     }
@@ -178,35 +196,12 @@ public class TeacherNotificationDAO {
             }
         } catch (SQLException e) {
             System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
-                              + " – " + e.getMessage());
+                              + " ï¿½ " + e.getMessage());
         }
         return notifications;
     }
 
-    /**
-     * Gets teacher user_id by their full name (first + last).
-     */
-    public static int getTeacherUserIdByName(String fullName) {
-        String sql = "SELECT user_id FROM Teachers WHERE CONCAT(first_name, ' ', last_name) = ?";
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            try (Connection conn = dbConn.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, fullName);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) return rs.getInt("user_id");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving user_id for teacher name '" + fullName + "': " + e.getMessage());
-        }
-        return -1;
-    }
-
-    /**
-     * Submits an excuse by sending a notification to the teacher (GUI handles message prefix).
-     */
+    
     public static boolean submitExcuse(int studentId,
                                        String dateSubmitted,
                                        String reason,
