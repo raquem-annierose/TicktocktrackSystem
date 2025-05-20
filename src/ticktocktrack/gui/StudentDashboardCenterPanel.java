@@ -9,6 +9,8 @@ import javafx.scene.text.Text;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import javafx.scene.paint.Color;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class StudentDashboardCenterPanel {
 
@@ -55,6 +57,16 @@ public class StudentDashboardCenterPanel {
         UsersModel currentUser = Session.getCurrentUser();
         String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Student";
         if (fullName.isEmpty()) fullName = "Student";
+        
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+        String formattedDate = currentDate.format(formatter);
+        
+        Text dateText = new Text(formattedDate);
+        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
+        dateText.setFill(Color.web("#02383E"));
+        dateText.setLayoutX(70);
+        dateText.setLayoutY(101);
 
        
         // Create the "Student Dashboard" Text
@@ -75,7 +87,7 @@ public class StudentDashboardCenterPanel {
         Pane panel2 = createBoxPanel(startX + width + gap, 290, width, height, "Absent Days", 0); // Placeholder value for Absent
         Pane panel3 = createBoxPanel(startX + 2 * (width + gap), 290, width, height, "Excused Days", 0); // Placeholder value for Excused
 
-        centerPanel.getChildren().addAll(shadowView, studentBgView, studentEffectsView,  studentAvatarView, dashboardTitle, panel1, panel2, panel3);
+        centerPanel.getChildren().addAll(shadowView, studentBgView, studentEffectsView,  studentAvatarView, dashboardTitle, dateText, panel1, panel2, panel3);
 
         return centerPanel;
     }
