@@ -304,17 +304,14 @@ public class DatabaseViewClassList {
         DatabaseConnection dbConn = new DatabaseConnection();
 
 
-        String sql = """
-            SELECT s.student_id, s.user_id, u.username, u.email,
-                   s.first_name, s.middle_name, s.last_name,
-                   s.year_level, s.section, s.program
-            FROM Students s
-            JOIN Users u ON s.user_id = u.user_id
-            WHERE s.student_id NOT IN (
-                SELECT student_id FROM Enrollments WHERE class_id = ?
-            )
-            """;
-
+        String sql = "SELECT s.student_id, s.user_id, u.username, u.email, " +
+                "s.first_name, s.middle_name, s.last_name, " +
+                "s.year_level, s.section, s.program " +
+                "FROM Students s " +
+                "JOIN Users u ON s.user_id = u.user_id " +
+                "WHERE s.student_id NOT IN ( " +
+                "    SELECT student_id FROM Enrollments WHERE class_id = ? " +
+                ")";
 
         try {
             dbConn.connectToSQLServer();

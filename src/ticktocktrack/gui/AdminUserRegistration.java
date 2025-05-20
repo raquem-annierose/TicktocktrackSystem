@@ -1,6 +1,9 @@
 package ticktocktrack.gui;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -9,12 +12,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.paint.Color;
 import ticktocktrack.logic.UserRegistration;
+import javafx.scene.image.Image;
 
 public class AdminUserRegistration {
 
@@ -103,6 +109,93 @@ public class AdminUserRegistration {
         return passwordField;
     }
     
+    public static Pane createPasswordFieldWithToggle(String prompt, double x, double y, double width, double height) {
+        PasswordField passwordField = new PasswordField();
+        TextField textField = new TextField();
+
+        passwordField.setPromptText(prompt);
+        textField.setPromptText(prompt);
+        textField.setVisible(false);
+        textField.setManaged(false);
+
+        // Sync text
+        passwordField.textProperty().bindBidirectional(textField.textProperty());
+
+        String style = "-fx-border-color: #02383E;" +
+                       "-fx-border-width: 2px;" +
+                       "-fx-background-radius: 12px;" +
+                       "-fx-border-radius: 12px;" +
+                       "-fx-background-color: white;" +
+                       "-fx-text-fill: #02383E;" +
+                       "-fx-prompt-text-fill: #02383E;";
+        passwordField.setStyle(style);
+        textField.setStyle(style);
+
+        passwordField.setPrefSize(width, height);
+        textField.setPrefSize(width, height);
+
+        String imageUrl = AdminUserRegistration.class.getResource("/resources/EyeIcon.png").toExternalForm();
+
+        ImageView eyeIcon = new ImageView(new Image(imageUrl));
+
+        eyeIcon.setFitWidth(24);
+        eyeIcon.setFitHeight(24);
+        eyeIcon.setCursor(Cursor.HAND);
+        eyeIcon.setVisible(false);
+        eyeIcon.setManaged(false);
+
+
+        ChangeListener<String> showIconListener = (obs, oldText, newText) -> {
+            boolean hasText = !newText.isEmpty();
+            eyeIcon.setVisible(hasText);
+            eyeIcon.setManaged(hasText);
+        };
+        passwordField.textProperty().addListener(showIconListener);
+        textField.textProperty().addListener(showIconListener);
+
+        eyeIcon.setOnMouseClicked(e -> {
+            boolean show = !textField.isVisible();
+            textField.setVisible(show);
+            textField.setManaged(show);
+            passwordField.setVisible(!show);
+            passwordField.setManaged(!show);
+
+            if (show) {
+                textField.requestFocus();
+                textField.positionCaret(textField.getText().length());
+            } else {
+                passwordField.requestFocus();
+                passwordField.positionCaret(passwordField.getText().length());
+            }
+        });
+
+        StackPane container = new StackPane(passwordField, textField, eyeIcon);
+        container.setLayoutX(x);
+        container.setLayoutY(y);
+        container.setPrefSize(width, height);
+        container.setMaxSize(width, height);
+
+        StackPane.setMargin(eyeIcon, new Insets(0, 10, 0, 0));
+        StackPane.setAlignment(eyeIcon, Pos.CENTER_RIGHT);
+
+        return container;
+    }
+
+    public static String getPasswordFromPane(Pane pane) {
+        for (javafx.scene.Node node : pane.getChildren()) {
+            if (node instanceof PasswordField) {
+                return ((PasswordField) node).getText();
+            }
+            if (node instanceof TextField) {
+                TextField tf = (TextField) node;
+                if (tf.isVisible()) {
+                    return tf.getText();
+                }
+            }
+        }
+        return "";
+    }
+    
     private static void showAlert(AlertType alertType, String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(alertType);
@@ -168,13 +261,19 @@ public class AdminUserRegistration {
             roleComboBox.setStyle(comboBoxBaseStyle);
             facultyRegistrationPanel.getChildren().add(roleComboBox);
 
-            // Create and add password field (shifted down)
+         // Replace these lines:
             PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 4, 480, 50);
             facultyRegistrationPanel.getChildren().add(passwordField);
 
-            // Create and add confirm password field (shifted down)
             PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX, startY + gap * 5, 480, 50);
             facultyRegistrationPanel.getChildren().add(confirmPasswordField);
+
+            // With these lines:
+            Pane passwordPane = createPasswordFieldWithToggle("Password", startX, startY + gap * 4, 480, 50);
+            Pane confirmPasswordPane = createPasswordFieldWithToggle("Confirm Password", startX, startY + gap * 5, 480, 50);
+
+            facultyRegistrationPanel.getChildren().addAll(passwordPane, confirmPasswordPane);
+
 
             // Create and add Done button (shifted down)
             Button doneButton = createDoneButton(800, 490);
@@ -187,8 +286,10 @@ public class AdminUserRegistration {
                 String username = usernameField.getText();
                 String email = emailField.getText();
                 String role = roleComboBox.getValue();
-                String password = passwordField.getText();
-                String confirmPassword = confirmPasswordField.getText();
+
+                // Use helper to get text from your toggle password panes
+                String password = getPasswordFromPane(passwordPane);
+                String confirmPassword = getPasswordFromPane(confirmPasswordPane);
 
                 if (!password.equals(confirmPassword)) {
                     showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
@@ -202,6 +303,7 @@ public class AdminUserRegistration {
                     showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
                 }
             });
+
 
 
             return facultyRegistrationPanel;
@@ -299,8 +401,8 @@ public class AdminUserRegistration {
             TextField middleNameField = createTextField("Middle Name", startX + smallFieldWidth + smallGap, startY + gap * 5, startW, startH);
             middleNameField.setPrefWidth(smallFieldWidth);
 
-            PasswordField passwordField = createPasswordField("Password", startX, startY + gap * 6, startW / 2, startH);
-            PasswordField confirmPasswordField = createPasswordField("Confirm Password", startX + smallFieldWidth + smallGap, startY + gap * 6, startW / 2, startH);
+            Pane passwordFieldPane = createPasswordFieldWithToggle("Password", startX, startY + gap * 6, startW / 2, startH);
+            Pane confirmPasswordFieldPane = createPasswordFieldWithToggle("Confirm Password", startX + smallFieldWidth + smallGap, startY + gap * 6, startW / 2, startH);
 
             Button doneButton = createDoneButton(800, 490);
 
@@ -310,13 +412,12 @@ public class AdminUserRegistration {
                 String lastName = lastNameField.getText();
                 String firstName = firstNameField.getText();
                 String middleName = middleNameField.getText();
-                String password = passwordField.getText();
-                String confirmPassword = confirmPasswordField.getText();
+                String password = getPasswordFromPane(passwordFieldPane);
+                String confirmPassword = getPasswordFromPane(confirmPasswordFieldPane);
                 String yearLevel = yearLevelComboBox.getValue();
                 String section = sectionField.getText();
-                String program = programComboBox.getValue(); // ⬅️ NEW
+                String program = programComboBox.getValue(); // NEW
 
-                // Now pass the new field as well
                 UserRegistration.registerStudent(
                     username,
                     email,
@@ -327,14 +428,15 @@ public class AdminUserRegistration {
                     lastName,
                     yearLevel,
                     section,
-                    program // ⬅️ NEW
+                    program // NEW
                 );
             });
+
 
             studentRegistrationPanel.getChildren().addAll(
                 emailField, usernameField, lastNameField,
                 firstNameField, middleNameField,
-                passwordField, confirmPasswordField,
+                passwordFieldPane, confirmPasswordFieldPane,
                 yearLevelComboBox, programComboBox, sectionField, // ⬅️ NEW programComboBox added
                 doneButton
             );

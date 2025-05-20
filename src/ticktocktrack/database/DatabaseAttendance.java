@@ -224,25 +224,11 @@ public class DatabaseAttendance {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
             conn.setAutoCommit(false);
-
-            System.out.println("DEBUG saveAttendance params:");
-            System.out.println("studentId: " + studentId);
-            System.out.println("date: " + date);
-            System.out.println("status: " + status);
-            System.out.println("reason: " + reason);
-            System.out.println("program: " + program);
-            System.out.println("courseName: " + courseName);
-            System.out.println("section: " + section);
-
-            // Get enrollment_id using exact values in DB
+            // Get enrollment_id
             String enrollmentSql = "SELECT e.enrollment_id " +
                                    "FROM Enrollments e " +
                                    "JOIN Classes c ON e.class_id = c.class_id " +
-                                   "WHERE e.student_id = ? " +
-                                   "AND c.course_name = ? " +
-                                   "AND c.program = ? " +
-                                   "AND c.section = ?";
-
+                                   "WHERE e.student_id = ? AND c.course_name = ? AND c.program = ? AND c.section = ?";
             Integer enrollmentId = null;
             try (PreparedStatement psEnroll = conn.prepareStatement(enrollmentSql)) {
                 psEnroll.setInt(1, studentId);
@@ -257,14 +243,14 @@ public class DatabaseAttendance {
                     }
                 }
             }
-
-            // Check if attendance record exists
+            // Check for existing attendance
             String checkSql = "SELECT attendance_id FROM Attendance WHERE enrollment_id = ? AND date = ?";
             try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
                 psCheck.setInt(1, enrollmentId);
                 psCheck.setString(2, date);
                 try (ResultSet rsCheck = psCheck.executeQuery()) {
                     if (rsCheck.next()) {
+                        // Update
                         int attendanceId = rsCheck.getInt("attendance_id");
                         String updateSql = "UPDATE Attendance SET status = ?, reason = ? WHERE attendance_id = ?";
                         try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
@@ -274,20 +260,20 @@ public class DatabaseAttendance {
                             psUpdate.executeUpdate();
                         }
                     } else {
-                        String insertSql = "INSERT INTO Attendance (enrollment_id, date, status, reason) VALUES (?, ?, ?, ?)";
+                        // Insert with default approval status
+                        String insertSql = "INSERT INTO Attendance (enrollment_id, date, status, reason, approval_status) VALUES (?, ?, ?, ?, ?)";
                         try (PreparedStatement psInsert = conn.prepareStatement(insertSql)) {
                             psInsert.setInt(1, enrollmentId);
                             psInsert.setString(2, date);
                             psInsert.setString(3, status);
                             psInsert.setString(4, reason);
+                            psInsert.setString(5, "Pending"); // default approval status
                             psInsert.executeUpdate();
                         }
                     }
                 }
             }
-
-            conn.commit();
-
+            conn.commit(); // commit all changes
         } catch (SQLException ex) {
             ex.printStackTrace();
             throw ex;
@@ -295,6 +281,54 @@ public class DatabaseAttendance {
             dbConn.closeConnection();
         }
     }
+
+    public static void updateStudentAttendance(int studentId, String date, String status, String program, String courseName, String section) {
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            Connection conn = dbConn.getConnection();
+            conn.setAutoCommit(false);
+
+            // Get enrollment_id
+            String enrollmentSql = "SELECT e.enrollment_id " +
+                                   "FROM Enrollments e " +
+                                   "JOIN Classes c ON e.class_id = c.class_id " +
+                                   "WHERE e.student_id = ? AND c.course_name = ? AND c.program = ? AND c.section = ?";
+            Integer enrollmentId = null;
+            try (PreparedStatement psEnroll = conn.prepareStatement(enrollmentSql)) {
+                psEnroll.setInt(1, studentId);
+                psEnroll.setString(2, courseName.trim());
+                psEnroll.setString(3, program.trim());
+                psEnroll.setString(4, section.trim());
+                try (ResultSet rs = psEnroll.executeQuery()) {
+                    if (rs.next()) {
+                        enrollmentId = rs.getInt("enrollment_id");
+                    } else {
+                        throw new SQLException("Enrollment not found.");
+                    }
+                }
+            }
+
+            // Update attendance
+            String updateSql = "UPDATE Attendance SET status = ? WHERE enrollment_id = ? AND date = ?";
+            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                psUpdate.setString(1, status);
+                psUpdate.setInt(2, enrollmentId);
+                psUpdate.setString(3, date);
+                int rowsUpdated = psUpdate.executeUpdate();
+                if (rowsUpdated == 0) {
+                    System.out.println("No attendance record found to update.");
+                }
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
 
 
     /**
