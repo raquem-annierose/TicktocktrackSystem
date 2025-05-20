@@ -1,4 +1,5 @@
 package ticktocktrack.gui;
+
 import javafx.scene.layout.Pane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -15,7 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Side;
 
-import ticktocktrack.database.DatabaseSubmitExcuse;
+// Removed import of DatabaseSubmitExcuse
+// import ticktocktrack.database.DatabaseSubmitExcuse;
+
+import ticktocktrack.database.TeacherNotificationDAO;
 
 public class StudentSubmitExcuseCenterPanel {
 
@@ -33,7 +37,8 @@ public class StudentSubmitExcuseCenterPanel {
         List<Button> excuseButtons = new ArrayList<>();
 
         // Shadow background
-        String shadowPath = StudentSubmitExcuseCenterPanel.class.getResource("/resources/SHADOW.png").toExternalForm();
+        String shadowPath = StudentSubmitExcuseCenterPanel.class
+            .getResource("/resources/SHADOW.png").toExternalForm();
         ImageView shadowView = new ImageView(new Image(shadowPath));
         shadowView.setFitWidth(1300);
         shadowView.setFitHeight(250);
@@ -47,11 +52,11 @@ public class StudentSubmitExcuseCenterPanel {
         container.setEffect(new DropShadow(4, Color.GRAY));
 
         Text instructions = new Text(
-                "If you were unable to attend your class due to\n" +
-                "valid reasons (e.g., illness, emergency, or\n" +
-                "personal matters), you may submit an excuse\n" +
-                "here for review."
-            );
+            "If you were unable to attend your class due to\n" +
+            "valid reasons (e.g., illness, emergency, or\n" +
+            "personal matters), you may submit an excuse\n" +
+            "here for review."
+        );
         instructions.setFont(Font.font("Poppins", FontWeight.NORMAL, 14));
         instructions.setFill(Color.web("#434343"));
         instructions.setLayoutX(85);
@@ -62,26 +67,27 @@ public class StudentSubmitExcuseCenterPanel {
         fillUpText.setLayoutX(685);
         fillUpText.setLayoutY(100);
 
-        // ComboBox Styling
         String comboBoxStyle =
-                "-fx-background-color: white;" +
-                "-fx-font-size: 11px;" +
-                "-fx-padding: 6 12 6 12;" +
-                "-fx-background-radius: 5;" +
-                "-fx-border-radius: 5;" +
-                "-fx-border-color: black;" +
-                "-fx-border-width: 0.7;" +
-                "-fx-font-family: 'Poppins';" +
-                "-fx-font-weight: normal;" +
-                "-fx-text-fill: black;";
+            "-fx-background-color: white;" +
+            "-fx-font-size: 11px;" +
+            "-fx-padding: 6 12 6 12;" +
+            "-fx-background-radius: 5;" +
+            "-fx-border-radius: 5;" +
+            "-fx-border-color: black;" +
+            "-fx-border-width: 0.7;" +
+            "-fx-font-family: 'Poppins';" +
+            "-fx-font-weight: normal;" +
+            "-fx-text-fill: black;";
 
         ComboBox<String> monthBox = new ComboBox<>(FXCollections.observableArrayList(
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
         ));
         ComboBox<String> dayBox = new ComboBox<>();
         for (int i = 1; i <= 31; i++) dayBox.getItems().add(String.valueOf(i));
-        ComboBox<String> yearBox = new ComboBox<>(FXCollections.observableArrayList("2025", "2026", "2027"));
+        ComboBox<String> yearBox = new ComboBox<>(FXCollections.observableArrayList(
+            "2025", "2026", "2027"
+        ));
 
         monthBox.setPromptText("Month");
         dayBox.setPromptText("Day");
@@ -100,15 +106,12 @@ public class StudentSubmitExcuseCenterPanel {
         monthBox.setLayoutX(570);
         dayBox.setLayoutX(699);
         yearBox.setLayoutX(830);
-
         monthBox.setLayoutY(159);
         dayBox.setLayoutY(159);
         yearBox.setLayoutY(159);
-
         monthBox.setPrefWidth(115);
         dayBox.setPrefWidth(115);
         yearBox.setPrefWidth(115);
-
         monthBox.setPrefHeight(20);
         dayBox.setPrefHeight(20);
         yearBox.setPrefHeight(20);
@@ -127,24 +130,24 @@ public class StudentSubmitExcuseCenterPanel {
         teacherField.setPrefWidth(375);
         teacherField.setStyle("-fx-font-family: 'Poppins'; -fx-font-size: 13;");
 
-        List<String> allTeachers = DatabaseSubmitExcuse.getAllTeacherNames();
-        ContextMenu suggestions = new ContextMenu();
+        // Use TeacherNotificationDAO to get teacher names now
+        List<String> allTeachers = TeacherNotificationDAO.getAllTeacherNames();
 
+        ContextMenu suggestions = new ContextMenu();
         teacherField.textProperty().addListener((obs, oldText, newText) -> {
-            if (newText.length() == 0) {
+            if (newText.isEmpty()) {
                 suggestions.hide();
             } else {
                 List<MenuItem> filtered = allTeachers.stream()
-                        .filter(name -> name.toLowerCase().contains(newText.toLowerCase()))
-                        .map(name -> {
-                            MenuItem item = new MenuItem(name);
-                            item.setOnAction(e -> {
-                                teacherField.setText(name);
-                                suggestions.hide();
-                            });
-                            return item;
-                        })
-                        .collect(Collectors.toList());
+                    .filter(name -> name.toLowerCase().contains(newText.toLowerCase()))
+                    .map(name -> {
+                        MenuItem item = new MenuItem(name);
+                        item.setOnAction(ev -> {
+                            teacherField.setText(name);
+                            suggestions.hide();
+                        });
+                        return item;
+                    }).collect(Collectors.toList());
 
                 if (!filtered.isEmpty()) {
                     suggestions.getItems().setAll(filtered);
@@ -156,11 +159,11 @@ public class StudentSubmitExcuseCenterPanel {
         });
 
         // REMARKS FIELD
-        Text remarksText = new Text("Remarks");
-        remarksText.setFont(Font.font("Poppins", FontWeight.NORMAL, 14));
-        remarksText.setFill(Color.web("#434343"));
-        remarksText.setLayoutX(575);
-        remarksText.setLayoutY(270);
+        Text remarksLabel = new Text("Remarks");
+        remarksLabel.setFont(Font.font("Poppins", FontWeight.NORMAL, 14));
+        remarksLabel.setFill(Color.web("#434343"));
+        remarksLabel.setLayoutX(575);
+        remarksLabel.setLayoutY(270);
 
         TextArea remarks = new TextArea();
         remarks.setPromptText("Enter your excuse remarks here...");
@@ -176,6 +179,7 @@ public class StudentSubmitExcuseCenterPanel {
         submitButton.setPrefWidth(80);
         submitButton.setStyle("-fx-background-color: #D6B4FC; -fx-text-fill: black;");
 
+        // Confirmation overlay pane
         Pane messageOverlay = new Pane();
         messageOverlay.setPrefSize(1300, 750);
         messageOverlay.setStyle("-fx-background-color: rgba(111,111,111,0.65);");
@@ -202,7 +206,7 @@ public class StudentSubmitExcuseCenterPanel {
         okBtn.setLayoutY(313);
         okBtn.setPrefWidth(100);
         okBtn.setStyle("-fx-background-color: #D6B4FC; -fx-text-fill: black;");
-        okBtn.setOnAction(e -> {
+        okBtn.setOnAction(ev -> {
             messageOverlay.setVisible(false);
             monthBox.getSelectionModel().clearSelection();
             dayBox.getSelectionModel().clearSelection();
@@ -219,21 +223,51 @@ public class StudentSubmitExcuseCenterPanel {
             if (selectedReason != null && !remarks.getText().trim().isEmpty()
                 && monthBox.getValue() != null && dayBox.getValue() != null && yearBox.getValue() != null
                 && !teacherField.getText().trim().isEmpty()) {
-                messageOverlay.setVisible(true);
-                messageOverlay.toFront();
+
+                String dateString = yearBox.getValue() + "-" +
+                    String.format("%02d", monthBox.getSelectionModel().getSelectedIndex() + 1) + "-" +
+                    String.format("%02d", Integer.parseInt(dayBox.getValue()));
+
+                // Use TeacherNotificationDAO to get teacher ID
+                int teacherId = TeacherNotificationDAO.getTeacherUserIdByName(teacherField.getText().trim());
+                if (teacherId == -1) {
+                    new Alert(Alert.AlertType.ERROR, "Invalid teacher name.").showAndWait();
+                    return;
+                }
+
+                // Use TeacherNotificationDAO to submit excuse
+                boolean submitted = TeacherNotificationDAO.submitExcuse(
+                    studentId,
+                    dateString,
+                    selectedReason,
+                    teacherId,
+                    remarks.getText().trim()
+                );
+
+                if (submitted) {
+                    // Send notification to teacher
+                    String eventMessage = "submitted an excuse for " + dateString + ": " + selectedReason;
+                    TeacherNotificationDAO.sendTeacherNotification(
+                        teacherId,
+                        eventMessage,
+                        "Excuse Submission"
+                    );
+
+                    messageOverlay.setVisible(true);
+                    messageOverlay.toFront();
+                } else {
+                    new Alert(Alert.AlertType.ERROR, "Failed to submit excuse. Please try again later.")
+                        .showAndWait();
+                }
             } else {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Incomplete Submission");
-                alert.setHeaderText(null);
-                alert.setContentText("Please select a reason, date, teacher, and enter remarks before submitting.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.WARNING, "Please complete all fields before submitting.")
+                    .showAndWait();
             }
         });
 
-        // Excuse Buttons
+        // Excuse reason buttons grid
         Pane excuseGrid = new Pane();
         excuseGrid.setPrefSize(540, 420);
-
         String[] imagePaths = {
             "/resources/Student_Dashboard/Student_Family_emergency.png",
             "/resources/Student_Dashboard/Student_Medical_appointment.png",
@@ -242,24 +276,17 @@ public class StudentSubmitExcuseCenterPanel {
             "/resources/Student_Dashboard/Student_Transportation.png",
             "/resources/Student_Dashboard/Student_Others.png"
         };
-
         String[] labels = {
             "Family Emergency", "Medical Appointment", "Sick",
             "Academic Related", "Transportation Issue", "Others"
         };
-
-        double startX = 75;
-        double startY = 230;
-        double gapX = 145;
-        double gapY = 160;
-
+        double startX = 75, startY = 230, gapX = 145, gapY = 160;
         for (int i = 0; i < imagePaths.length; i++) {
-            int row = i / 3;
-            int col = i % 3;
-            double x = startX + col * gapX;
-            double y = startY + row * gapY;
+            int row = i / 3, col = i % 3;
+            double x = startX + col * gapX, y = startY + row * gapY;
 
-            Image icon = new Image(StudentSubmitExcuseCenterPanel.class.getResourceAsStream(imagePaths[i]));
+            Image icon = new Image(StudentSubmitExcuseCenterPanel.class
+                .getResourceAsStream(imagePaths[i]));
             ImageView iconView = new ImageView(icon);
             iconView.setFitWidth(65);
             iconView.setFitHeight(65);
@@ -272,26 +299,27 @@ public class StudentSubmitExcuseCenterPanel {
             reasonBtn.setStyle(defaultButtonStyle());
 
             int index = i;
-            reasonBtn.setOnAction(e -> {
+            reasonBtn.setOnAction(evt -> {
                 excuseButtons.forEach(b -> b.setStyle(defaultButtonStyle()));
                 reasonBtn.setStyle(selectedButtonStyle());
                 selectedReason = labels[index];
+                remarks.setText("Reason: " + selectedReason);
             });
 
-            Text label = new Text(labels[i]);
-            label.setFont(Font.font("Poppins", 12));
-            label.setFill(Color.web("#434343"));
-            label.setWrappingWidth(104);
-            label.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-            label.setLayoutX(x);
-            label.setLayoutY(y + 125);
+            Text lbl = new Text(labels[i]);
+            lbl.setFont(Font.font("Poppins", 12));
+            lbl.setFill(Color.web("#434343"));
+            lbl.setWrappingWidth(104);
+            lbl.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+            lbl.setLayoutX(x);
+            lbl.setLayoutY(y + 125);
 
             excuseButtons.add(reasonBtn);
-            excuseGrid.getChildren().addAll(reasonBtn, label);
+            excuseGrid.getChildren().addAll(reasonBtn, lbl);
         }
 
         centerPanel.getChildren().addAll(
-            shadowView, container, instructions, fillUpText, dateText, remarksText,
+            shadowView, container, instructions, fillUpText, dateText, remarksLabel,
             monthBox, dayBox, yearBox,
             teacherText, teacherField,
             remarks, submitButton, excuseGrid, messageOverlay
@@ -302,19 +330,17 @@ public class StudentSubmitExcuseCenterPanel {
 
     private static String defaultButtonStyle() {
         return "-fx-background-color: #FFFFFF; " +
-                "-fx-background-radius: 5; " +
-                "-fx-border-radius: 5; " +
-                "-fx-border-color: #A39C9C; " +
-                "-fx-border-width: 2px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 1, 0.15, 0, 1);";
+               "-fx-background-radius: 5; " +
+               "-fx-border-radius: 5; " +
+               "-fx-border-color: #B4B4B4; " +
+               "-fx-border-width: 1;";
     }
 
     private static String selectedButtonStyle() {
-        return "-fx-background-color: #FFFFFF; " +
-                "-fx-background-radius: 5; " +
-                "-fx-border-radius: 5; " +
-                "-fx-border-color: #B57EDC; " +
-                "-fx-border-width: 2.5px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(181,126,220,0.25), 2, 0.2, 0, 2);";
+        return "-fx-background-color: #D6B4FC; " +
+               "-fx-background-radius: 5; " +
+               "-fx-border-radius: 5; " +
+               "-fx-border-color: #9B4FFC; " +
+               "-fx-border-width: 2;";
     }
 }
