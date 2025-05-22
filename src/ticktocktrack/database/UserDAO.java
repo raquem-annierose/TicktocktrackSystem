@@ -13,11 +13,10 @@ public class UserDAO {
 
     public static List<UsersModel> getAdmins() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-            SELECT a.admin_id, u.user_id, u.username, u.email, u.role, a.first_name, a.last_name
-            FROM Admins a
-            JOIN Users u ON a.user_id = u.user_id
-        """;
+        String query = 
+                "SELECT a.admin_id, u.user_id, u.username, u.email, u.role, a.first_name, a.last_name " +
+                "FROM Admins a " +
+                "JOIN Users u ON a.user_id = u.user_id";
 
         try {
             dbConnection.connectToSQLServer();
@@ -48,11 +47,10 @@ public class UserDAO {
 
     public static List<UsersModel> getTeachers() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-            SELECT t.teacher_id, u.user_id, u.username, u.email, u.role, t.first_name, t.last_name
-            FROM Teachers t
-            JOIN Users u ON t.user_id = u.user_id
-        """;
+        String query = 
+                "SELECT t.teacher_id, u.user_id, u.username, u.email, u.role, t.first_name, t.last_name " +
+                "FROM Teachers t " +
+                "JOIN Users u ON t.user_id = u.user_id";
 
         try {
             dbConnection.connectToSQLServer();
@@ -83,13 +81,12 @@ public class UserDAO {
 
     public static List<UsersModel> getStudents() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-            SELECT s.student_id, u.user_id, u.username, u.email, u.role,
-                   s.first_name, s.middle_name, s.last_name,
-                   s.year_level, s.program, s.section
-            FROM Students s
-            JOIN Users u ON s.user_id = u.user_id
-        """;
+        String query = 
+                "SELECT s.student_id, u.user_id, u.username, u.email, u.role, " +
+                "s.first_name, s.middle_name, s.last_name, " +
+                "s.year_level, s.program, s.section " +
+                "FROM Students s " +
+                "JOIN Users u ON s.user_id = u.user_id";
 
         try {
             dbConnection.connectToSQLServer();
@@ -123,17 +120,16 @@ public class UserDAO {
     
     public static List<UsersModel> manageAdmins() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-        	    SELECT a.admin_id, u.user_id, u.username, u.email, u.role,
-        	           a.first_name, a.last_name,
-        	           u.created_by_admin_id, u.date_created,
-        	           ca.first_name AS created_by_first_name,
-        	           ca.last_name AS created_by_last_name
-        	    FROM Admins a
-        	    JOIN Users u ON a.user_id = u.user_id
-        	    LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id
-        	    WHERE u.username <> 'headadmin'
-        	""";
+        String query = 
+                "SELECT a.admin_id, u.user_id, u.username, u.email, u.role, " +
+                "a.first_name, a.last_name, " +
+                "u.created_by_admin_id, u.date_created, " +
+                "ca.first_name AS created_by_first_name, " +
+                "ca.last_name AS created_by_last_name " +
+                "FROM Admins a " +
+                "JOIN Users u ON a.user_id = u.user_id " +
+                "LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id " +
+                "WHERE u.username <> 'headadmin'";
 
 
         try {
@@ -180,17 +176,15 @@ public class UserDAO {
 
     public static List<UsersModel> manageTeachers() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-        	SELECT t.teacher_id, u.user_id, u.username, u.email, u.role,
-        				t.first_name, t.last_name,
-        				u.created_by_admin_id, u.date_created,
-        				ca.first_name AS created_by_first_name,
-        				ca.last_name AS created_by_last_name
-        		FROM Teachers t
-        		JOIN Users u ON t.user_id = u.user_id
-        		LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id
-
-        """;
+        String query = 
+                "SELECT t.teacher_id, u.user_id, u.username, u.email, u.role, " +
+                "t.first_name, t.last_name, " +
+                "u.created_by_admin_id, u.date_created, " +
+                "ca.first_name AS created_by_first_name, " +
+                "ca.last_name AS created_by_last_name " +
+                "FROM Teachers t " +
+                "JOIN Users u ON t.user_id = u.user_id " +
+                "LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id";
 
         try {
             dbConnection.connectToSQLServer();
@@ -235,18 +229,16 @@ public class UserDAO {
 
     public static List<UsersModel> manageStudents() {
         List<UsersModel> list = new ArrayList<>();
-        String query = """
-        		SELECT s.student_id, u.user_id, u.username, u.email, u.role,
-        			s.first_name, s.middle_name, s.last_name,
-        			s.year_level, s.program, s.section,
-        			u.created_by_admin_id, u.date_created,
-        			ca.first_name AS created_by_first_name,
-        			ca.last_name AS created_by_last_name
-        		FROM Students s
-        		JOIN Users u ON s.user_id = u.user_id
-        		LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id
-
-        """;
+        String query = 
+                "SELECT s.student_id, u.user_id, u.username, u.email, u.role, " +
+                "s.first_name, s.middle_name, s.last_name, " +
+                "s.year_level, s.program, s.section, " +
+                "u.created_by_admin_id, u.date_created, " +
+                "ca.first_name AS created_by_first_name, " +
+                "ca.last_name AS created_by_last_name " +
+                "FROM Students s " +
+                "JOIN Users u ON s.user_id = u.user_id " +
+                "LEFT JOIN Admins ca ON u.created_by_admin_id = ca.admin_id";
 
         try {
             dbConnection.connectToSQLServer();
@@ -454,40 +446,37 @@ public class UserDAO {
 
         switch (role.toLowerCase()) {
             case "admin":
-                query = """
-                    SELECT u.user_id, u.username, u.email, u.date_created,
-                           a.first_name, a.last_name,
-                           ca.username AS created_by_username
-                    FROM Users u
-                    JOIN Admins a ON u.user_id = a.user_id
-                    LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id
-                    LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id
-                    WHERE u.role = 'Admin'
-                """;
+            	query = 
+                "SELECT u.user_id, u.username, u.email, u.date_created, " +
+                "a.first_name, a.last_name, " +
+                "ca.username AS created_by_username " +
+                "FROM Users u " +
+                "JOIN Admins a ON u.user_id = a.user_id " +
+                "LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id " +
+                "LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id " +
+                "WHERE u.role = 'Admin'";
                 break;
             case "teacher":
-                query = """
-                    SELECT u.user_id, u.username, u.email, u.date_created,
-                           t.first_name, t.last_name,
-                           ca.username AS created_by_username
-                    FROM Users u
-                    JOIN Teachers t ON u.user_id = t.user_id
-                    LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id
-                    LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id
-                    WHERE u.role = 'Teacher'
-                """;
+            	query = 
+                "SELECT u.user_id, u.username, u.email, u.date_created, " +
+                "t.first_name, t.last_name, " +
+                "ca.username AS created_by_username " +
+                "FROM Users u " +
+                "JOIN Teachers t ON u.user_id = t.user_id " +
+                "LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id " +
+                "LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id " +
+                "WHERE u.role = 'Teacher'";
                 break;
             case "student":
-                query = """
-                    SELECT u.user_id, u.username, u.email, u.date_created,
-                           s.first_name, s.last_name,
-                           ca.username AS created_by_username
-                    FROM Users u
-                    JOIN Students s ON u.user_id = s.user_id
-                    LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id
-                    LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id
-                    WHERE u.role = 'Student'
-                """;
+            	query = 
+                "SELECT u.user_id, u.username, u.email, u.date_created, " +
+                "s.first_name, s.last_name, " +
+                "ca.username AS created_by_username " +
+                "FROM Users u " +
+                "JOIN Students s ON u.user_id = s.user_id " +
+                "LEFT JOIN Admins ca_admin ON u.created_by_admin_id = ca_admin.admin_id " +
+                "LEFT JOIN Users ca ON ca.user_id = ca_admin.user_id " +
+                "WHERE u.role = 'Student'";
                 break;
             default:
                 return users; // Return empty list if role is unrecognized
