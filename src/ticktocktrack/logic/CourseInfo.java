@@ -11,7 +11,18 @@ public class CourseInfo {
         this.program = program;
     }
 
-    // Optional: You can override toString if needed
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public String getSection() {
+        return section;
+    }
+
+    public String getProgram() {
+        return program;
+    }
+
     @Override
     public String toString() {
         return courseName + " - " + section + " - " + program;

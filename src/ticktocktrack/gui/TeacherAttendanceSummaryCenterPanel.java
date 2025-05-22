@@ -12,7 +12,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.Text;
+import ticktocktrack.database.DatabaseAttendance;
+import ticktocktrack.logic.CourseInfo;
 
 public class TeacherAttendanceSummaryCenterPanel {
 
@@ -36,7 +39,7 @@ public class TeacherAttendanceSummaryCenterPanel {
     private static final String[] SUBJECT_COLORS = {"#8B43BC", "#BA8200", "#147F8A", "#55DC93"};
     private static final Color VIEW_GLOW_COLOR = Color.web("#8B43BC");
 
-    public static Pane createPanel(int studentId) {
+    public static Pane createPanel(int teacherId) {
         BorderPane root = new BorderPane();
         root.setPrefSize(1300, 750);
         root.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
@@ -44,7 +47,7 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         StackPane content = new StackPane();
         content.setPadding(new Insets(20, 20, 20, 50));
-        content.getChildren().add(buildSubjectGrid(content));
+        content.getChildren().add(buildSubjectGrid(content, teacherId));
         root.setCenter(content);
         return root;
     }
@@ -63,7 +66,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         return headerPane;
     }
 
-    private static Pane buildSubjectGrid(StackPane content) {
+    private static Pane buildSubjectGrid(StackPane content, int teacherId) {
         Pane layout = new Pane();
 
         Text summaryTitle = new Text("Attendance Summary");
@@ -78,12 +81,17 @@ public class TeacherAttendanceSummaryCenterPanel {
         double cardWidth = 200;
         double cardHeight = 200;
         double gapX = 20;
-        double gapY = 20;
+        double gapY = 50;
+        int cardsPerRow = 4;
 
-        for (int i = 0; i < 8; i++) {
-            VBox card = createSubjectCard("Subject " + (i + 1), i, content);
-            double x = startX + (i % 4) * (cardWidth + gapX);
-            double y = startY + (i / 4) * (cardHeight + gapY);
+        CourseInfo[] courses = DatabaseAttendance.getCoursesForTeacher(teacherId);
+
+        for (int i = 0; i < courses.length; i++) {
+            CourseInfo course = courses[i];
+            String displayName = course.getCourseName() + " - " + course.getSection() + " (" + course.getProgram() + ")";
+            VBox card = createSubjectCard(displayName, i, content);
+            double x = startX + (i % cardsPerRow) * (cardWidth + gapX);
+            double y = startY + (i / cardsPerRow) * (cardHeight + gapY);
             card.setLayoutX(x);
             card.setLayoutY(y);
             layout.getChildren().add(card);
@@ -100,6 +108,10 @@ public class TeacherAttendanceSummaryCenterPanel {
         Text label = new Text(name);
         label.setFont(Font.font("Poppins", FontWeight.MEDIUM, 14));
         label.setFill(Color.web("#02383E"));
+        label.setWrappingWidth(160);
+        label.setTextAlignment(TextAlignment.CENTER); // center align text
+        label.setLineSpacing(1);
+        label.setStyle("-fx-text-overrun: ellipsis;");
 
         Button view = new Button("View");
         view.setFont(Font.font("Poppins", FontWeight.MEDIUM, 14));
@@ -112,7 +124,9 @@ public class TeacherAttendanceSummaryCenterPanel {
         view.setOnAction(e -> showDetailView(name, content));
 
         VBox card = new VBox(10, icon, label, view);
-        card.setPrefSize(180, 180);
+        card.setPrefSize(180, 200);
+        card.setMaxSize(180, 200);
+        card.setMinSize(180, 200);
         card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER);
         card.setStyle("-fx-background-color: white; -fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; -fx-border-width: 1.5; -fx-background-radius: 5; -fx-border-radius: 5;");
@@ -145,18 +159,6 @@ public class TeacherAttendanceSummaryCenterPanel {
         titleBox.setAlignment(Pos.CENTER_LEFT);
         titleBox.relocate(-960, -110);
 
-        ComboBox<String> year = new ComboBox<>();
-        year.setPromptText("Select Year Level");
-        year.getItems().addAll("1st Year", "2nd Year", "3rd Year", "4th Year");
-        year.setStyle(COMBO_STYLE);
-        year.relocate(-960, -50);
-
-        ComboBox<String> section = new ComboBox<>();
-        section.setPromptText("Select Section");
-        section.getItems().addAll("A", "B", "C", "D");
-        section.setStyle(COMBO_STYLE);
-        section.relocate(-545, -50);
-
         Text attendance = new Text("Attendance Summary");
         attendance.setFont(Font.font("Poppins", FontWeight.BOLD, 25));
         attendance.setFill(Color.web("#02383E"));
@@ -173,9 +175,10 @@ public class TeacherAttendanceSummaryCenterPanel {
         ok.setPrefHeight(20);
         ok.setStyle("-fx-background-color: white;-fx-text-fill: #02383E;-fx-border-color: #8B43BC;-fx-border-width: 1;-fx-border-radius: 2;-fx-background-radius: 2;");
         ok.relocate(-960, 540);
-        ok.setOnAction(e -> content.getChildren().setAll(buildSubjectGrid(content)));
+        ok.setOnAction(e -> content.getChildren().setAll(buildSubjectGrid(content, 0))); // Pass the correct teacherId here
 
-        centerPane.getChildren().addAll(titleBox, section, year, table, ok, attendance);
+        // Add nodes without the year and section ComboBoxes
+        centerPane.getChildren().addAll(titleBox, table, ok, attendance);
         detail.setCenter(centerPane);
 
         content.getChildren().setAll(detail);
