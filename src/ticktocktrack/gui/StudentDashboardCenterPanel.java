@@ -63,16 +63,16 @@ public class StudentDashboardCenterPanel {
         String formattedDate = currentDate.format(formatter);
         
         Text dateText = new Text(formattedDate);
-        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
-        dateText.setFill(Color.web("#02383E"));
+        dateText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
+        dateText.setFill(Color.web("#8B43BC"));
         dateText.setLayoutX(70);
         dateText.setLayoutY(101);
 
        
         // Create the "Student Dashboard" Text
         Text dashboardTitle = new Text("Welcome Student \n" + fullName + "!");
-        dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        dashboardTitle.setFill(Color.web("#02383E"));
+        dashboardTitle.setFont(Font.font("Bakbak One", FontWeight.BOLD, 22));
+        dashboardTitle.setFill(Color.web("#8B43BC"));
         dashboardTitle.setLayoutX(70);
         dashboardTitle.setLayoutY(200);
 

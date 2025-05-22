@@ -81,8 +81,8 @@ public class StudentNotificationPane {
         // Setup icon
         String notificationIconPath = getClass().getResource("/resources/Student_Dashboard/Student_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(notificationIconPath));
-        notificationIcon.setFitWidth(50);
-        notificationIcon.setFitHeight(50);
+        notificationIcon.setFitWidth(30);
+        notificationIcon.setFitHeight(30);
         notificationIcon.setPreserveRatio(true);
 
         notificationIconWrapper = new StackPane(notificationIcon);
