@@ -98,19 +98,20 @@ public class StudentDashboardPage extends Application {
 
         // Student text
         Text studentText = new Text(currentUser.getUsername());
-        studentText.setFont(Font.font("Poppins Medium", 25));
+        studentText.setFont(Font.font("Poppins Medium", 20));
         studentText.setFill(Color.web("#02383E"));
-        studentText.setLayoutX(1050);
+        studentText.setLayoutX(1080);
         studentText.setLayoutY(65);
 
         // User Icon
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
         ImageView userIcon = new ImageView(new Image(userIconPath));
-        userIcon.setFitWidth(90);
-        userIcon.setFitHeight(90);
-        userIcon.setLayoutX(1200);
-        userIcon.setLayoutY(5);
+        userIcon.setFitWidth(67);
+        userIcon.setFitHeight(67);
+        userIcon.setLayoutX(1190);
+        userIcon.setLayoutY(20);
         userIcon.setCursor(Cursor.HAND);
+        
         // --- User Icon Popup Handling ---
         userIcon.setOnMouseClicked(event -> {
             Popup popup = new Popup();
@@ -219,17 +220,17 @@ public class StudentDashboardPage extends Application {
         // Dashboard icon
         String dashboardIconPath = getClass().getResource("/resources/Dashboard_icon.png").toExternalForm();
         ImageView dashboardIcon = new ImageView(new Image(dashboardIconPath));
-        dashboardIcon.setFitWidth(55);
-        dashboardIcon.setFitHeight(55);
-        dashboardIcon.setLayoutX(22);
-        dashboardIcon.setLayoutY(20);
+        dashboardIcon.setFitWidth(35);
+        dashboardIcon.setFitHeight(35);
+        dashboardIcon.setLayoutX(46);
+        dashboardIcon.setLayoutY(25);
 
         // Dashboard text
         Text dashboardText = new Text("Dashboard");
-        dashboardText.setFont(Font.font("Poppins", 18));
+        dashboardText.setFont(Font.font("Poppins", 15));
         dashboardText.setFill(Color.web("#20B2AA"));
-        dashboardText.setLayoutX(90);
-        dashboardText.setLayoutY(180);
+        dashboardText.setLayoutX(93);
+        dashboardText.setLayoutY(169);
 
         // Set the default selected text when the app launches
         selectedText = dashboardText;
@@ -262,17 +263,17 @@ public class StudentDashboardPage extends Application {
         // Add "View My Attendance" Icon
         String viewAttendanceIconPath = getClass().getResource("/resources/Student_Dashboard/Student_view_attendance_icon.png").toExternalForm();
         ImageView viewAttendanceIcon = new ImageView(new Image(viewAttendanceIconPath));
-        viewAttendanceIcon.setFitWidth(51);
-        viewAttendanceIcon.setFitHeight(51);
-        viewAttendanceIcon.setLayoutX(26);
-        viewAttendanceIcon.setLayoutY(130);
+        viewAttendanceIcon.setFitWidth(35);
+        viewAttendanceIcon.setFitHeight(35);
+        viewAttendanceIcon.setLayoutX(46);
+        viewAttendanceIcon.setLayoutY(139);
 
         // Create View My Attendance Text
         Text viewAttendanceText = new Text("View My Attendance");
-        viewAttendanceText.setFont(Font.font("Poppins", 18));
+        viewAttendanceText.setFont(Font.font("Poppins", 15));
         viewAttendanceText.setFill(Color.web("#02383E"));
-        viewAttendanceText.setLayoutX(90);
-        viewAttendanceText.setLayoutY(150);
+        viewAttendanceText.setLayoutX(93);
+        viewAttendanceText.setLayoutY(152);
         viewAttendanceText.setWrappingWidth(135);
 
         // Hover effect
@@ -303,17 +304,17 @@ public class StudentDashboardPage extends Application {
         // Attendance Status icon image
         String attendanceStatusPath = getClass().getResource("/resources/Student_Dashboard/Student_attendance_status_icon.png").toExternalForm();
         ImageView attendanceStatusIcon = new ImageView(new Image(attendanceStatusPath));
-        attendanceStatusIcon.setFitWidth(69);
-        attendanceStatusIcon.setFitHeight(69);
-        attendanceStatusIcon.setLayoutX(17);
-        attendanceStatusIcon.setLayoutY(260);
+        attendanceStatusIcon.setFitWidth(35);
+        attendanceStatusIcon.setFitHeight(35);
+        attendanceStatusIcon.setLayoutX(46);
+        attendanceStatusIcon.setLayoutY(276);
 
         // Create Attendance Status Text
         Text attendanceStatusText = new Text("Attendance Status");
-        attendanceStatusText.setFont(Font.font("Poppins", 18));
+        attendanceStatusText.setFont(Font.font("Poppins", 15));
         attendanceStatusText.setFill(Color.web("#02383E"));
-        attendanceStatusText.setLayoutX(90);
-        attendanceStatusText.setLayoutY(285);
+        attendanceStatusText.setLayoutX(93);
+        attendanceStatusText.setLayoutY(295);
         attendanceStatusText.setWrappingWidth(135);
 
         // Hover effect
@@ -344,17 +345,17 @@ public class StudentDashboardPage extends Application {
         // Submit Excuse icon image
         String submitExcuseIconPath = getClass().getResource("/resources/Student_Dashboard/Student_excuse_letter_icon.png").toExternalForm();
         ImageView submitExcuseIcon = new ImageView(new Image(submitExcuseIconPath));
-        submitExcuseIcon.setFitWidth(56);
-        submitExcuseIcon.setFitHeight(56);
-        submitExcuseIcon.setLayoutX(25);
-        submitExcuseIcon.setLayoutY(400);
+        submitExcuseIcon.setFitWidth(35);
+        submitExcuseIcon.setFitHeight(35);
+        submitExcuseIcon.setLayoutX(46);
+        submitExcuseIcon.setLayoutY(418);
 
         // Create "Submit Excuse" Text
         Text submitExcuseText = new Text("Submit Excuse");
-        submitExcuseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18));
+        submitExcuseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));
         submitExcuseText.setFill(Color.web("#02383E"));
-        submitExcuseText.setLayoutX(90);
-        submitExcuseText.setLayoutY(430);
+        submitExcuseText.setLayoutX(93);
+        submitExcuseText.setLayoutY(440);
         submitExcuseText.setWrappingWidth(135);
 
         // Hover effect for Submit Excuse text

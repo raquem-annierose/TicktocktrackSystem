@@ -73,7 +73,7 @@ public class StudentSubmitExcuseCenterPanel {
             "-fx-padding: 6 12 6 12;" +
             "-fx-background-radius: 5;" +
             "-fx-border-radius: 5;" +
-            "-fx-border-color: black;" +
+            "-fx-border-color: #02383E;" +
             "-fx-border-width: 0.7;" +
             "-fx-font-family: 'Poppins';" +
             "-fx-font-weight: normal;" +
@@ -106,15 +106,18 @@ public class StudentSubmitExcuseCenterPanel {
         monthBox.setLayoutX(570);
         dayBox.setLayoutX(699);
         yearBox.setLayoutX(830);
-        monthBox.setLayoutY(159);
-        dayBox.setLayoutY(159);
-        yearBox.setLayoutY(159);
+        
+        monthBox.setLayoutY(154);
+        dayBox.setLayoutY(154);
+        yearBox.setLayoutY(154);
+        
         monthBox.setPrefWidth(115);
         dayBox.setPrefWidth(115);
         yearBox.setPrefWidth(115);
-        monthBox.setPrefHeight(20);
-        dayBox.setPrefHeight(20);
-        yearBox.setPrefHeight(20);
+        
+        monthBox.setPrefHeight(18);
+        dayBox.setPrefHeight(18);
+        yearBox.setPrefHeight(18);
 
         // TEACHER NAME AUTOCOMPLETE FIELD
         Text teacherText = new Text("Send to");
