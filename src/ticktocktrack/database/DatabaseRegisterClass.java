@@ -68,17 +68,16 @@ public class DatabaseRegisterClass {
             int currentAdminUserId = Session.getSenderUserId();
 
             // SQL to check for classes created by teachers that were created by the current admin
-            String sql = """
-                SELECT COUNT(*) AS count
-                FROM Classes c
-                JOIN Teachers t ON c.teacher_id = t.teacher_id
-                JOIN Users u ON t.user_id = u.user_id
-                WHERE c.teacher_id = ? 
-                  AND c.course_name = ? 
-                  AND c.section = ? 
-                  AND c.program = ?
-                  AND u.created_by_admin_id = ?
-            """;
+            String sql = 
+            	    "SELECT COUNT(*) AS count " +
+            	    "FROM Classes c " +
+            	    "JOIN Teachers t ON c.teacher_id = t.teacher_id " +
+            	    "JOIN Users u ON t.user_id = u.user_id " +
+            	    "WHERE c.teacher_id = ? " +
+            	    "AND c.course_name = ? " +
+            	    "AND c.section = ? " +
+            	    "AND c.program = ? " +
+            	    "AND u.created_by_admin_id = ?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, teacherId);
