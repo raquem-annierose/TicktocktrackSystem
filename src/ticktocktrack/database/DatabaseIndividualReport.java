@@ -7,13 +7,45 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+import ticktocktrack.logic.ClassAttendanceSummary;
+import ticktocktrack.logic.ClassAttendanceSummary.MonthlyAttendanceSummary;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
 public class DatabaseIndividualReport {
 	
+	public static List<String> getCourseNamesForStudent(int studentId, int teacherId) {
+	    List<String> courseNames = new ArrayList<>();
+
+	    String query = """
+	        SELECT DISTINCT c.course_name
+	        FROM Classes c
+	        JOIN Enrollments e ON c.class_id = e.class_id
+	        WHERE e.student_id = ? AND c.teacher_id = ?
+	    """;
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(query)) {
+	            pstmt.setInt(1, studentId);
+	            pstmt.setInt(2, teacherId);
+
+	            try (ResultSet rs = pstmt.executeQuery()) {
+	                while (rs.next()) {
+	                    courseNames.add(rs.getString("course_name"));
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error fetching course names for student: " + e.getMessage());
+	    }
+
+	    return courseNames;
+	}
+
 	
 	public static Student getStudentById(int studentId, int teacherId) {
 	    String query = """
@@ -68,8 +100,102 @@ public class DatabaseIndividualReport {
 
 	    return null;
 	}
-
 	
+	public static List<ClassAttendanceSummary> getAttendanceSummaryForStudent(int studentId, int teacherId) {
+	    List<ClassAttendanceSummary> summaries = new ArrayList<>();
+
+	    String query = """
+	        SELECT
+	            c.class_id,
+	            c.course_name,
+	            COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count,
+	            COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count,
+	            COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count,
+	            COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count
+	        FROM Classes c
+	        JOIN Enrollments e ON c.class_id = e.class_id
+	        LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id
+	        WHERE e.student_id = ? AND c.teacher_id = ?
+	        GROUP BY c.class_id, c.course_name
+	    """;
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(query)) {
+	            pstmt.setInt(1, studentId);
+	            pstmt.setInt(2, teacherId);
+
+	            try (ResultSet rs = pstmt.executeQuery()) {
+	                while (rs.next()) {
+	                    ClassAttendanceSummary summary = new ClassAttendanceSummary(
+	                        rs.getInt("class_id"),
+	                        rs.getString("course_name"),
+	                        rs.getInt("present_count"),
+	                        rs.getInt("absent_count"),
+	                        rs.getInt("excused_count"),
+	                        rs.getInt("late_count")
+	                    );
+	                    summaries.add(summary);
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error fetching attendance summary: " + e.getMessage());
+	    }
+
+	    return summaries;
+	}
+	
+	public static List<MonthlyAttendanceSummary> getMonthlyAttendanceSummaryForStudent(int studentId, int teacherId) {
+	    List<MonthlyAttendanceSummary> summaries = new ArrayList<>();
+
+	    String query = """
+	    	    SELECT
+	    	        YEAR(a.date) AS year,
+	    	        MONTH(a.date) AS month,
+	    	        COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count,
+	    	        COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count,
+	    	        COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count,
+	    	        COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count
+	    	    FROM Enrollments e
+	    	    LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id
+	    	    JOIN Classes c ON e.class_id = c.class_id
+	    	    WHERE e.student_id = ? AND c.teacher_id = ? AND a.date IS NOT NULL
+	    	    GROUP BY YEAR(a.date), MONTH(a.date)
+	    	    ORDER BY YEAR(a.date), MONTH(a.date)
+	    	""";
+
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(query)) {
+	            pstmt.setInt(1, studentId);
+	            pstmt.setInt(2, teacherId);
+
+	            try (ResultSet rs = pstmt.executeQuery()) {
+	                while (rs.next()) {
+	                    MonthlyAttendanceSummary summary = new MonthlyAttendanceSummary(
+	                        rs.getInt("year"),
+	                        rs.getInt("month"),
+	                        rs.getInt("present_count"),
+	                        rs.getInt("absent_count"),
+	                        rs.getInt("excused_count"),
+	                        rs.getInt("late_count")
+	                    );
+	                    summaries.add(summary);
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error fetching monthly attendance summary: " + e.getMessage());
+	    }
+	    return summaries;
+	}
+
 	public static List<Student> getStudentsForCurrentTeacherClass(String courseName, String section, String program) {
 	    List<Student> students = new ArrayList<>();
 	    

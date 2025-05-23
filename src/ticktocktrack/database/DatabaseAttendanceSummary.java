@@ -7,10 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ticktocktrack.logic.AttendanceSummary;
-import ticktocktrack.logic.Session;
+
 import ticktocktrack.logic.Student;
-import ticktocktrack.logic.UsersModel;
 
 
 
