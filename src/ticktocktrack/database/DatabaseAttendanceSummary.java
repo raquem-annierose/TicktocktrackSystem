@@ -148,5 +148,37 @@ public class DatabaseAttendanceSummary {
         return excusedCount;
     }
    
+    public static int countLate(int studentId, String courseName, String section, String program, int teacherId) {
+        int lateCount = 0;
+        String query = "SELECT COUNT(*) AS late_count FROM Attendance a " +
+                       "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                       "JOIN Classes c ON e.class_id = c.class_id " +
+                       "WHERE e.student_id = ? AND a.status = 'Late' " +
+                       "AND c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
+
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+                pstmt.setInt(1, studentId);
+                pstmt.setString(2, courseName);
+                pstmt.setString(3, section);
+                pstmt.setString(4, program);
+                pstmt.setInt(5, teacherId);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        lateCount = rs.getInt("late_count");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error counting excused for student: " + e.getMessage());
+        }
+        return lateCount;
+    }
+  
 
 }
