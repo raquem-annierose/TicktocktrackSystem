@@ -27,4 +27,5 @@ public class CourseInfo {
     public String toString() {
         return courseName + " - " + section + " - " + program;
     }
+
 }

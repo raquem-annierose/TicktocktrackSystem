@@ -1,93 +1,51 @@
 package ticktocktrack.gui;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ticktocktrack.logic.AttendanceSummary;
+import ticktocktrack.database.DatabaseIndividualReport;
+import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
-import ticktocktrack.database.DatabaseAttendanceSummary;
+import ticktocktrack.logic.UsersModel;
 
 public class CardIndividualReport {
 
-    public static void showStudentDetailDialog(Student student, String courseName, int teacherId) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Student Details");
+	public static void showStudentDetailDialog(Student student) {
+	    UsersModel currentUser = Session.getCurrentUser();
+	    if (currentUser == null || currentUser.getTeacherId() == null) {
+	        System.err.println("No logged-in teacher found.");
+	        return;
+	    }
+	    int teacherId = currentUser.getTeacherId();
 
-        VBox dialogVBox = new VBox(12);
-        dialogVBox.setPadding(new Insets(20));
-        dialogVBox.setAlignment(Pos.TOP_LEFT);
-        dialogVBox.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;");
+	    Student fullStudent = DatabaseIndividualReport.getStudentById(student.getStudentId(), teacherId);
+	    if (fullStudent == null) {
+	        System.err.println("Student details not found for ID: " + student.getStudentId());
+	        return;
+	    }
 
-        // Prepare middle initial
-        String middleInitial = "";
-        if (student.getMiddleName() != null && !student.getMiddleName().isBlank()) {
-            middleInitial = student.getMiddleName().substring(0, 1).toUpperCase() + ".";
-        }
+	    Stage dialog = new Stage();
+	    dialog.initModality(Modality.APPLICATION_MODAL);
+	    dialog.setTitle("Student Details");
 
-        Label nameLabel = new Label("Name: " + student.getLastName() + ", " + student.getFirstName() + " " + middleInitial);
-        nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
+	    VBox dialogVBox = new VBox(10);
+	    dialogVBox.setPadding(new Insets(20));
 
-        Label yearLabel = new Label("Year: " + student.getYearLevel());
-        yearLabel.setFont(Font.font("Poppins", 14));
+	    Label nameLabel = new Label("Name: " + fullStudent.getLastName() + ", " + fullStudent.getFirstName() + " " + fullStudent.getMiddleName());
+	    Label emailLabel = new Label("Email: " + fullStudent.getEmail());
+	    Label yearLabel = new Label("Year Level: " + fullStudent.getYearLevel());
+	    Label programLabel = new Label("Program: " + fullStudent.getProgram());
+	    Label sectionLabel = new Label("Section: " + fullStudent.getSection());
+	    Label totalClassesLabel = new Label("Total Classes: " + fullStudent.getTotalClasses());
 
-        Label programLabel = new Label("Program: " + student.getProgram());
-        programLabel.setFont(Font.font("Poppins", 14));
+	    dialogVBox.getChildren().addAll(nameLabel, emailLabel, yearLabel, programLabel, sectionLabel, totalClassesLabel);
 
-        // Use student's section and program for the query parameters
-        AttendanceSummary attendanceSummary = DatabaseAttendanceSummary.getAttendanceSummary(
-            student.getStudentId(),
-            courseName,
-            student.getSection(),
-            student.getProgram(),
-            teacherId
-        );
+	    Scene dialogScene = new Scene(dialogVBox);
+	    dialog.setScene(dialogScene);
+	    dialog.showAndWait();
+	}
 
-        Label totalClassesLabel = new Label("Total Classes: " + attendanceSummary.getTotalClasses());
-        totalClassesLabel.setFont(Font.font("Poppins", 14));
-
-        Label attendanceSummaryTitle = new Label("Attendance Summary:");
-        attendanceSummaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 14));
-
-        VBox attendanceDetailsVBox = new VBox(6);
-        attendanceDetailsVBox.setPadding(new Insets(0, 0, 0, 15));
-
-        Label presentLabel = new Label("• Present: " + attendanceSummary.getPresent());
-        presentLabel.setFont(Font.font("Poppins", 14));
-
-        Label absentLabel = new Label("• Absent: " + attendanceSummary.getAbsent());
-        absentLabel.setFont(Font.font("Poppins", 14));
-
-        Label lateLabel = new Label("• Late: " + attendanceSummary.getLate());
-        lateLabel.setFont(Font.font("Poppins", 14));
-
-        Label excusedLabel = new Label("• Excused: " + attendanceSummary.getExcused());
-        excusedLabel.setFont(Font.font("Poppins", 14));
-
-        attendanceDetailsVBox.getChildren().addAll(presentLabel, absentLabel, lateLabel, excusedLabel);
-
-        Button closeButton = new Button("Close");
-        closeButton.setOnAction(e -> dialog.close());
-
-        dialogVBox.getChildren().addAll(
-            nameLabel,
-            yearLabel,
-            programLabel,
-            totalClassesLabel,
-            attendanceSummaryTitle,
-            attendanceDetailsVBox,
-            closeButton
-        );
-
-        Scene dialogScene = new Scene(dialogVBox, 380, 320);
-        dialog.setScene(dialogScene);
-        dialog.showAndWait();
-    }
 }

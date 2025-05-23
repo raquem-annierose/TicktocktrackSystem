@@ -19,9 +19,11 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.DropShadow;
 import javafx.util.Duration;
 import ticktocktrack.database.DatabaseAttendance;
-import ticktocktrack.database.DatabaseAttendanceSummary;
+import ticktocktrack.database.DatabaseIndividualReport;
 import ticktocktrack.logic.CourseInfo;
+import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
+
 
 public class TeacherIndividualReportsCenterPanel {
 
@@ -194,17 +196,16 @@ public class TeacherIndividualReportsCenterPanel {
 
             card.setOnMouseClicked(e -> {
                 System.out.println("Selected course: " + course.getCourseName());
+
                 rightPanelVBox.setStyle("-fx-background-color: #EEF5F9;");
 
-
-                // Reset all cards
+                // Reset all cards animation and styling
                 for (javafx.scene.Node node : rightPanelVBox.getChildren()) {
                     if (node instanceof VBox && node != filterTitle) {
                         VBox c = (VBox) node;
-                        boolean isSelected = (c == currentCard);
+                        boolean isSelected = (c == card);
                         double targetScale = isSelected ? 1.0 : SMALL_SCALE;
 
-                        // Animate scale
                         Timeline animation = new Timeline(
                             new KeyFrame(Duration.ZERO,
                                 new KeyValue(c.scaleXProperty(), c.getScaleX())
@@ -215,20 +216,23 @@ public class TeacherIndividualReportsCenterPanel {
                         );
                         animation.play();
 
-                        // Update style and text color
                         if (isSelected) {
                             c.setStyle(
-                                "-fx-background-color: " + currentColor + ";" +
-                                "-fx-border-color: " + currentColor + ";" +
+                                "-fx-background-color: " + borderColor + ";" +
+                                "-fx-border-color: " + borderColor + ";" +
                                 "-fx-border-width: 1.5;" +
                                 "-fx-background-radius: 5;" +
                                 "-fx-border-radius: 5;"
                             );
-                            courseName.setTextFill(Color.WHITE);
-                            section.setTextFill(Color.WHITE);
-                            program.setTextFill(Color.WHITE);
+                            // Update labels to white
+                            for (javafx.scene.Node label : c.getChildren()) {
+                                if (label instanceof Label) {
+                                    ((Label) label).setTextFill(Color.WHITE);
+                                }
+                            }
                         } else {
-                            String otherColor = SUBJECT_COLORS[(rightPanelVBox.getChildren().indexOf(c) - 1) % SUBJECT_COLORS.length]; // -1 for filterTitle offset
+                            int idx = rightPanelVBox.getChildren().indexOf(c) - 1; // -1 for filterTitle offset
+                            String otherColor = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
                             c.setStyle(
                                 "-fx-background-color: white;" +
                                 "-fx-border-color: " + otherColor + ";" +
@@ -236,12 +240,11 @@ public class TeacherIndividualReportsCenterPanel {
                                 "-fx-background-radius: 5;" +
                                 "-fx-border-radius: 5;"
                             );
-                            for (javafx.scene.Node label : ((VBox) c).getChildren()) {
+                            // Reset labels to default colors
+                            for (javafx.scene.Node label : c.getChildren()) {
                                 if (label instanceof Label) {
                                     Label lbl = (Label) label;
-                                    if (lbl.getText().startsWith("Section")) {
-                                        lbl.setTextFill(Color.web("#555555"));
-                                    } else if (lbl.getText().startsWith("Program")) {
+                                    if (lbl.getText().startsWith("Section") || lbl.getText().startsWith("Program")) {
                                         lbl.setTextFill(Color.web("#555555"));
                                     } else {
                                         lbl.setTextFill(Color.web("#02383E"));
@@ -252,17 +255,24 @@ public class TeacherIndividualReportsCenterPanel {
                     }
                 }
 
-                selectedCard[0] = currentCard;
+                selectedCard[0] = card;
 
                 TranslateTransition slideRight = new TranslateTransition(Duration.millis(300), rightPanelScrollPane);
                 slideRight.setToX(700);
                 slideRight.play();
-                
-             // Load and show student cards
+
+                // Clear previous student cards BEFORE loading new ones
                 studentCardContainer.getChildren().clear();
-                List<Student> students = DatabaseAttendanceSummary.getStudentsEnrolledForTeacher(
-                    course.getCourseName(), course.getSection(), course.getProgram(), teacherId
-                );
+
+                List<Student> students = DatabaseIndividualReport.getStudentsForCurrentTeacherClass(
+                	    course.getCourseName(),
+                	    course.getSection(),
+                	    course.getProgram()
+                	);
+
+
+                // (Use getBasicStudentsForTeacher or whichever method returns fresh student list for the teacher)
+
                 for (Student s : students) {
                     VBox studentCard = new VBox(5);
                     studentCard.setPadding(new Insets(10));
@@ -283,16 +293,21 @@ public class TeacherIndividualReportsCenterPanel {
 
                     studentCard.getChildren().addAll(nameLabel, yearLabel);
                     
-                    Student selectedStudent = s;  // capture here for lambda
+                    Student selectedStudent = s;  // capture for lambda
+                   
                     studentCard.setOnMouseClicked(evt -> {
-                        CardIndividualReport.showStudentDetailDialog(selectedStudent, course.getCourseName(), teacherId);
+                        CardIndividualReport.showStudentDetailDialog(selectedStudent);
                     });
+
+
+
 
                     studentCardContainer.getChildren().add(studentCard);
                 }
 
                 studentCardContainer.setVisible(true);
             });
+
 
 
             rightPanelVBox.getChildren().add(card);
