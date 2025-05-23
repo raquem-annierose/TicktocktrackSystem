@@ -4,7 +4,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -12,8 +11,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import ticktocktrack.database.DatabaseAttendanceSummary;
 import ticktocktrack.database.DatabaseAttendance;
 import ticktocktrack.logic.Student;
@@ -65,7 +64,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
         summaryTitle.setFill(Color.web("#02383E"));
         summaryTitle.setLayoutX(325);
-        summaryTitle.setLayoutY(-100);
+        summaryTitle.setLayoutY(-55);
         layout.getChildren().add(summaryTitle);
 
         double startX = 40;
@@ -156,8 +155,6 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         TableView<AttendanceRecord> table = createAttendanceTable();
 
-        // Extract course name, section, program
-        // subjectName example: "CourseName - Section (Program)"
         String[] parts = subjectName.split(" - | \\(|\\)");
         String courseName = parts[0].trim();
         String section = parts[1].trim();
@@ -171,19 +168,20 @@ public class TeacherAttendanceSummaryCenterPanel {
                 fullName += " " + s.getMiddleName();
             }
 
-            // COUNT absences for this student in this class
-            int absences = DatabaseAttendanceSummary.countAbsences(s.getStudentId(), courseName, section, program, teacherId);
+            int present = DatabaseAttendanceSummary.countPresent(s.getStudentId(), courseName, section, program, teacherId);
+            int absent = DatabaseAttendanceSummary.countAbsences(s.getStudentId(), courseName, section, program, teacherId);
+            int excused = DatabaseAttendanceSummary.countExcused(s.getStudentId(), courseName, section, program, teacherId);
 
             String status;
-            if (absences == 0) {
+            if (absent == 0) {
                 status = "Good";
-            } else if (absences <= 2) {
+            } else if (absent <= 2) {
                 status = "Warning";
             } else {
                 status = "Critical";
             }
 
-            table.getItems().add(new AttendanceRecord(fullName, status, ""));
+            table.getItems().add(new AttendanceRecord(fullName, status, present, absent, excused));
         }
 
         table.setPrefSize(545, 400);
@@ -205,7 +203,7 @@ public class TeacherAttendanceSummaryCenterPanel {
 
     private static TableView<AttendanceRecord> createAttendanceTable() {
         TableView<AttendanceRecord> table = new TableView<>();
-        table.setEditable(true);
+        table.setEditable(false);
 
         TableColumn<AttendanceRecord, String> cStudent = new TableColumn<>("Student");
         cStudent.setCellValueFactory(new PropertyValueFactory<>("student"));
@@ -213,26 +211,37 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         TableColumn<AttendanceRecord, String> cStatus = new TableColumn<>("Status");
         cStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        cStatus.setPrefWidth(165);
+        cStatus.setPrefWidth(100);
 
-        TableColumn<AttendanceRecord, String> cRemarks = new TableColumn<>("Remarks");
-        cRemarks.setCellValueFactory(new PropertyValueFactory<>("remarks"));
-        cRemarks.setCellFactory(TextFieldTableCell.forTableColumn());
-        cRemarks.setPrefWidth(200);
+        TableColumn<AttendanceRecord, Integer> cPresent = new TableColumn<>("Present");
+        cPresent.setCellValueFactory(new PropertyValueFactory<>("totalPresent"));
+        cPresent.setPrefWidth(80);
 
-        table.getColumns().addAll(cStudent, cStatus, cRemarks);
+        TableColumn<AttendanceRecord, Integer> cAbsent = new TableColumn<>("Absent");
+        cAbsent.setCellValueFactory(new PropertyValueFactory<>("totalAbsent"));
+        cAbsent.setPrefWidth(80);
+
+        TableColumn<AttendanceRecord, Integer> cExcused = new TableColumn<>("Excused");
+        cExcused.setCellValueFactory(new PropertyValueFactory<>("totalExcused"));
+        cExcused.setPrefWidth(80);
+
+        table.getColumns().addAll(cStudent, cStatus, cPresent, cAbsent, cExcused);
         return table;
     }
 
     public static class AttendanceRecord {
         private final String student;
         private final String status;
-        private final String remarks;
+        private final int totalPresent;
+        private final int totalAbsent;
+        private final int totalExcused;
 
-        public AttendanceRecord(String student, String status, String remarks) {
+        public AttendanceRecord(String student, String status, int totalPresent, int totalAbsent, int totalExcused) {
             this.student = student;
             this.status = status;
-            this.remarks = remarks;
+            this.totalPresent = totalPresent;
+            this.totalAbsent = totalAbsent;
+            this.totalExcused = totalExcused;
         }
 
         public String getStudent() {
@@ -243,8 +252,16 @@ public class TeacherAttendanceSummaryCenterPanel {
             return status;
         }
 
-        public String getRemarks() {
-            return remarks;
+        public int getTotalPresent() {
+            return totalPresent;
+        }
+
+        public int getTotalAbsent() {
+            return totalAbsent;
+        }
+
+        public int getTotalExcused() {
+            return totalExcused;
         }
     }
 }
