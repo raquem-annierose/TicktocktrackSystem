@@ -32,11 +32,11 @@ public class DatabaseDashboard {
 
 	public static int countAccountsCreatedBy(String creatorName) {
 	    // Assume creatorName = "John Smith", split it into first and last name
-	    String sql = """
-	        SELECT COUNT(*) FROM users u
-	        JOIN admins a ON u.created_by_admin_id = a.admin_id
-	        WHERE CONCAT(a.first_name, ' ', a.last_name) = ?
-	    """;
+		String sql = 
+			    "SELECT COUNT(*) FROM users u " +
+			    "JOIN admins a ON u.created_by_admin_id = a.admin_id " +
+			    "WHERE CONCAT(a.first_name, ' ', a.last_name) = ?";
+
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
 	        dbConn.connectToSQLServer();
