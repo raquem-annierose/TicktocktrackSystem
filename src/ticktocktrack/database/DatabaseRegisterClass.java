@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 
 public class DatabaseRegisterClass {
@@ -64,13 +65,27 @@ public class DatabaseRegisterClass {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
 
-            String sql = "SELECT COUNT(*) AS count FROM Classes WHERE teacher_id = ? AND course_name = ? AND section = ? AND program = ?";
+            int currentAdminUserId = Session.getSenderUserId();
+
+            // SQL to check for classes created by teachers that were created by the current admin
+            String sql = """
+                SELECT COUNT(*) AS count
+                FROM Classes c
+                JOIN Teachers t ON c.teacher_id = t.teacher_id
+                JOIN Users u ON t.user_id = u.user_id
+                WHERE c.teacher_id = ? 
+                  AND c.course_name = ? 
+                  AND c.section = ? 
+                  AND c.program = ?
+                  AND u.created_by_admin_id = ?
+            """;
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, teacherId);
             pstmt.setString(2, courseName);
             pstmt.setString(3, section);
             pstmt.setString(4, program);
+            pstmt.setInt(5, currentAdminUserId);
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {

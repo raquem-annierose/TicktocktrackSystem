@@ -109,6 +109,38 @@ public class DatabaseDashboard {
 	        }
 	        return total;
 	    }
+	    
+	    public static int getAttendanceCountByStatus(int studentId, String status) {
+	        int count = 0;
+	        DatabaseConnection dbConn = new DatabaseConnection();
+	        try {
+	            dbConn.connectToSQLServer();
+	            Connection conn = dbConn.getConnection();
+
+	            String sql = 
+	                "SELECT COUNT(*) " +
+	                "FROM Attendance a " +
+	                "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+	                "WHERE e.student_id = ? AND a.status = ?";
+
+	            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	                pstmt.setInt(1, studentId);
+	                pstmt.setString(2, status);
+
+	                ResultSet rs = pstmt.executeQuery();
+	                if (rs.next()) {
+	                    count = rs.getInt(1);
+	                }
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace(); // Replace with logging if needed
+	        } finally {
+	            dbConn.closeConnection();
+	        }
+
+	        return count;
+	    }
+
 
 
 }

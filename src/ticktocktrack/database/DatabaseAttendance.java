@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ticktocktrack.logic.CourseInfo;
+import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
+import ticktocktrack.logic.UsersModel;
 
 public class DatabaseAttendance {
 
@@ -177,6 +179,15 @@ public class DatabaseAttendance {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
 
+        // Get the logged-in teacher's ID
+        UsersModel currentUser = Session.getCurrentUser();
+        Integer teacherId = currentUser != null ? currentUser.getTeacherId() : null;
+
+        if (teacherId == null) {
+            System.err.println("No teacher is currently logged in.");
+            return students; // Return empty list
+        }
+
         String sql = "SELECT s.student_id, s.last_name, s.first_name, s.middle_name " +
                      "FROM Students s " +
                      "JOIN Enrollments e ON s.student_id = e.student_id " +
@@ -184,6 +195,7 @@ public class DatabaseAttendance {
                      "WHERE c.course_name = ? " +
                      "AND c.program = ? " +
                      "AND c.section = ? " +
+                     "AND c.teacher_id = ? " + // Ensure the class is taught by the logged-in teacher
                      "ORDER BY s.last_name, s.first_name";
 
         try {
@@ -194,6 +206,7 @@ public class DatabaseAttendance {
                 pstmt.setString(1, courseName);
                 pstmt.setString(2, program);
                 pstmt.setString(3, section);
+                pstmt.setInt(4, teacherId); // Add teacher filter
 
                 try (ResultSet rs = pstmt.executeQuery()) {
                     while (rs.next()) {
@@ -214,6 +227,8 @@ public class DatabaseAttendance {
 
         return students;
     }
+
+
 
     /**
      * Saves or updates attendance record for a student on a specific date.

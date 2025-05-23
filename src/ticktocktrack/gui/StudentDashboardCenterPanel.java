@@ -6,6 +6,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import ticktocktrack.database.DatabaseDashboard;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import javafx.scene.paint.Color;
@@ -77,17 +78,24 @@ public class StudentDashboardCenterPanel {
         dashboardTitle.setLayoutY(200);
 
         // Create 3 panels (box holders) with present, absent, and excused days
-        double startX = 50;
-        double gap = 50;
-        double width = 267;
+        double startX = 25;
+        double gap = 30;
+        double width = 225;
         double height = 120;
 
-        // Replace 0 with actual data (e.g., total present, absent, and excused days)
-        Pane panel1 = createBoxPanel(startX, 290, width, height, "Present Days", 0); // Placeholder value for Present
-        Pane panel2 = createBoxPanel(startX + width + gap, 290, width, height, "Absent Days", 0); // Placeholder value for Absent
-        Pane panel3 = createBoxPanel(startX + 2 * (width + gap), 290, width, height, "Excused Days", 0); // Placeholder value for Excused
+        int studentId = currentUser != null ? currentUser.getStudentId() : -1;
 
-        centerPanel.getChildren().addAll(shadowView, studentBgView, studentEffectsView,  studentAvatarView, dashboardTitle, dateText, panel1, panel2, panel3);
+        int presentCount = DatabaseDashboard.getAttendanceCountByStatus(studentId, "Present");
+        int absentCount = DatabaseDashboard.getAttendanceCountByStatus(studentId, "Absent");
+        int excusedCount = DatabaseDashboard.getAttendanceCountByStatus(studentId, "Excused");
+        int lateCount = DatabaseDashboard.getAttendanceCountByStatus(studentId, "Late");
+
+        Pane panel1 = createBoxPanel(startX, 290, width, height, "Present Days", presentCount);
+        Pane panel2 = createBoxPanel(startX + width + gap, 290, width, height, "Absent Days", absentCount);
+        Pane panel3 = createBoxPanel(startX + 2 * (width + gap), 290, width, height, "Excused Days", excusedCount);
+        Pane panel4 = createBoxPanel(startX + 3 * (width + gap), 290, width, height, "Late Days", lateCount);
+
+        centerPanel.getChildren().addAll(shadowView, studentBgView, studentEffectsView, studentAvatarView, dashboardTitle, dateText, panel1, panel2, panel3, panel4);
 
         return centerPanel;
     }
@@ -114,16 +122,20 @@ public class StudentDashboardCenterPanel {
         label.setLayoutY(35);
 
         // Display the relevant number of days (e.g., present, absent, or excused) as a placeholder
-        Text daysText = new Text("0"); // Placeholder text, to be replaced with actual database data
+        Text daysText = new Text(String.valueOf(days));
+// Placeholder text, to be replaced with actual database data
         daysText.setFont(Font.font("Poppins", FontWeight.BOLD, 36)); // Large number font
         // Set color based on the type (Present = Green, Absent = Red, Excused = Yellow)
         if (labelText.equals("Present Days")) {
-            daysText.setFill(Color.web("#009688"));
+            daysText.setFill(Color.web("#009688")); // Teal
         } else if (labelText.equals("Absent Days")) {
-            daysText.setFill(Color.web("#FF5722"));
+            daysText.setFill(Color.web("#FF5722")); // Red-Orange
         } else if (labelText.equals("Excused Days")) {
-            daysText.setFill(Color.web("#FFC107"));
+            daysText.setFill(Color.web("#FFC107")); // Amber
+        } else if (labelText.equals("Late Days")) {
+            daysText.setFill(Color.web("#673AB7")); // Deep Purple
         }
+
         daysText.setLayoutX(20);
         daysText.setLayoutY(70); // Positioning the number below the label
 
@@ -131,4 +143,6 @@ public class StudentDashboardCenterPanel {
 
         return box;
     }
+    
+    
 }
