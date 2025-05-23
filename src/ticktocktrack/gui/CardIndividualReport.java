@@ -1,93 +1,130 @@
 package ticktocktrack.gui;
 
+import java.util.List;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.control.Separator;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import ticktocktrack.logic.AttendanceSummary;
+import ticktocktrack.database.DatabaseIndividualReport;
+import ticktocktrack.logic.ClassAttendanceSummary;
+import ticktocktrack.logic.ClassAttendanceSummary.MonthlyAttendanceSummary;
+import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
-import ticktocktrack.database.DatabaseAttendanceSummary;
+import ticktocktrack.logic.UsersModel;
 
 public class CardIndividualReport {
 
-    public static void showStudentDetailDialog(Student student, String courseName, int teacherId) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Student Details");
+    public static void showStudentDetailDialog(Student student) {
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null || currentUser.getTeacherId() == null) {
+            System.err.println("No logged-in teacher found.");
+            return;
+        }
+        int teacherId = currentUser.getTeacherId();
 
-        VBox dialogVBox = new VBox(12);
-        dialogVBox.setPadding(new Insets(20));
-        dialogVBox.setAlignment(Pos.TOP_LEFT);
-        dialogVBox.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1;");
-
-        // Prepare middle initial
-        String middleInitial = "";
-        if (student.getMiddleName() != null && !student.getMiddleName().isBlank()) {
-            middleInitial = student.getMiddleName().substring(0, 1).toUpperCase() + ".";
+        Student fullStudent = DatabaseIndividualReport.getStudentById(student.getStudentId(), teacherId);
+        if (fullStudent == null) {
+            System.err.println("Student details not found for ID: " + student.getStudentId());
+            return;
         }
 
-        Label nameLabel = new Label("Name: " + student.getLastName() + ", " + student.getFirstName() + " " + middleInitial);
-        nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
+        List<String> courseNames = DatabaseIndividualReport.getCourseNamesForStudent(fullStudent.getStudentId(), teacherId);
+        List<ClassAttendanceSummary> attendanceSummaries = DatabaseIndividualReport.getAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
+        List<MonthlyAttendanceSummary> monthlySummaries = DatabaseIndividualReport.getMonthlyAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
 
-        Label yearLabel = new Label("Year: " + student.getYearLevel());
-        yearLabel.setFont(Font.font("Poppins", 14));
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Individual Report");
 
-        Label programLabel = new Label("Program: " + student.getProgram());
-        programLabel.setFont(Font.font("Poppins", 14));
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(25));
+        root.setStyle("-fx-background-color: #f9f9f9;");
 
-        // Use student's section and program for the query parameters
-        AttendanceSummary attendanceSummary = DatabaseAttendanceSummary.getAttendanceSummary(
-            student.getStudentId(),
-            courseName,
-            student.getSection(),
-            student.getProgram(),
-            teacherId
+        // Header Card with Icon and Name
+        HBox profileHeader = new HBox(15);
+        profileHeader.setAlignment(Pos.CENTER_LEFT);
+
+        String userIconPath = CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
+        ImageView userIcon = new ImageView(new Image(userIconPath));
+        userIcon.setFitWidth(80);
+        userIcon.setFitHeight(80);
+
+        VBox studentInfo = new VBox(5);
+        studentInfo.getChildren().addAll(
+            styledLabel("Name: " + fullStudent.getLastName() + ", " + fullStudent.getFirstName() + " " + fullStudent.getMiddleName()),
+            styledLabel("Email: " + fullStudent.getEmail()),
+            styledLabel("Program: " + fullStudent.getProgram() + " | Year: " + fullStudent.getYearLevel() + " | Section: " + fullStudent.getSection()),
+            styledLabel("Total Classes: " + fullStudent.getTotalClasses())
         );
 
-        Label totalClassesLabel = new Label("Total Classes: " + attendanceSummary.getTotalClasses());
-        totalClassesLabel.setFont(Font.font("Poppins", 14));
+        profileHeader.getChildren().addAll(userIcon, studentInfo);
+        root.getChildren().add(profileHeader);
 
-        Label attendanceSummaryTitle = new Label("Attendance Summary:");
-        attendanceSummaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 14));
+        root.getChildren().add(new Separator());
 
-        VBox attendanceDetailsVBox = new VBox(6);
-        attendanceDetailsVBox.setPadding(new Insets(0, 0, 0, 15));
+        // Course Info
+        Label courseLabel = sectionTitle("Enrolled Courses:");
+        String coursesText = courseNames.isEmpty() ? "None" : String.join(", ", courseNames);
+        Label coursesList = styledLabel(coursesText);
 
-        Label presentLabel = new Label("• Present: " + attendanceSummary.getPresent());
-        presentLabel.setFont(Font.font("Poppins", 14));
+        root.getChildren().addAll(courseLabel, coursesList, new Separator());
 
-        Label absentLabel = new Label("• Absent: " + attendanceSummary.getAbsent());
-        absentLabel.setFont(Font.font("Poppins", 14));
+        // Monthly Attendance Summary
+        root.getChildren().add(sectionTitle("Monthly Attendance Summary:"));
+        if (monthlySummaries.isEmpty()) {
+            root.getChildren().add(styledLabel("No monthly attendance records found."));
+        } else {
+            for (MonthlyAttendanceSummary summary : monthlySummaries) {
+                String monthName = java.time.Month.of(summary.getMonth()).name();
+                String attendanceText = String.format(
+                    "%s %d — Present: %d, Absent: %d, Excused: %d, Late: %d",
+                    monthName, summary.getYear(),
+                    summary.getPresentCount(), summary.getAbsentCount(),
+                    summary.getExcusedCount(), summary.getLateCount()
+                );
+                root.getChildren().add(styledLabel(attendanceText));
+            }
+        }
 
-        Label lateLabel = new Label("• Late: " + attendanceSummary.getLate());
-        lateLabel.setFont(Font.font("Poppins", 14));
+        root.getChildren().add(new Separator());
 
-        Label excusedLabel = new Label("• Excused: " + attendanceSummary.getExcused());
-        excusedLabel.setFont(Font.font("Poppins", 14));
+        // Per-Class Attendance Summary
+        root.getChildren().add(sectionTitle("Attendance Per Class:"));
+        if (attendanceSummaries.isEmpty()) {
+            root.getChildren().add(styledLabel("No attendance records found."));
+        } else {
+            for (ClassAttendanceSummary summary : attendanceSummaries) {
+                String classSummary = String.format(
+                    "%s — Present: %d, Absent: %d, Excused: %d, Late: %d",
+                    summary.getCourseName(),
+                    summary.getPresentCount(), summary.getAbsentCount(),
+                    summary.getExcusedCount(), summary.getLateCount()
+                );
+                root.getChildren().add(styledLabel(classSummary));
+            }
+        }
 
-        attendanceDetailsVBox.getChildren().addAll(presentLabel, absentLabel, lateLabel, excusedLabel);
-
-        Button closeButton = new Button("Close");
-        closeButton.setOnAction(e -> dialog.close());
-
-        dialogVBox.getChildren().addAll(
-            nameLabel,
-            yearLabel,
-            programLabel,
-            totalClassesLabel,
-            attendanceSummaryTitle,
-            attendanceDetailsVBox,
-            closeButton
-        );
-
-        Scene dialogScene = new Scene(dialogVBox, 380, 320);
-        dialog.setScene(dialogScene);
+        Scene scene = new Scene(root, 600, 700);
+        dialog.setScene(scene);
         dialog.showAndWait();
+    }
+
+    private static Label styledLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+        return label;
+    }
+
+    private static Label sectionTitle(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        return label;
     }
 }

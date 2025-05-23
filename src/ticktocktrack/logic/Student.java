@@ -16,6 +16,12 @@ public class Student {
     private String approvalStatus;
     private String reason; // For attendance reason dialog
     private String date;
+ // In ticktocktrack.logic.Student.java
+    private int totalClasses;
+    private int present;
+    private int absent;
+    private int late;
+    private int excused;
 
     public Student() {
         // Default constructor
@@ -185,6 +191,20 @@ public class Student {
         return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName())
                 .trim().replaceAll(" +", " ");
     }
+    
+    public void setTotalClasses(int totalClasses) { this.totalClasses = totalClasses; }
+    public int getTotalClasses() { return totalClasses; }
 
+    public void setPresent(int present) { this.present = present; }
+    public int getPresent() { return present; }
+
+    public void setAbsent(int absent) { this.absent = absent; }
+    public int getAbsent() { return absent; }
+
+    public void setLate(int late) { this.late = late; }
+    public int getLate() { return late; }
+
+    public void setExcused(int excused) { this.excused = excused; }
+    public int getExcused() { return excused; }
 	
 }

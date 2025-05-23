@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ticktocktrack.logic.AttendanceSummary;
+
 import ticktocktrack.logic.Student;
 
 
@@ -181,61 +181,5 @@ public class DatabaseAttendanceSummary {
         return lateCount;
     }
     
-    public static AttendanceSummary getAttendanceSummary(int studentId, String courseName, String section, String program, int teacherId) {
-        int totalClasses = 0;
-        int present = 0;
-        int absent = 0;
-        int late = 0;
-        int excused = 0;
-
-        String sql = 
-            "SELECT " +
-            "   COUNT(DISTINCT a.date) AS total_classes, " +
-            "   SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) AS present_count, " +
-            "   SUM(CASE WHEN a.status = 'Absent' THEN 1 ELSE 0 END) AS absent_count, " +
-            "   SUM(CASE WHEN a.status = 'Late' THEN 1 ELSE 0 END) AS late_count, " +
-            "   SUM(CASE WHEN a.status = 'Excused' THEN 1 ELSE 0 END) AS excused_count " +
-            "FROM Attendance a " +
-            "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
-            "JOIN Classes c ON e.class_id = c.class_id " +
-            "WHERE e.student_id = ? " +
-            "AND c.course_name = ? " +
-            "AND c.section = ? " +
-            "AND c.program = ? " +
-            "AND c.teacher_id = ?";
-
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            try (Connection conn = dbConn.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                
-                pstmt.setInt(1, studentId);
-                pstmt.setString(2, courseName);
-                pstmt.setString(3, section);
-                pstmt.setString(4, program);
-                pstmt.setInt(5, teacherId);
-
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        totalClasses = rs.getInt("total_classes");
-                        present = rs.getInt("present_count");
-                        absent = rs.getInt("absent_count");
-                        late = rs.getInt("late_count");
-                        excused = rs.getInt("excused_count");
-
-                        System.out.println("DEBUG: totalClasses=" + totalClasses + ", present=" + present +
-                                           ", absent=" + absent + ", late=" + late + ", excused=" + excused);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching attendance summary: " + e.getMessage());
-        }
-
-        return new AttendanceSummary(totalClasses, present, absent, late, excused);
-    }
-
-  
-
+   
 }
