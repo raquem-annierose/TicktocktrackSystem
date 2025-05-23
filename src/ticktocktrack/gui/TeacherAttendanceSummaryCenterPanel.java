@@ -67,13 +67,13 @@ public class TeacherAttendanceSummaryCenterPanel {
         summaryTitle.setLayoutY(-55);
         layout.getChildren().add(summaryTitle);
 
-        double startX = 70;
-        double startY = 2;
-        double cardWidth = 200;
-        double cardHeight = 200;
-        double gapX = 20;
-        double gapY = 50;
-        int cardsPerRow = 4;
+        double startX = 40;
+        double startY = -30;
+        double cardWidth = 175;
+        double cardHeight = 125;
+        double gapX = 255;
+        double gapY = 100;
+        int cardsPerRow = 2;
 
         CourseInfo[] courses = DatabaseAttendance.getCoursesForTeacher(teacherId);
 
@@ -115,7 +115,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         view.setOnAction(e -> showDetailView(name, content, teacherId));
 
         VBox card = new VBox(10, icon, label, view);
-        card.setPrefSize(180, 250);
+        card.setPrefSize(400, 100);
         card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER);
         card.setStyle("-fx-background-color: white; -fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; -fx-border-width: 1.5; -fx-background-radius: 5; -fx-border-radius: 5;");
