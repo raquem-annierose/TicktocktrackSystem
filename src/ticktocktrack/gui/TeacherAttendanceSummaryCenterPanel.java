@@ -64,7 +64,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
         summaryTitle.setFill(Color.web("#02383E"));
         summaryTitle.setLayoutX(325);
-        summaryTitle.setLayoutY(-55);
+        summaryTitle.setLayoutY(-75);
         layout.getChildren().add(summaryTitle);
 
         double startX = 40;
@@ -171,6 +171,7 @@ public class TeacherAttendanceSummaryCenterPanel {
             int present = DatabaseAttendanceSummary.countPresent(s.getStudentId(), courseName, section, program, teacherId);
             int absent = DatabaseAttendanceSummary.countAbsences(s.getStudentId(), courseName, section, program, teacherId);
             int excused = DatabaseAttendanceSummary.countExcused(s.getStudentId(), courseName, section, program, teacherId);
+            int late = DatabaseAttendanceSummary.countLate(s.getStudentId(), courseName, section, program, teacherId);
 
             String status;
             if (absent == 0) {
@@ -181,7 +182,7 @@ public class TeacherAttendanceSummaryCenterPanel {
                 status = "Critical";
             }
 
-            table.getItems().add(new AttendanceRecord(fullName, status, present, absent, excused));
+            table.getItems().add(new AttendanceRecord(fullName, status, present, absent, excused, late));
         }
 
         table.setPrefSize(545, 400);
@@ -224,8 +225,12 @@ public class TeacherAttendanceSummaryCenterPanel {
         TableColumn<AttendanceRecord, Integer> cExcused = new TableColumn<>("Excused");
         cExcused.setCellValueFactory(new PropertyValueFactory<>("totalExcused"));
         cExcused.setPrefWidth(80);
+        
+        TableColumn<AttendanceRecord, Integer> cLate = new TableColumn<>("Late");
+        cLate.setCellValueFactory(new PropertyValueFactory<>("totalLate"));
+        cLate.setPrefWidth(80);
 
-        table.getColumns().addAll(cStudent, cStatus, cPresent, cAbsent, cExcused);
+        table.getColumns().addAll(cStudent, cStatus, cPresent, cAbsent, cExcused, cLate);
         return table;
     }
 
@@ -235,13 +240,15 @@ public class TeacherAttendanceSummaryCenterPanel {
         private final int totalPresent;
         private final int totalAbsent;
         private final int totalExcused;
+        private final int totalLate;
 
-        public AttendanceRecord(String student, String status, int totalPresent, int totalAbsent, int totalExcused) {
+        public AttendanceRecord(String student, String status, int totalPresent, int totalAbsent, int totalExcused, int totalLate) {
             this.student = student;
             this.status = status;
             this.totalPresent = totalPresent;
             this.totalAbsent = totalAbsent;
             this.totalExcused = totalExcused;
+            this.totalLate = totalLate;
         }
 
         public String getStudent() {
@@ -262,6 +269,10 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         public int getTotalExcused() {
             return totalExcused;
+        }
+        
+        public int getTotalLate() {
+        	return totalLate;
         }
     }
 }
