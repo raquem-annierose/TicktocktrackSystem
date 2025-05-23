@@ -1,25 +1,28 @@
 package ticktocktrack.gui;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Popup;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.Cursor;
-import javafx.scene.layout.StackPane;
-import javafx.scene.control.ScrollPane;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
-import ticktocktrack.logic.Notification;
-import ticktocktrack.logic.UsersModel;
-import ticktocktrack.logic.Session;
+import javafx.stage.Popup;
 import ticktocktrack.database.TeacherNotificationDAO;
+import ticktocktrack.logic.Notification;
+import ticktocktrack.logic.Session;
+import ticktocktrack.logic.UsersModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
+
 
 public class TeacherNotificationPane {
     private int userId;
@@ -30,17 +33,15 @@ public class TeacherNotificationPane {
     private VBox notificationHolder;
 
     public TeacherNotificationPane() {
-        // Get current teacher
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("No user is logged in. Notifications cannot be loaded.");
         }
         this.userId = currentUser.getUserId();
-        System.out.println("DEBUG: Initializing TeacherNotificationPane for userId = " + userId);
 
         notifications = FXCollections.observableArrayList();
 
-        // Popup & container
+        // Create popup container
         notificationPopup = new Popup();
         notificationHolder = new VBox(10);
         notificationHolder.setPadding(new Insets(10));
@@ -59,13 +60,11 @@ public class TeacherNotificationPane {
 
         notificationPopup.getContent().add(scrollPane);
 
-        // Load from DB
         loadNotificationsFromDatabase();
         for (Notification n : notifications) {
             addNotificationToHolder(n);
         }
 
-        // Icon
         String iconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(iconPath));
         notificationIcon.setFitWidth(30);
@@ -88,13 +87,9 @@ public class TeacherNotificationPane {
     }
 
     private void loadNotificationsFromDatabase() {
-        System.out.println("DEBUG: Loading notifications for teacherId = " + userId);
         List<Notification> dbNotes = TeacherNotificationDAO.getNotificationsForUser(userId);
         if (dbNotes != null) {
-            System.out.println("DEBUG: Total notifications loaded: " + dbNotes.size());
             notifications.addAll(dbNotes);
-        } else {
-            System.out.println("DEBUG: No notifications returned from DAO (null)");
         }
     }
 
@@ -105,7 +100,7 @@ public class TeacherNotificationPane {
     }
 
     private void addNotificationToHolder(Notification note) {
-        Label msgLabel = new Label("� " + note.getMessage());
+        Label msgLabel = new Label("\u2022 " + note.getMessage());
         msgLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         msgLabel.setWrapText(true);
         msgLabel.setMaxWidth(240);
@@ -118,13 +113,13 @@ public class TeacherNotificationPane {
         VBox content = new VBox(2, msgLabel, dateLabel);
         HBox box = new HBox(content);
         box.setPadding(new Insets(5));
-        box.setStyle(
-            "-fx-background-color: #f9f9f9; " +
-            "-fx-border-radius: 5px; " +
-            "-fx-background-radius: 5px; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);"
-        );
+        box.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);");
+
         addHoverEffect(box);
+
+        box.setOnMouseClicked(e -> showDetailedNotificationPopup(note));
+
         notificationHolder.getChildren().add(box);
     }
 
@@ -137,6 +132,82 @@ public class TeacherNotificationPane {
             "-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);"
         ));
+    }
+
+    private void showDetailedNotificationPopup(Notification note) {
+        // Hide main notification popup so it won't cover detailed popup
+        if (notificationPopup.isShowing()) {
+            notificationPopup.hide();
+        }
+
+        StackPane dimOverlay = new StackPane();
+        dimOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
+        dimOverlay.setPrefSize(1300, 750);
+        dimOverlay.setPickOnBounds(true);
+
+        Label title = new Label("Notification Details");
+        title.setFont(javafx.scene.text.Font.font("Poppins", 13));
+        title.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
+
+        Label message = new Label(note.getMessage());
+        message.setFont(javafx.scene.text.Font.font("Poppins", 12));
+        message.setMaxWidth(500);
+
+        Label date = new Label("Sent: " + note.getDateSent().toString());
+        date.setFont(javafx.scene.text.Font.font("Poppins", 10));
+        date.setStyle("-fx-text-fill: gray;");
+
+        
+        Button closeButton = new Button("X");
+        closeButton.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-font-size: 14;" +
+            "-fx-text-fill: #666666;" +
+            "-fx-font-weight: bold;"
+        );
+        closeButton.setCursor(Cursor.HAND);
+        closeButton.setOnAction(e -> {
+            Scene scene = notificationIconWrapper.getScene();
+            if (scene != null && scene.getRoot() instanceof StackPane) {
+                StackPane root = (StackPane) scene.getRoot();
+                root.getChildren().remove(dimOverlay.getParent());
+            }
+        });
+
+        // Title bar with close button aligned right
+        HBox titleBar = new HBox();
+        titleBar.setAlignment(Pos.CENTER_LEFT);
+        titleBar.setSpacing(10);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        titleBar.getChildren().addAll(title, spacer, closeButton);
+
+        VBox popupBox = new VBox(10, titleBar, message, date);
+        popupBox.setPadding(new Insets(15));
+        popupBox.setMaxWidth(700);
+        popupBox.setMaxHeight(300);
+        popupBox.setStyle("-fx-background-color: white; -fx-background-radius: 8; " +
+                          "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.2, 0, 0);");
+
+        StackPane popupWrapper = new StackPane(popupBox);
+        popupWrapper.setPrefSize(1300, 750);
+        popupWrapper.setAlignment(Pos.CENTER);
+
+        StackPane fullOverlay = new StackPane(dimOverlay, popupWrapper);
+
+        Scene scene = notificationIconWrapper.getScene();
+        if (scene != null && scene.getRoot() instanceof StackPane) {
+            StackPane root = (StackPane) scene.getRoot();
+            root.getChildren().add(fullOverlay);
+            fullOverlay.toFront(); // Make sure this popup is on top
+
+            // Clicking outside popup closes it
+            dimOverlay.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                root.getChildren().remove(fullOverlay);
+            });
+        }
     }
 
     public StackPane getNotificationIconWrapper() { return notificationIconWrapper; }
