@@ -64,15 +64,15 @@ public class TeacherAttendanceSummaryCenterPanel {
         summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
         summaryTitle.setFill(Color.web("#02383E"));
         summaryTitle.setLayoutX(325);
-        summaryTitle.setLayoutY(-55);
+        summaryTitle.setLayoutY(-75);
         layout.getChildren().add(summaryTitle);
 
-        double startX = 70;
-        double startY = 2;
+        double startX = 40;
+        double startY = -50;
         double cardWidth = 200;
         double cardHeight = 200;
         double gapX = 20;
-        double gapY = 50;
+        double gapY = 70;
         int cardsPerRow = 4;
 
         CourseInfo[] courses = DatabaseAttendance.getCoursesForTeacher(teacherId);
