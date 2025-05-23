@@ -14,8 +14,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.Text;
+import ticktocktrack.database.DatabaseAttendanceSummary;
 import ticktocktrack.database.DatabaseAttendance;
+import ticktocktrack.logic.Student;
 import ticktocktrack.logic.CourseInfo;
+
+import java.util.List;
 
 public class TeacherAttendanceSummaryCenterPanel {
 
@@ -23,18 +27,6 @@ public class TeacherAttendanceSummaryCenterPanel {
             .getResource("/resources/Subject_icon.png").toExternalForm();
     private static final String DASHBOARD_BG = TeacherAttendanceSummaryCenterPanel.class
             .getResource("/resources/Teacher_Dashboard/Teacher_Attendance_summary.png").toExternalForm();
-
-    private static final String COMBO_STYLE =
-            "-fx-background-color: white;" +
-            "-fx-font-size: 11px;" +
-            "-fx-padding: 6 12 6 12;" +
-            "-fx-background-radius: 5;" +
-            "-fx-border-radius: 5;" +
-            "-fx-border-color: black;" +
-            "-fx-border-width: 0.7;" +
-            "-fx-font-family: 'Poppins';" +
-            "-fx-font-weight: normal;" +
-            "-fx-text-fill: black;";
 
     private static final String[] SUBJECT_COLORS = {"#8B43BC", "#BA8200", "#147F8A", "#55DC93"};
     private static final Color VIEW_GLOW_COLOR = Color.web("#8B43BC");
@@ -89,7 +81,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         for (int i = 0; i < courses.length; i++) {
             CourseInfo course = courses[i];
             String displayName = course.getCourseName() + " - " + course.getSection() + " (" + course.getProgram() + ")";
-            VBox card = createSubjectCard(displayName, i, content);
+            VBox card = createSubjectCard(displayName, i, content, teacherId);
             double x = startX + (i % cardsPerRow) * (cardWidth + gapX);
             double y = startY + (i / cardsPerRow) * (cardHeight + gapY);
             card.setLayoutX(x);
@@ -100,7 +92,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         return layout;
     }
 
-    private static VBox createSubjectCard(String name, int idx, StackPane content) {
+    private static VBox createSubjectCard(String name, int idx, StackPane content, int teacherId) {
         ImageView icon = new ImageView(new Image(SUBJECT_ICON));
         icon.setFitWidth(80);
         icon.setFitHeight(80);
@@ -109,7 +101,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         label.setFont(Font.font("Poppins", FontWeight.MEDIUM, 14));
         label.setFill(Color.web("#02383E"));
         label.setWrappingWidth(160);
-        label.setTextAlignment(TextAlignment.CENTER); // center align text
+        label.setTextAlignment(TextAlignment.CENTER);
         label.setLineSpacing(1);
         label.setStyle("-fx-text-overrun: ellipsis;");
 
@@ -121,19 +113,17 @@ public class TeacherAttendanceSummaryCenterPanel {
         glow.setSpread(0.2);
         view.setOnMouseEntered(e -> view.setEffect(glow));
         view.setOnMouseExited(e -> view.setEffect(null));
-        view.setOnAction(e -> showDetailView(name, content));
+        view.setOnAction(e -> showDetailView(name, content, teacherId));
 
         VBox card = new VBox(10, icon, label, view);
-        card.setPrefSize(180, 200);
-        card.setMaxSize(180, 200);
-        card.setMinSize(180, 200);
+        card.setPrefSize(180, 250);
         card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER);
         card.setStyle("-fx-background-color: white; -fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; -fx-border-width: 1.5; -fx-background-radius: 5; -fx-border-radius: 5;");
         return card;
     }
 
-    private static void showDetailView(String subjectName, StackPane content) {
+    private static void showDetailView(String subjectName, StackPane content, int teacherId) {
         BorderPane detail = new BorderPane();
 
         Pane left = new Pane();
@@ -165,6 +155,37 @@ public class TeacherAttendanceSummaryCenterPanel {
         attendance.relocate(-300, -120);
 
         TableView<AttendanceRecord> table = createAttendanceTable();
+
+        // Extract course name, section, program
+        // subjectName example: "CourseName - Section (Program)"
+        String[] parts = subjectName.split(" - | \\(|\\)");
+        String courseName = parts[0].trim();
+        String section = parts[1].trim();
+        String program = parts[2].trim();
+
+        List<Student> enrolledStudents = DatabaseAttendanceSummary.getStudentsEnrolledForTeacher(courseName, section, program, teacherId);
+
+        for (Student s : enrolledStudents) {
+            String fullName = s.getLastName() + ", " + s.getFirstName();
+            if (s.getMiddleName() != null && !s.getMiddleName().isEmpty()) {
+                fullName += " " + s.getMiddleName();
+            }
+
+            // COUNT absences for this student in this class
+            int absences = DatabaseAttendanceSummary.countAbsences(s.getStudentId(), courseName, section, program, teacherId);
+
+            String status;
+            if (absences == 0) {
+                status = "Good";
+            } else if (absences <= 2) {
+                status = "Warning";
+            } else {
+                status = "Critical";
+            }
+
+            table.getItems().add(new AttendanceRecord(fullName, status, ""));
+        }
+
         table.setPrefSize(545, 400);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.relocate(-960, 5);
@@ -175,12 +196,10 @@ public class TeacherAttendanceSummaryCenterPanel {
         ok.setPrefHeight(20);
         ok.setStyle("-fx-background-color: white;-fx-text-fill: #02383E;-fx-border-color: #8B43BC;-fx-border-width: 1;-fx-border-radius: 2;-fx-background-radius: 2;");
         ok.relocate(-960, 540);
-        ok.setOnAction(e -> content.getChildren().setAll(buildSubjectGrid(content, 0))); // Pass the correct teacherId here
+        ok.setOnAction(e -> content.getChildren().setAll(buildSubjectGrid(content, teacherId)));
 
-        // Add nodes without the year and section ComboBoxes
         centerPane.getChildren().addAll(titleBox, table, ok, attendance);
         detail.setCenter(centerPane);
-
         content.getChildren().setAll(detail);
     }
 
@@ -208,7 +227,7 @@ public class TeacherAttendanceSummaryCenterPanel {
     public static class AttendanceRecord {
         private final String student;
         private final String status;
-        private String remarks;
+        private final String remarks;
 
         public AttendanceRecord(String student, String status, String remarks) {
             this.student = student;
@@ -226,10 +245,6 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         public String getRemarks() {
             return remarks;
-        }
-
-        public void setRemarks(String remarks) {
-            this.remarks = remarks;
         }
     }
 }
