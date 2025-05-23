@@ -54,18 +54,17 @@ public class DatabaseAttendanceSummary {
     
     public static int countAbsences(int studentId, String courseName, String section, String program, int teacherId) {
         int absenceCount = 0;
-        String query = "SELECT COUNT(*) AS absence_count " +
-                       "FROM Attendance a " +
-                       "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
-                       "JOIN Classes c ON e.class_id = c.class_id " +
-                       "WHERE e.student_id = ? AND a.status = 'Absent' " +
-                       "AND c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
+        String sql = "SELECT COUNT(*) AS absence_count FROM Attendance a " +
+                     "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                     "JOIN Classes c ON e.class_id = c.class_id " +
+                     "WHERE e.student_id = ? AND a.status = 'Absent' " +
+                     "AND c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
 
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
             dbConn.connectToSQLServer();
             try (Connection conn = dbConn.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(query)) {
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
                 pstmt.setInt(1, studentId);
                 pstmt.setString(2, courseName);
@@ -85,5 +84,69 @@ public class DatabaseAttendanceSummary {
         return absenceCount;
     }
 
+    public static int countPresent(int studentId, String courseName, String section, String program, int teacherId) {
+        int presentCount = 0;
+        String query = "SELECT COUNT(*) AS present_count FROM Attendance a " +
+                       "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                       "JOIN Classes c ON e.class_id = c.class_id " +
+                       "WHERE e.student_id = ? AND a.status = 'Present' " +
+                       "AND c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
+
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+                pstmt.setInt(1, studentId);
+                pstmt.setString(2, courseName);
+                pstmt.setString(3, section);
+                pstmt.setString(4, program);
+                pstmt.setInt(5, teacherId);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        presentCount = rs.getInt("present_count");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error counting presents for student: " + e.getMessage());
+        }
+        return presentCount;
+    }
+
+    public static int countExcused(int studentId, String courseName, String section, String program, int teacherId) {
+        int excusedCount = 0;
+        String query = "SELECT COUNT(*) AS excused_count FROM Attendance a " +
+                       "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                       "JOIN Classes c ON e.class_id = c.class_id " +
+                       "WHERE e.student_id = ? AND a.status = 'Excused' " +
+                       "AND c.course_name = ? AND c.section = ? AND c.program = ? AND c.teacher_id = ?";
+
+        DatabaseConnection dbConn = new DatabaseConnection();
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+                pstmt.setInt(1, studentId);
+                pstmt.setString(2, courseName);
+                pstmt.setString(3, section);
+                pstmt.setString(4, program);
+                pstmt.setInt(5, teacherId);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        excusedCount = rs.getInt("excused_count");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error counting excused for student: " + e.getMessage());
+        }
+        return excusedCount;
+    }
+   
 
 }
