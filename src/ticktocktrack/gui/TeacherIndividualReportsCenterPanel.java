@@ -296,10 +296,9 @@ public class TeacherIndividualReportsCenterPanel {
                     Student selectedStudent = s;  // capture for lambda
                    
                     studentCard.setOnMouseClicked(evt -> {
-                        CardIndividualReport.showStudentDetailDialog(selectedStudent);
+                        Pane overlay = CardIndividualReport.createStudentDetailOverlay(selectedStudent);
+                        centerPanel.getChildren().add(overlay);  // This will overlay on top of everything inside the panel
                     });
-
-
 
 
                     studentCardContainer.getChildren().add(studentCard);
