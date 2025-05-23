@@ -59,16 +59,16 @@ public class TeacherDashboardCenterPanel {
         String formattedDate = currentDate.format(formatter);
         
         Text dateText = new Text(formattedDate);
-        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
-        dateText.setFill(Color.web("#02383E"));
+        dateText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
+        dateText.setFill(Color.web("#FFFFFF"));
         dateText.setLayoutX(70);
         dateText.setLayoutY(101);
         
         
 
         Text dashboardTitle = new Text("Welcome Teacher \n" + fullName + "!");
-        dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
-        dashboardTitle.setFill(Color.web("#02383E"));
+        dashboardTitle.setFont(Font.font("Bakbak One", FontWeight.BOLD, 22));
+        dashboardTitle.setFill(Color.web("#FFFFFF"));
         dashboardTitle.setLayoutX(70);
         dashboardTitle.setLayoutY(200);
 
@@ -78,7 +78,7 @@ public class TeacherDashboardCenterPanel {
         int totalStudents = DatabaseDashboard .getTotalUniqueStudentsByTeacher(teacherId);
 
         Pane classPanel = createBoxPanel(50, 290, 300, 120, "Total Classes", totalClasses);
-        Pane studentsPanel = createBoxPanel(400, 290, 300, 120, "Number of Students", totalStudents);
+        Pane studentsPanel = createBoxPanel(290, 290, 300, 120, "Number of Students", totalStudents);
 
 
         // Add panels to the center panel
@@ -90,14 +90,14 @@ public class TeacherDashboardCenterPanel {
     // Helper method to create a styled box panel with a label and the relevant number (e.g., days or classes)
     private static Pane createBoxPanel(double x, double y, double width, double height, String labelText, int value) {
         Pane box = new Pane();
-        box.setPrefSize(width, height);
+        box.setPrefSize(200, 100);
         box.setLayoutX(x);
         box.setLayoutY(y);
         box.setStyle(
             "-fx-background-color: #f0f0f0;" +
-            "-fx-background-radius: 20;" +
+            "-fx-background-radius: 15;" +
             "-fx-border-color: #cccccc;" +
-            "-fx-border-radius: 20;" +
+            "-fx-border-radius: 15;" +
             "-fx-border-width: 1;"
         );
 
@@ -110,7 +110,7 @@ public class TeacherDashboardCenterPanel {
 
         // Display the relevant value (e.g., days or number of classes)
         Text valueText = new Text(String.valueOf(value)); // Default value 0
-        valueText.setFont(Font.font("Poppins", FontWeight.BOLD, 36)); // Large number font
+        valueText.setFont(Font.font("Poppins", FontWeight.BOLD, 30)); // Large number font
         // Set color based on the type (Attendance panels = Blue, Classes and Students panel = Orange)
         if (labelText.contains("Class")) {
             valueText.setFill(Color.web("#FF9800")); // Orange for total classes

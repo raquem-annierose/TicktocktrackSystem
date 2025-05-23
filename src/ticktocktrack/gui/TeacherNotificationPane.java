@@ -68,8 +68,8 @@ public class TeacherNotificationPane {
         // Icon
         String iconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(iconPath));
-        notificationIcon.setFitWidth(50);
-        notificationIcon.setFitHeight(50);
+        notificationIcon.setFitWidth(30);
+        notificationIcon.setFitHeight(30);
         notificationIcon.setPreserveRatio(true);
 
         notificationIconWrapper = new StackPane(notificationIcon);
@@ -105,7 +105,7 @@ public class TeacherNotificationPane {
     }
 
     private void addNotificationToHolder(Notification note) {
-        Label msgLabel = new Label("• " + note.getMessage());
+        Label msgLabel = new Label("ï¿½ " + note.getMessage());
         msgLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         msgLabel.setWrapText(true);
         msgLabel.setMaxWidth(240);

@@ -76,7 +76,7 @@ public class AdminDashboardPage extends Application {
         
         // Admin text
         Text adminText = new Text(currentUser.getUsername());
-        adminText.setFont(Font.font("Poppins Medium", 25));
+        adminText.setFont(Font.font("Poppins Medium", 20));
         adminText.setFill(Color.web("#02383E"));
         adminText.setLayoutX(1050);
         adminText.setLayoutY(65);
@@ -84,10 +84,10 @@ public class AdminDashboardPage extends Application {
         // User Icon
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
         ImageView userIcon = new ImageView(new Image(userIconPath));
-        userIcon.setFitWidth(90);
-        userIcon.setFitHeight(90);
-        userIcon.setLayoutX(1200);
-        userIcon.setLayoutY(5);
+        userIcon.setFitWidth(67);
+        userIcon.setFitHeight(67);
+        userIcon.setLayoutX(1190);
+        userIcon.setLayoutY(20);
         userIcon.setCursor(Cursor.HAND);
         
      // --- User Icon Popup Handling (keep your event here) ---
@@ -140,17 +140,17 @@ public class AdminDashboardPage extends Application {
         // Dashboard icon
         String dashboardIconPath = getClass().getResource("/resources/Dashboard_icon.png").toExternalForm();
         ImageView dashboardIcon = new ImageView(new Image(dashboardIconPath));
-        dashboardIcon.setFitWidth(55);
-        dashboardIcon.setFitHeight(55);
-        dashboardIcon.setLayoutX(22);
-        dashboardIcon.setLayoutY(20);
+        dashboardIcon.setFitWidth(35);
+        dashboardIcon.setFitHeight(35);
+        dashboardIcon.setLayoutX(46);
+        dashboardIcon.setLayoutY(25);
       
         // Dashboard text
         Text dashboardText = new Text("Dashboard");
-        dashboardText.setFont(Font.font("Poppins", 18));
+        dashboardText.setFont(Font.font("Poppins", 15));
         dashboardText.setFill(Color.web("#20B2AA"));
-        dashboardText.setLayoutX(90);
-        dashboardText.setLayoutY(60);
+        dashboardText.setLayoutX(93);
+        dashboardText.setLayoutY(52);
         sidePanel.getChildren().add(dashboardText);
         
      // Set the default selected text when the app launches
@@ -189,17 +189,17 @@ public class AdminDashboardPage extends Application {
         // Add Icon
         String addIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_add_icon.png").toExternalForm();
         ImageView addIcon = new ImageView(new Image(addIconPath));
-        addIcon.setFitWidth(51);
-        addIcon.setFitHeight(51);
-        addIcon.setLayoutX(26);
-        addIcon.setLayoutY(130);
+        addIcon.setFitWidth(31);
+        addIcon.setFitHeight(31);
+        addIcon.setLayoutX(46);
+        addIcon.setLayoutY(129);
        
      // Create Users Text
         Text createUsersText = new Text("Create Users");
-        createUsersText.setFont(Font.font("Poppins", 18)); // Set font size to 18 and Poppins font
+        createUsersText.setFont(Font.font("Poppins", 15)); // Set font size to 18 and Poppins font
         createUsersText.setFill(Color.web("#02383E")); // Set text color
-        createUsersText.setLayoutX(90); // x position
-        createUsersText.setLayoutY(160); // y position
+        createUsersText.setLayoutX(93); // x position
+        createUsersText.setLayoutY(153); // y position
         createUsersText.setWrappingWidth(135); // Set width for wrapping
 
         // Hover effect
@@ -225,18 +225,18 @@ public class AdminDashboardPage extends Application {
      // View All icon image
         String viewAllPath = getClass().getResource("/resources/Admin_Dashboard/Admin_view_all_icon.png").toExternalForm();
         ImageView viewAllIcon = new ImageView(new Image(viewAllPath));
-        viewAllIcon.setFitWidth(69);
-        viewAllIcon.setFitHeight(69);
-        viewAllIcon.setLayoutX(17); // x position
+        viewAllIcon.setFitWidth(42);
+        viewAllIcon.setFitHeight(42);
+        viewAllIcon.setLayoutX(46); // x position
         viewAllIcon.setLayoutY(210); // y position
         
 
         // Add "View All Users" text
         Text viewAllUsersText = new Text("View All Users");
-        viewAllUsersText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size to 18 and Poppins font (medium weight)
+        viewAllUsersText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         viewAllUsersText.setFill(Color.web("#02383E")); // Set text color
-        viewAllUsersText.setLayoutX(90); // x position
-        viewAllUsersText.setLayoutY(250); // y position
+        viewAllUsersText.setLayoutX(93); // x position
+        viewAllUsersText.setLayoutY(237); // y position
         viewAllUsersText.setWrappingWidth(153); // Set width for wrapping
         
      // Hover effect
@@ -266,22 +266,22 @@ public class AdminDashboardPage extends Application {
         line2.setFitWidth(180);  // width of line 2
         line2.setFitHeight(0);   // height of line 2 (0 for a thin line)
         line2.setLayoutX(30); // x position
-        line2.setLayoutY(310); // y position
+        line2.setLayoutY(288); // y position
         
         // Report icon image
         String reportIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_report_icon.png").toExternalForm();
         ImageView reportIcon = new ImageView(new Image(reportIconPath));
-        reportIcon.setFitWidth(56);
-        reportIcon.setFitHeight(56);
-        reportIcon.setLayoutX(25); // x position
-        reportIcon.setLayoutY(355); // y position
+        reportIcon.setFitWidth(29);
+        reportIcon.setFitHeight(29);
+        reportIcon.setLayoutX(47); // x position
+        reportIcon.setLayoutY(335); // y position
         
      // Create "Attendance Reports" Text
         Text attendanceReportsText = new Text("Attendance Reports");
-        attendanceReportsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18));  // Set font size and weight
+        attendanceReportsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));  // Set font size and weight
         attendanceReportsText.setFill(Color.web("#02383E"));  // Set initial text color
-        attendanceReportsText.setLayoutX(90);  // x position
-        attendanceReportsText.setLayoutY(375);  // y position
+        attendanceReportsText.setLayoutX(91);  // x position
+        attendanceReportsText.setLayoutY(355);  // y position
         attendanceReportsText.setWrappingWidth(135);  // Set width for wrapping
 
         // Hover effect for Attendance Reports text
@@ -308,17 +308,17 @@ public class AdminDashboardPage extends Application {
         // Hammer wrench icon image
         String hammerWrenchPath = getClass().getResource("/resources/Admin_Dashboard/Admin_hammer_wrench_icon.png").toExternalForm();
         ImageView hammerWrenchIcon = new ImageView(new Image(hammerWrenchPath));
-        hammerWrenchIcon.setFitWidth(53);
-        hammerWrenchIcon.setFitHeight(53);
-        hammerWrenchIcon.setLayoutX(26); // x position
-        hammerWrenchIcon.setLayoutY(455); // y position
+        hammerWrenchIcon.setFitWidth(34);
+        hammerWrenchIcon.setFitHeight(34);
+        hammerWrenchIcon.setLayoutX(46); // x position
+        hammerWrenchIcon.setLayoutY(415); // y position
 
         // Add "Manage Accounts" text
         Text manageAccountsText = new Text("Manage Accounts");
-        manageAccountsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size to 18 and Poppins font (medium weight)
+        manageAccountsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         manageAccountsText.setFill(Color.web("#02383E")); // Set text color
-        manageAccountsText.setLayoutX(90); // x position
-        manageAccountsText.setLayoutY(480); // y position
+        manageAccountsText.setLayoutX(93); // x position
+        manageAccountsText.setLayoutY(435); // y position
         manageAccountsText.setWrappingWidth(135); // Set width for wrapping
      
         // Hover effect for Manage Accounts text

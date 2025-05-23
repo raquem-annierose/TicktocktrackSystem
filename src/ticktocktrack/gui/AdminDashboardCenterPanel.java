@@ -74,16 +74,16 @@ public class AdminDashboardCenterPanel {
         String formattedDate = currentDate.format(formatter);
         
         Text dateText = new Text(formattedDate);
-        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
-        dateText.setFill(Color.web("#02383E"));
+        dateText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
+        dateText.setFill(Color.web("#A17102"));
         dateText.setLayoutX(70);
         dateText.setLayoutY(101);
         
 
         // Create the "Dashboard" Text
         Text dashboardTitle = new Text("Welcome Admin \n" + fullName + "!");
-        dashboardTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
-        dashboardTitle.setFill(Color.web("#02383E"));
+        dashboardTitle.setFont(Font.font("Bakbak One", FontWeight.BOLD, 22));
+        dashboardTitle.setFill(Color.web("#A17102"));
         dashboardTitle.setLayoutX(70);
         dashboardTitle.setLayoutY(200);
 
