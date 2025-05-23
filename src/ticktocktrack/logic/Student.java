@@ -185,4 +185,6 @@ public class Student {
         return String.format("%s %s %s", getFirstName(), getMiddleName(), getLastName())
                 .trim().replaceAll(" +", " ");
     }
+
+	
 }

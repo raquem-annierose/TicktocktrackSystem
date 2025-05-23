@@ -268,57 +268,22 @@ public class AdminDashboardPage extends Application {
         line2.setLayoutX(30); // x position
         line2.setLayoutY(288); // y position
         
-        // Report icon image
-        String reportIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_report_icon.png").toExternalForm();
-        ImageView reportIcon = new ImageView(new Image(reportIconPath));
-        reportIcon.setFitWidth(29);
-        reportIcon.setFitHeight(29);
-        reportIcon.setLayoutX(47); // x position
-        reportIcon.setLayoutY(335); // y position
         
-     // Create "Attendance Reports" Text
-        Text attendanceReportsText = new Text("Attendance Reports");
-        attendanceReportsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));  // Set font size and weight
-        attendanceReportsText.setFill(Color.web("#02383E"));  // Set initial text color
-        attendanceReportsText.setLayoutX(91);  // x position
-        attendanceReportsText.setLayoutY(355);  // y position
-        attendanceReportsText.setWrappingWidth(135);  // Set width for wrapping
 
-        // Hover effect for Attendance Reports text
-        attendanceReportsText.setOnMouseMoved(e -> {
-            if (selectedText != attendanceReportsText) {
-                attendanceReportsText.setFill(Color.web("#20B2AA"));  // Change color on hover (if not selected)
-            }
-            attendanceReportsText.setStyle("-fx-cursor: hand;");  // Change cursor to hand on hover
-        });
-
-        // Reset the color when the mouse moves out
-        attendanceReportsText.setOnMouseExited(e -> {
-            if (selectedText != attendanceReportsText) {
-                attendanceReportsText.setFill(Color.web("#02383E"));  // Revert to original color if not selected
-            }
-        });
-
-        // Click event for Attendance Reports text
-        attendanceReportsText.setOnMouseClicked(e -> {
-            selectSidebarText(attendanceReportsText);  // Call this method to handle selection behavior (define as needed)
-            onAttendanceReportsClicked(e);  // Define this method to handle the click (e.g., open a new page or show report)
-        });
-        
         // Hammer wrench icon image
         String hammerWrenchPath = getClass().getResource("/resources/Admin_Dashboard/Admin_hammer_wrench_icon.png").toExternalForm();
         ImageView hammerWrenchIcon = new ImageView(new Image(hammerWrenchPath));
         hammerWrenchIcon.setFitWidth(34);
         hammerWrenchIcon.setFitHeight(34);
         hammerWrenchIcon.setLayoutX(46); // x position
-        hammerWrenchIcon.setLayoutY(415); // y position
+        hammerWrenchIcon.setLayoutY(335); // y position
 
         // Add "Manage Accounts" text
         Text manageAccountsText = new Text("Manage Accounts");
         manageAccountsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         manageAccountsText.setFill(Color.web("#02383E")); // Set text color
         manageAccountsText.setLayoutX(93); // x position
-        manageAccountsText.setLayoutY(435); // y position
+        manageAccountsText.setLayoutY(355); // y position
         manageAccountsText.setWrappingWidth(135); // Set width for wrapping
      
         // Hover effect for Manage Accounts text
@@ -351,7 +316,7 @@ public class AdminDashboardPage extends Application {
         // Add all elements to topPanel
         topPanel.getChildren().addAll(logoView, adminText);
         
-        sidePanel.getChildren().addAll( dashboardIcon, line1, addIcon, createUsersText, viewAllIcon, viewAllUsersText, reportIcon, attendanceReportsText,  line2, hammerWrenchIcon, manageAccountsText );
+        sidePanel.getChildren().addAll( dashboardIcon, line1, addIcon, createUsersText, viewAllIcon, viewAllUsersText,  line2, hammerWrenchIcon, manageAccountsText );
         
         overlayPane.getChildren().addAll(topPanel, sidePanel, centerContentPane, userIcon);
         
@@ -454,26 +419,7 @@ public class AdminDashboardPage extends Application {
     }
 
     
-    private void onAttendanceReportsClicked(MouseEvent event) {
-        System.out.println("Dashboard clicked!");
-        selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
-        centerContentPane.getChildren().clear();
-
-        UsersModel currentUser = Session.getCurrentUser();
-        if (currentUser == null) {
-            System.err.println("No user is logged in.");
-            return;
-        }
-
-        Integer adminId = currentUser.getAdminId();
-        if (adminId == null) {
-            System.err.println("Current user is not an admin.");
-            return;
-        }
-
-        Pane dashboardPanel = AdminAttendanceReportsCenterPanel.createPanel(adminId);
-        centerContentPane.getChildren().add(dashboardPanel);
-    }
+   
 
     
     private void onManageAccountsClicked(MouseEvent event) {
