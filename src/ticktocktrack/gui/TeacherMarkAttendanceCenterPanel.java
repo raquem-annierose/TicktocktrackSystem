@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -187,35 +188,51 @@ public class TeacherMarkAttendanceCenterPanel {
 
         });
 
-
         TableView<Student> table = new TableView<>();
-        table.setMaxWidth(950);
+        table.setMaxWidth(1000);
         table.setItems(filteredStudents);
         table.setEditable(true);
- 
-        table.setStyle("-fx-font-size: 14px;");
+
+        table.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-background-color: transparent;" +     // Makes table background transparent
+            "-fx-text-fill: white;"                     // This affects selected text, but not all cells
+        );
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         table.getColumns().addAll(
-        	    createColumn("Student ID", "studentId"),
-        	    createColumn("Last Name", "lastName"),
-        	    createColumn("First Name", "firstName"),
-        	    createColumn("Middle Name", "middleName"),
-        	    createColumn("Date", "date"),
-        	    createEditableStatusColumn(),   // Editable status column here
-        	    createReasonColumnWithDialog()  // Custom column
-        	);
+            createColumn("Student ID", "studentId"),
+            createColumn("Last Name", "lastName"),
+            createColumn("First Name", "firstName"),
+            createColumn("Middle Name", "middleName"),
+            createColumn("Date", "date"),
+            createEditableStatusColumn(),
+            createReasonColumnWithDialog()
+        );
 
+        // Style the header and header text
+        Platform.runLater(() -> {
+            Node header = table.lookup("TableHeaderRow");
+            if (header != null) {
+                header.setStyle("-fx-background-color: #2a72d9;");  // header background
+            }
 
+            Set<Node> columnHeaders = table.lookupAll(".column-header");
+            for (Node colHeader : columnHeaders) {
+                colHeader.setStyle("-fx-background-color: #336699; -fx-border-color: transparent;");
+
+                Node label = colHeader.lookup(".label");
+                if (label != null) {
+                    label.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");  // white header text
+                }
+            }
+        });
         
         ScrollPane sp = new ScrollPane(table);
         sp.setFitToWidth(true);
         sp.setFitToHeight(true);
         sp.setMaxWidth(950);
      
-        
-        
-
 
         centerVBox.getChildren().addAll(searchCourseBox, sp);
         VBox.setVgrow(sp, Priority.ALWAYS);
@@ -260,6 +277,13 @@ public class TeacherMarkAttendanceCenterPanel {
         return mainPane;
     }
     
+    private static TableColumn<Student, String> createColumn(String title, String property) {
+        TableColumn<Student, String> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        return col;
+    }
+    
+    
     private static TableColumn<Student, String> createEditableStatusColumn() {
         TableColumn<Student, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -285,9 +309,37 @@ public class TeacherMarkAttendanceCenterPanel {
         return statusCol;
     }
     
-    private static TableColumn<Student, String> createColumn(String title, String property) {
-        TableColumn<Student, String> col = new TableColumn<>(title);
-        col.setCellValueFactory(new PropertyValueFactory<>(property));
+    
+    private static TableColumn<Student, Void> createReasonColumnWithDialog() {
+        TableColumn<Student, Void> col = new TableColumn<>("Reason");
+        col.setCellFactory(param -> new TableCell<Student, Void>() {
+            private final Button btn = new Button("View");
+
+            {
+                btn.setStyle("-fx-font-size: 12px; -fx-padding: 5 10; -fx-background-color: #4285f4; -fx-text-fill: white; -fx-background-radius: 15;");
+                btn.setOnAction(event -> {
+                    Student student = getTableView().getItems().get(getIndex());
+                    String reason = student.getReason() != null ? student.getReason() : "No reason provided";
+                    String approval = student.getApprovalStatus() != null ? student.getApprovalStatus() : "No approval status";
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Reason & Approval");
+                    alert.setHeaderText("Attendance Details");
+                    alert.setContentText("Reason: " + reason + "\nApproval Status: " + approval);
+                    alert.showAndWait();
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
         return col;
     }
 
@@ -331,41 +383,8 @@ public class TeacherMarkAttendanceCenterPanel {
         }
     }
 
-
-
     
-    private static TableColumn<Student, Void> createReasonColumnWithDialog() {
-        TableColumn<Student, Void> col = new TableColumn<>("Reason");
-        col.setCellFactory(param -> new TableCell<Student, Void>() {
-            private final Button btn = new Button("View");
-
-            {
-                btn.setStyle("-fx-font-size: 12px; -fx-padding: 5 10; -fx-background-color: #4285f4; -fx-text-fill: white; -fx-background-radius: 15;");
-                btn.setOnAction(event -> {
-                    Student student = getTableView().getItems().get(getIndex());
-                    String reason = student.getReason() != null ? student.getReason() : "No reason provided";
-                    String approval = student.getApprovalStatus() != null ? student.getApprovalStatus() : "No approval status";
-
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Reason & Approval");
-                    alert.setHeaderText("Attendance Details");
-                    alert.setContentText("Reason: " + reason + "\nApproval Status: " + approval);
-                    alert.showAndWait();
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(btn);
-                }
-            }
-        });
-        return col;
-    }
+   
     
     private static void saveAttendance(ObservableList<Student> students, String course, String combinedSection) {
         if (combinedSection == null || course == null) return;
@@ -440,11 +459,6 @@ public class TeacherMarkAttendanceCenterPanel {
             alert.showAndWait();
         }
     }
-
-
-
-
-
 
 
 }
