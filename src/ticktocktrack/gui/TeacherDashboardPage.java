@@ -150,84 +150,9 @@ public class TeacherDashboardPage extends Application {
         popup.show(userIcon.getScene().getWindow(), popupX, popupY);
         });
       
-        // Search Box
-        StackPane searchBox = new StackPane();
-        searchBox.setPrefWidth(300);
-        searchBox.setPrefHeight(40);
-        searchBox.setLayoutX(130);
-        searchBox.setLayoutY(40);
-
-        String searchIconPath = getClass().getResource("/resources/search_icon.png").toExternalForm();
-        ImageView searchIcon = new ImageView(new Image(searchIconPath));
-        searchIcon.setFitWidth(20);
-        searchIcon.setFitHeight(20);
-        StackPane.setAlignment(searchIcon, Pos.CENTER_LEFT);
-        searchIcon.setTranslateX(10);
-
-        TextField searchBar = new TextField();
-        searchBar.setPromptText("Search and filter...");
-        searchBar.setPrefWidth(300);
-        searchBar.setPrefHeight(40);
-        searchBar.setStyle("-fx-background-radius: 20;" +
-                "-fx-border-radius: 20;" +
-                "-fx-border-color: #ccc;" +
-                "-fx-font-size: 16px;" +
-                "-fx-padding: 0 15 0 30;");
-
-        StackPane.setAlignment(searchBar, Pos.CENTER);
-
-       
+        
       
-        // --- Search Bar Handling ---
-        searchBar.setOnMouseClicked(event -> {
-            System.out.println("Search bar clicked");
-            searchBar.setFocusTraversable(true); // Make the search bar focusable
-            searchBar.requestFocus(); // Focus the search bar when clicked
-            if (searchBar.getText().equals("Search and filter...")) {
-                searchBar.clear(); // Clear prompt text if clicked
-            }
-        });
-
-        // Handle when text changes in the search bar
-        searchBar.textProperty().addListener((observable, oldValue, newValue) -> {
-            onSearchTextChanged(newValue); // Call the search function as text changes
-        });
-
-        // Handle when the "Enter" key is pressed (submit search)
-        searchBar.setOnAction(event -> {
-            String searchText = searchBar.getText();
-            onSearchSubmit(searchText);  // Trigger the search logic when "Enter" is pressed
-            // Reset prompt text after submit if the search bar is empty
-            if (searchBar.getText().isEmpty()) {
-                searchBar.setPromptText("Search and filter..."); // Reset to default prompt text
-            }
-        });
-
-        // Handle losing focus and resetting prompt text
-        Platform.runLater(() -> {
-            searchBar.getScene().setOnMouseClicked(event -> {
-                // Check if the click was outside the search bar
-                if (!searchBox.contains(event.getX(), event.getY())) {
-                    // If the search bar is focused but the click is outside, reset the search bar
-                    if (searchBar.isFocused()) {
-                        if (searchBar.getText().isEmpty()) {
-                            searchBar.setPromptText("Search and filter..."); // Reset prompt text when empty
-                        }
-                    }
-                    // Also handle losing focus case
-                    if (!searchBar.isFocused() && searchBar.getText().isEmpty()) {
-                        searchBar.setPromptText("Search and filter..."); // Reset prompt text
-                    }
-                }
-            });
-
-            // Ensure the search bar doesn't automatically focus when the scene is shown
-            searchBar.setFocusTraversable(false); // Ensure focus is not automatically set
-            
-            // Explicitly remove focus from the search bar when the scene is displayed
-            searchBar.requestFocus(); // Removing focus from search bar initially
-            searchBar.getParent().requestFocus(); // Request focus on the parent container instead
-        });
+        
 
         // Sidebar panel
         Pane sidePanel = new Pane();
@@ -495,10 +420,9 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.setLayoutX(258);
         centerContentPane.setLayoutY(120);
         
-        searchBox.getChildren().addAll(searchBar, searchIcon);
-        
+       
         // Add all elements to topPanel
-        topPanel.getChildren().addAll(logoView, searchBox, teacherText);
+        topPanel.getChildren().addAll(logoView,  teacherText);
         
         sidePanel.getChildren().addAll( dashboardIcon, line1, calendarIcon, markAttendanceText, viewAllIcon, viewClassListText, line3, addCourseIcon, addCourseText,  line2, attendanceIcon, attendanceSummaryText, individualReportsIcon, individualReportsText);
         
@@ -517,23 +441,9 @@ public class TeacherDashboardPage extends Application {
        
     }
     
-    // --- Search Logic Functions ---
+   
 
-    // Handle search text change dynamically
-    private void onSearchTextChanged(String searchText) {
-        System.out.println("Search text changed: " + searchText);
-        // You can add your filtering or search logic here
-        // For example, dynamically filtering a list of items based on searchText
-    }
-
-    // Handle search submit (when "Enter" key is pressed)
-    private void onSearchSubmit(String searchText) {
-        System.out.println("Search submitted: " + searchText);
-        // Trigger your search or filtering logic here
-        // Example: searching in a database or filtering items in a list
-    }
-
-    // Add a global listener to detect clicks outside the search box
+   
     
     // Profile Functions
     private void onProfileClicked(MouseEvent event) {
