@@ -1,11 +1,16 @@
 package ticktocktrack.gui;
 
 import javafx.scene.layout.Pane;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import ticktocktrack.database.DatabaseDashboard;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import javafx.scene.paint.Color;
@@ -63,6 +68,17 @@ public class AdminDashboardCenterPanel {
         UsersModel currentUser = Session.getCurrentUser();
         String fullName = (currentUser != null) ? currentUser.getFullName().trim() : "Admin";
         if (fullName.isEmpty()) fullName = "Admin";
+        
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+        String formattedDate = currentDate.format(formatter);
+        
+        Text dateText = new Text(formattedDate);
+        dateText.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
+        dateText.setFill(Color.web("#02383E"));
+        dateText.setLayoutX(70);
+        dateText.setLayoutY(101);
+        
 
         // Create the "Dashboard" Text
         Text dashboardTitle = new Text("Welcome Admin \n" + fullName + "!");
@@ -73,22 +89,66 @@ public class AdminDashboardCenterPanel {
 
         // Create 3 panels (box holders)
         double startX = 20;
-        double gap = 50;
+        double gap = 95;
         double width = 267;
         double height = 120;
         double panelsY = 290; // <--- move lower (increase Y)
-        Pane panel1 = createBoxPanel(startX, panelsY, width, height, "Total Admins User", "/resources/admin_icon.png");
-        Pane panel2 = createBoxPanel(startX + width + gap, panelsY, width, height, "Total Teachers User", "/resources/teacher_icon.png");
-        Pane panel3 = createBoxPanel(startX + 2 * (width + gap), panelsY, width, height, "Total Students User", "/resources/student_icon.png");
+        int totalAdmins = DatabaseDashboard.countUsersByRole("admin");
+        int totalTeachers = DatabaseDashboard.countUsersByRole("teacher");
+        int totalStudents = DatabaseDashboard.countUsersByRole("student");
 
+        String createdBy = (currentUser != null) ? currentUser.getFullName().trim() : "Admin";
+        int totalCreatedByAdmin = DatabaseDashboard.countAccountsCreatedBy(createdBy);
 
-        centerPanel.getChildren().addAll(shadowView, adminBgView, adminEffectsView, adminEffectsIconView, adminAvatarView, dashboardTitle, panel1, panel2, panel3);
+        Pane panel1 = createBoxPanel(startX, panelsY, width, height, "Total Admins User", totalAdmins, "/resources/admin_icon.png");
+        Pane panel2 = createBoxPanel(startX + width + gap, panelsY, width, height, "Total Teachers User", totalTeachers, "/resources/teacher_icon.png");
+        Pane panel3 = createBoxPanel(startX + 2 * (width + gap), panelsY, width, height, "Total Students User", totalStudents, "/resources/student_icon.png");
+
+        
+     // Additional panel: Number of accounts created by admin
+        Pane createdAccountsPanel = new Pane();
+        createdAccountsPanel.setPrefSize(535, 150);
+        createdAccountsPanel.setLayoutX(255); // Centered under the three boxes
+        createdAccountsPanel.setLayoutY(430);
+        createdAccountsPanel.setStyle(
+            "-fx-background-color: #e8f5e9;" +  // light greenish background
+            "-fx-background-radius: 20;" +
+            "-fx-border-color: #a5d6a7;" +
+            "-fx-border-radius: 20;" +
+            "-fx-border-width: 1;"
+        );
+
+        // Title label
+        Text createdLabel = new Text("Number of Accounts Created by Admin");
+        createdLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
+        createdLabel.setFill(Color.web("#02383E"));
+        createdLabel.setLayoutX(30);
+        createdLabel.setLayoutY(40);
+
+        // Number value (placeholder)
+        Text createdNumber = new Text(String.valueOf(totalCreatedByAdmin)); // You can update this dynamically from the database
+        createdNumber.setFont(Font.font("Poppins", FontWeight.BOLD, 40));
+        createdNumber.setFill(Color.web("#00796B"));
+        createdNumber.setLayoutX(30);
+        createdNumber.setLayoutY(85);
+
+        // Optional: Add a decorative icon
+        String createdIconPath = AdminDashboardCenterPanel.class.getResource("/resources/Admin_Dashboard/Admin_hammer_wrench_icon.png").toExternalForm();
+        ImageView createdIcon = new ImageView(new Image(createdIconPath));
+        createdIcon.setFitWidth(60);
+        createdIcon.setFitHeight(60);
+        createdIcon.setLayoutX(470); // Right end
+        createdIcon.setLayoutY(20);
+
+        createdAccountsPanel.getChildren().addAll(createdLabel, createdNumber, createdIcon);
+
+        centerPanel.getChildren().addAll(shadowView, adminBgView, adminEffectsView, adminEffectsIconView, adminAvatarView, dashboardTitle, dateText,  panel1, panel2, panel3, createdAccountsPanel);
 
         return centerPanel;
     }
 
     // Helper method to create a styled box panel with a label, number holder, and icon
-    private static Pane createBoxPanel(double x, double y, double width, double height, String labelText, String iconResourcePath) {
+    private static Pane createBoxPanel(double x, double y, double width, double height, String labelText, int numberValue, String iconResourcePath) {
         Pane box = new Pane();
         box.setPrefSize(width, height);
         box.setLayoutX(x);
@@ -101,30 +161,28 @@ public class AdminDashboardCenterPanel {
             "-fx-border-width: 1;"
         );
 
-        // Title label
         Text label = new Text(labelText);
         label.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
         label.setFill(Color.web("#02383E"));
         label.setLayoutX(20);
         label.setLayoutY(35);
 
-        // Number holder
-        Text number = new Text("0"); // Default 0, you will update later from database
+        Text number = new Text(String.valueOf(numberValue));
         number.setFont(Font.font("Poppins", FontWeight.BOLD, 32));
         number.setFill(Color.web("#009688"));
         number.setLayoutX(20);
         number.setLayoutY(90);
 
-        // Load the icon from resources
         String fullIconPath = AdminDashboardCenterPanel.class.getResource(iconResourcePath).toExternalForm();
         ImageView icon = new ImageView(new Image(fullIconPath));
         icon.setFitWidth(40);
         icon.setFitHeight(40);
-        icon.setLayoutX(width - 55); // Right side
-        icon.setLayoutY(30); // Align vertically
+        icon.setLayoutX(width - 55);
+        icon.setLayoutY(30);
 
         box.getChildren().addAll(label, number, icon);
 
         return box;
     }
+
 }

@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import ticktocktrack.database.DatabaseDashboard;
 import ticktocktrack.database.DatabaseRegisterClass;
 
 public class TeacherDashboardCenterPanel {
@@ -72,9 +73,9 @@ public class TeacherDashboardCenterPanel {
         dashboardTitle.setLayoutY(200);
 
 
-        int teacherId = (currentUser != null) ? currentUser.getUserId() : -1;
-        int totalClasses = DatabaseRegisterClass.getTotalClassesByTeacher(teacherId);
-        int totalStudents = DatabaseRegisterClass.getTotalUniqueStudentsByTeacher(teacherId);
+        int teacherId = (currentUser != null && currentUser.getTeacherId() != null) ? currentUser.getTeacherId() : -1;
+        int totalClasses = DatabaseDashboard .getTotalClassesByTeacher(teacherId);
+        int totalStudents = DatabaseDashboard .getTotalUniqueStudentsByTeacher(teacherId);
 
         Pane classPanel = createBoxPanel(50, 290, 300, 120, "Total Classes", totalClasses);
         Pane studentsPanel = createBoxPanel(400, 290, 300, 120, "Number of Students", totalStudents);

@@ -149,9 +149,6 @@ public class TeacherDashboardPage extends Application {
         double popupY = userIcon.localToScreen(userIcon.getBoundsInLocal()).getMaxY() + 5;
         popup.show(userIcon.getScene().getWindow(), popupX, popupY);
         });
-      
-        
-      
         
 
         // Sidebar panel
