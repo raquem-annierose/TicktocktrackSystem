@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -21,8 +22,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
-
 
 public class TeacherNotificationPane {
     private int userId;
@@ -152,12 +151,53 @@ public class TeacherNotificationPane {
         Label message = new Label(note.getMessage());
         message.setFont(javafx.scene.text.Font.font("Poppins", 12));
         message.setMaxWidth(500);
+        message.setMaxHeight(500);
 
         Label date = new Label("Sent: " + note.getDateSent().toString());
         date.setFont(javafx.scene.text.Font.font("Poppins", 10));
         date.setStyle("-fx-text-fill: gray;");
 
-        
+        // Accept button
+        Button acceptButton = new Button("Accept");
+        acceptButton.setStyle(
+            "-fx-background-color: #FFFFFF;" +
+            "-fx-text-fill: #01B80A;" +
+            "-fx-border-color: #01B80A;" +
+            "-fx-border-width: 1px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-background-radius: 5px;"
+        );
+        acceptButton.setFont(javafx.scene.text.Font.font("Poppins", 12));
+        acceptButton.setPrefWidth(100);
+        acceptButton.setPrefHeight(35);
+        acceptButton.setCursor(Cursor.HAND);
+        acceptButton.setOnAction(e -> {
+            System.out.println("Accepted notification: " + note.getMessage());
+            // TODO: Add accept logic here
+            closePopup(dimOverlay);
+        });
+
+        // Reject button
+        Button rejectButton = new Button("Reject");
+        rejectButton.setStyle(
+            "-fx-background-color: #FFFFFF;" +
+            "-fx-text-fill: #DD5F61;" +
+            "-fx-border-color: #DD5F61;" +
+            "-fx-border-width: 1px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-background-radius: 5px;"
+        );
+        rejectButton.setFont(javafx.scene.text.Font.font("Poppins", 12));
+        rejectButton.setPrefWidth(100);
+        rejectButton.setPrefHeight(35);
+        rejectButton.setCursor(Cursor.HAND);
+        rejectButton.setOnAction(e -> {
+            System.out.println("Rejected notification: " + note.getMessage());
+            // TODO: Add reject logic here
+            closePopup(dimOverlay);
+        });
+
+        // Close button (X)
         Button closeButton = new Button("X");
         closeButton.setStyle(
             "-fx-background-color: transparent;" +
@@ -167,29 +207,33 @@ public class TeacherNotificationPane {
         );
         closeButton.setCursor(Cursor.HAND);
         closeButton.setOnAction(e -> {
-            Scene scene = notificationIconWrapper.getScene();
-            if (scene != null && scene.getRoot() instanceof StackPane) {
-                StackPane root = (StackPane) scene.getRoot();
-                root.getChildren().remove(dimOverlay.getParent());
-            }
+            closePopup(dimOverlay);
         });
 
-        // Title bar with close button aligned right
+        // Title bar
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
         titleBar.setSpacing(10);
-        
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
         titleBar.getChildren().addAll(title, spacer, closeButton);
 
-        VBox popupBox = new VBox(10, titleBar, message, date);
-        popupBox.setPadding(new Insets(15));
+        VBox contentBox = new VBox(10, message, date);
+        VBox.setVgrow(contentBox, Priority.ALWAYS); // Pushes buttons to the bottom
+
+        HBox buttonsBox = new HBox(20, acceptButton, rejectButton);
+        buttonsBox.setAlignment(Pos.CENTER);
+
+        VBox popupBox = new VBox(15, titleBar, contentBox, buttonsBox);
+        popupBox.setPadding(new Insets(20));
         popupBox.setMaxWidth(700);
-        popupBox.setMaxHeight(300);
-        popupBox.setStyle("-fx-background-color: white; -fx-background-radius: 8; " +
-                          "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.2, 0, 0);");
+        popupBox.setMaxHeight(350);
+        popupBox.setStyle(
+            "-fx-background-color: white; " +
+            "-fx-background-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.2, 0, 0);"
+        );
+
 
         StackPane popupWrapper = new StackPane(popupBox);
         popupWrapper.setPrefSize(1300, 750);
@@ -201,12 +245,21 @@ public class TeacherNotificationPane {
         if (scene != null && scene.getRoot() instanceof StackPane) {
             StackPane root = (StackPane) scene.getRoot();
             root.getChildren().add(fullOverlay);
-            fullOverlay.toFront(); // Make sure this popup is on top
+            fullOverlay.toFront();
 
             // Clicking outside popup closes it
             dimOverlay.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
                 root.getChildren().remove(fullOverlay);
             });
+        }
+    }
+
+
+    private void closePopup(StackPane dimOverlay) {
+        Scene scene = notificationIconWrapper.getScene();
+        if (scene != null && scene.getRoot() instanceof StackPane) {
+            StackPane root = (StackPane) scene.getRoot();
+            root.getChildren().removeIf(node -> node instanceof StackPane && ((StackPane)node).getChildren().contains(dimOverlay));
         }
     }
 
