@@ -203,34 +203,11 @@ public class TeacherNotificationDAO {
 
     
     public static boolean submitExcuse(int studentId,
-                                       String dateSubmitted,
-                                       String reason,
-                                       int teacherUserId,
-                                       String remarks) {
-        try {
-            StringBuilder messageBuilder = new StringBuilder();
-
-            if (reason != null && !reason.isEmpty()) {
-                messageBuilder.append(reason);
-            }
-
-            if (remarks != null && !remarks.isEmpty()) {
-                messageBuilder.append(" - ").append(remarks);
-            }
-
-            String message = messageBuilder.toString();
-
-            // Send simplified message; GUI already includes "Student submitted excuse for..."
-            TeacherNotificationDAO.sendTeacherNotification(
-                teacherUserId,
-                message,
-                "Excuse Submission",
-                studentId
-            );
-            return true;
-        } catch (Exception e) {
-            System.err.println("Error submitting excuse notification: " + e.getMessage());
-            return false;
-        }
+            String dateSubmitted,
+            String reason,
+            int teacherUserId,
+            String remarks) {
+    	
+    	return true;
     }
 }
