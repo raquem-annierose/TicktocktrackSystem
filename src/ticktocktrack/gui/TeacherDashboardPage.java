@@ -97,19 +97,19 @@ public class TeacherDashboardPage extends Application {
         
      // Teacher text
         Text teacherText = new Text(currentUser.getUsername());
-        teacherText.setFont(Font.font("Poppins Medium", 25));
+        teacherText.setFont(Font.font("Poppins Medium", 20));
         teacherText.setFill(Color.web("#02383E"));
-        teacherText.setLayoutX(1050);
+        teacherText.setLayoutX(1080);
         teacherText.setLayoutY(65);
     
         
         // User Icon
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
         ImageView userIcon = new ImageView(new Image(userIconPath));
-        userIcon.setFitWidth(90);
-        userIcon.setFitHeight(90);
-        userIcon.setLayoutX(1200);
-        userIcon.setLayoutY(5);
+        userIcon.setFitWidth(67);
+        userIcon.setFitHeight(67);
+        userIcon.setLayoutX(1190);
+        userIcon.setLayoutY(20);
         userIcon.setCursor(Cursor.HAND);
         
      // --- User Icon Popup Handling (keep your event here) ---
@@ -162,17 +162,17 @@ public class TeacherDashboardPage extends Application {
         // Dashboard icon
         String dashboardIconPath = getClass().getResource("/resources/Dashboard_icon.png").toExternalForm();
         ImageView dashboardIcon = new ImageView(new Image(dashboardIconPath));
-        dashboardIcon.setFitWidth(55);
-        dashboardIcon.setFitHeight(55);
-        dashboardIcon.setLayoutX(22);
-        dashboardIcon.setLayoutY(20);
+        dashboardIcon.setFitWidth(35);
+        dashboardIcon.setFitHeight(35);
+        dashboardIcon.setLayoutX(46);
+        dashboardIcon.setLayoutY(25);
       
         // Dashboard text
         Text dashboardText = new Text("Dashboard");
-        dashboardText.setFont(Font.font("Poppins", 18));
+        dashboardText.setFont(Font.font("Poppins", 15));
         dashboardText.setFill(Color.web("#20B2AA"));
-        dashboardText.setLayoutX(90);
-        dashboardText.setLayoutY(60);
+        dashboardText.setLayoutX(93);
+        dashboardText.setLayoutY(52);
         sidePanel.getChildren().add(dashboardText);
         
      // Set the default selected text when the app launches
@@ -203,7 +203,7 @@ public class TeacherDashboardPage extends Application {
         // Line under dashboard
         String line1Path = getClass().getResource("/resources/Line1.png").toExternalForm();
         ImageView line1 = new ImageView(new Image(line1Path));
-        line1.setFitWidth(180);
+        line1.setFitWidth(195);
         line1.setFitHeight(2);
         line1.setLayoutX(30);
         line1.setLayoutY(90);
@@ -211,15 +211,15 @@ public class TeacherDashboardPage extends Application {
      // Calendar Icon
         String calendarIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_calendar_icon.png").toExternalForm();
         ImageView calendarIcon = new ImageView(new Image(calendarIconPath));
-        calendarIcon.setFitWidth(51); // Set width for the calendar icon
-        calendarIcon.setFitHeight(51); // Set height for the calendar icon
-        calendarIcon.setLayoutX(26); // x position
+        calendarIcon.setFitWidth(33); // Set width for the calendar icon
+        calendarIcon.setFitHeight(33); // Set height for the calendar icon
+        calendarIcon.setLayoutX(46); // x position
         calendarIcon.setLayoutY(130); // y position (adjust as needed)
 
        
      // Mark Attendance Text
         Text markAttendanceText = new Text("Mark Attendance");
-        markAttendanceText.setFont(Font.font("Poppins", 18)); // Set font size to 18 and Poppins font
+        markAttendanceText.setFont(Font.font("Poppins", 15)); // Set font size to 18 and Poppins font
         markAttendanceText.setFill(Color.web("#02383E")); // Set text color
         markAttendanceText.setLayoutX(90); // x position
         markAttendanceText.setLayoutY(150); // y position (adjust as needed)
@@ -249,25 +249,25 @@ public class TeacherDashboardPage extends Application {
      // Line 2 image
         String line2Path = getClass().getResource("/resources/Line2.png").toExternalForm();
         ImageView line2 = new ImageView(new Image(line2Path));
-        line2.setFitWidth(180);  // width of line 2
+        line2.setFitWidth(195);  // width of line 2
         line2.setFitHeight(0);   // height of line 2 (0 for a thin line)
         line2.setLayoutX(30); // x position
-        line2.setLayoutY(220); // y position
+        line2.setLayoutY(205); // y position
         
      // View Class List icon image
         String viewAllPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_view_all_icon.png").toExternalForm();
         ImageView viewAllIcon = new ImageView(new Image(viewAllPath));
-        viewAllIcon.setFitWidth(69);
-        viewAllIcon.setFitHeight(69);
-        viewAllIcon.setLayoutX(17); // x position
-        viewAllIcon.setLayoutY(250); // y position
+        viewAllIcon.setFitWidth(35);
+        viewAllIcon.setFitHeight(35);
+        viewAllIcon.setLayoutX(46); // x position
+        viewAllIcon.setLayoutY(240); // y position
 
      // View Class List Text
         Text viewClassListText = new Text("View Class List");
-        viewClassListText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size to 18 and Poppins font (medium weight)
+        viewClassListText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         viewClassListText.setFill(Color.web("#02383E")); // Set text color
         viewClassListText.setLayoutX(90); // x position
-        viewClassListText.setLayoutY(285); // y position (adjust as needed)
+        viewClassListText.setLayoutY(265); // y position (adjust as needed)
         viewClassListText.setWrappingWidth(153); // Set width for wrapping
 
         // Hover effect
@@ -295,18 +295,18 @@ public class TeacherDashboardPage extends Application {
      // Add Course icon image
         String addCourseIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_add_course_icon.png").toExternalForm();
         ImageView addCourseIcon = new ImageView(new Image(addCourseIconPath));
-        addCourseIcon.setFitWidth(56); // Set width
-        addCourseIcon.setFitHeight(56); // Set height
-        addCourseIcon.setLayoutX(25); // x position (adjust if needed)
-        addCourseIcon.setLayoutY(340); // y position (adjust if needed)
+        addCourseIcon.setFitWidth(31); // Set width
+        addCourseIcon.setFitHeight(31); // Set height
+        addCourseIcon.setLayoutX(47); // x position (adjust if needed)
+        addCourseIcon.setLayoutY(320); // y position (adjust if needed)
 
         
      // Create "Add Course" Text
         Text addCourseText = new Text("Register Class");
-        addCourseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size and weight
+        addCourseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size and weight
         addCourseText.setFill(Color.web("#02383E")); // Set initial text color
         addCourseText.setLayoutX(90); // x position
-        addCourseText.setLayoutY(373); // y position (adjust if needed)
+        addCourseText.setLayoutY(339); // y position (adjust if needed)
         addCourseText.setWrappingWidth(135); // Set width for wrapping
 
         // Hover effect for Add Course text
@@ -333,25 +333,25 @@ public class TeacherDashboardPage extends Application {
      // Line 3 image
         String line3Path = getClass().getResource("/resources/Line3.png").toExternalForm();
         ImageView line3 = new ImageView(new Image(line3Path));
-        line3.setFitWidth(180);  // width of line 3
+        line3.setFitWidth(195);  // width of line 3
         line3.setFitHeight(0);   // height of line 3 (0 for a thin line)
         line3.setLayoutX(30);    // x position (adjust if needed)
-        line3.setLayoutY(425);   // y position (adjust for spacing between sections)
+        line3.setLayoutY(387);   // y position (adjust for spacing between sections)
         
      // Attendance icon image
         String attendanceIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_summary_icon.png").toExternalForm();
         ImageView attendanceIcon = new ImageView(new Image(attendanceIconPath));
-        attendanceIcon.setFitWidth(53);   // width
-        attendanceIcon.setFitHeight(53);  // height
-        attendanceIcon.setLayoutX(26);    // x position
-        attendanceIcon.setLayoutY(455);   // y position
+        attendanceIcon.setFitWidth(35);   // width
+        attendanceIcon.setFitHeight(35);  // height
+        attendanceIcon.setLayoutX(46);    // x position
+        attendanceIcon.setLayoutY(429);   // y position
 
      // Add "Attendance Summary" text
         Text attendanceSummaryText = new Text("Attendance Summary");
-        attendanceSummaryText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size to 18 and Poppins font (medium weight)
+        attendanceSummaryText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         attendanceSummaryText.setFill(Color.web("#02383E")); // Set text color
-        attendanceSummaryText.setLayoutX(90); // x position
-        attendanceSummaryText.setLayoutY(475); // y position
+        attendanceSummaryText.setLayoutX(93); // x position
+        attendanceSummaryText.setLayoutY(440); // y position
         attendanceSummaryText.setWrappingWidth(135); // Set width for wrapping
 
         // Hover effect for Attendance Summary text
@@ -378,17 +378,17 @@ public class TeacherDashboardPage extends Application {
      // Individual Reports icon image
         String individualReportsIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_report_icon.png").toExternalForm();
         ImageView individualReportsIcon = new ImageView(new Image(individualReportsIconPath));
-        individualReportsIcon.setFitWidth(53);   // width
-        individualReportsIcon.setFitHeight(53);  // height
-        individualReportsIcon.setLayoutX(26);    // x position
-        individualReportsIcon.setLayoutY(540);   // y position
+        individualReportsIcon.setFitWidth(35);   // width
+        individualReportsIcon.setFitHeight(35);  // height
+        individualReportsIcon.setLayoutX(46);    // x position
+        individualReportsIcon.setLayoutY(511);   // y position
         
      // Add "Individual Reports" text
         Text individualReportsText = new Text("Individual Reports");
-        individualReportsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18)); // Set font size to 18 and Poppins font (medium weight)
+        individualReportsText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15)); // Set font size to 18 and Poppins font (medium weight)
         individualReportsText.setFill(Color.web("#02383E")); // Set text color
         individualReportsText.setLayoutX(90); // x position
-        individualReportsText.setLayoutY(560); // y position
+        individualReportsText.setLayoutY(534); // y position
         individualReportsText.setWrappingWidth(135); // Set width for wrapping
 
         // Hover effect for Individual Reports text

@@ -114,7 +114,14 @@ public class TeacherViewClassListCenterPanel {
 
     private static VBox createCourseBox(String courseName, String section, String program) {
         VBox courseBox = new VBox(10);
-        courseBox.setStyle("-fx-padding: 15px; -fx-border-color: #ccc; -fx-border-width: 2px; -fx-background-color: #f9f9f9;");
+        courseBox.setStyle( "-fx-padding: 15px;" +
+        	    "-fx-border-color: #8B43BC;" +
+        	    "-fx-border-width: 2px;" +
+        	    "-fx-border-radius: 5px;" +       
+        	    "-fx-background-color: #F6F6F6;" +
+        	    "-fx-background-radius: 12px;"     
+        	);
+
         courseBox.setPrefSize(250, 120);
 
         Text courseNameText = new Text("Course: " + courseName);
@@ -136,7 +143,14 @@ public class TeacherViewClassListCenterPanel {
 
     private static Button createViewStudentsButton(String courseName, String section, String program, int teacherId) {
         Button viewStudentsButton = new Button("View Students");
-        viewStudentsButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
+        viewStudentsButton.setStyle("-fx-background-color: #FFFFFF;" +  
+        	    "-fx-text-fill: #009DDA;" +           
+        	    "-fx-border-color: #009DDA;" +      
+        	    "-fx-border-width: 1px;" +          
+        	    "-fx-border-radius: 3px;" +         
+        	    "-fx-background-radius: 3px;"       
+        	);
+
         viewStudentsButton.setOnAction(event -> openStudentList(courseName, section, program, teacherId));
         return viewStudentsButton;
     }
@@ -161,7 +175,14 @@ public class TeacherViewClassListCenterPanel {
 
     private static Button createEditButton(String oldCourseName, String oldSection) {
         Button editButton = new Button("Edit");
-        editButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        editButton.setStyle("-fx-background-color: #FFFFFF;" +  
+        	    "-fx-text-fill: #01B80A;" +           
+        	    "-fx-border-color: #01B80A;" +      
+        	    "-fx-border-width: 1px;" +          
+        	    "-fx-border-radius: 3px;" +         
+        	    "-fx-background-radius: 3px;"       
+        	);
+
         editButton.setOnAction(event -> ViewClassList.handleEditCourse(oldCourseName, oldSection, teacherId));
         return editButton;
     }
@@ -169,7 +190,13 @@ public class TeacherViewClassListCenterPanel {
 
     private static Button createDeleteButton(String courseName, String section) {
         Button deleteButton = new Button("Delete");
-        deleteButton.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white;");
+        deleteButton.setStyle("-fx-background-color: #FFFFFF;" +  
+        	    "-fx-text-fill: #DD5F61;" +           
+        	    "-fx-border-color: #DD5F61;" +      
+        	    "-fx-border-width: 1px;" +          
+        	    "-fx-border-radius: 3px;" +         
+        	    "-fx-background-radius: 3px;"
+        	  );
         deleteButton.setOnAction(event -> ViewClassList.handleDeleteCourse(courseName, section, teacherId));
         return deleteButton;
     }
