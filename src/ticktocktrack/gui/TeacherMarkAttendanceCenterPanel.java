@@ -206,8 +206,7 @@ public class TeacherMarkAttendanceCenterPanel {
             createColumn("First Name", "firstName"),
             createColumn("Middle Name", "middleName"),
             createColumn("Date", "date"),
-            createEditableStatusColumn(),
-            createReasonColumnWithDialog()
+            createEditableStatusColumn()
         );
 
         // Style the header and header text
@@ -309,39 +308,6 @@ public class TeacherMarkAttendanceCenterPanel {
         return statusCol;
     }
     
-    
-    private static TableColumn<Student, Void> createReasonColumnWithDialog() {
-        TableColumn<Student, Void> col = new TableColumn<>("Reason");
-        col.setCellFactory(param -> new TableCell<Student, Void>() {
-            private final Button btn = new Button("View");
-
-            {
-                btn.setStyle("-fx-font-size: 12px; -fx-padding: 5 10; -fx-background-color: #4285f4; -fx-text-fill: white; -fx-background-radius: 15;");
-                btn.setOnAction(event -> {
-                    Student student = getTableView().getItems().get(getIndex());
-                    String reason = student.getReason() != null ? student.getReason() : "No reason provided";
-                    String approval = student.getApprovalStatus() != null ? student.getApprovalStatus() : "No approval status";
-
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Reason & Approval");
-                    alert.setHeaderText("Attendance Details");
-                    alert.setContentText("Reason: " + reason + "\nApproval Status: " + approval);
-                    alert.showAndWait();
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(btn);
-                }
-            }
-        });
-        return col;
-    }
 
     private static void loadStudentsBasedOnSelection(ComboBox<String> courseComboBox,
             ComboBox<String> sectionComboBox,
