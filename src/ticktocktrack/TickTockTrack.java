@@ -13,7 +13,6 @@ public class TickTockTrack {
         // Initialize database connection
         dbConnection = new DatabaseConnection();
        
-        
         // Now launch the GUI
         HomePage.main(args);
     }

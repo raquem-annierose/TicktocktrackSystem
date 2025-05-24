@@ -65,16 +65,17 @@ public class Login {
             dbConnection.connectToSQLServer();
             conn = dbConnection.getConnection();
 
-            String sql = "SELECT user_id, username, email, role, password_hash FROM Users WHERE username = ?";
+            String sql = "SELECT user_id, username, email, role, password_hash, profile_path FROM Users WHERE username = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             rs = stmt.executeQuery();
-
+            
             if (rs.next()) {
                 int userId = rs.getInt("user_id");
                 String role = rs.getString("role");
                 String email = rs.getString("email");
                 String storedHash = rs.getString("password_hash");
+                String profilePath = rs.getString("profile_path");  // NEW
 
                 String enteredHash = DatabaseRegistrationManager.hashPassword(password);
 
@@ -83,6 +84,7 @@ public class Login {
 
                 if (storedHash != null && storedHash.equals(enteredHash)) {
                     UsersModel user = new UsersModel(userId, username, email, role);
+                    user.setProfilePath(profilePath);  // Set profilePath
 
                     switch (role.toLowerCase()) {
                         case "teacher":
