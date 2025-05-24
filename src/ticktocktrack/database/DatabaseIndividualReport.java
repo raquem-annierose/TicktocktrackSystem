@@ -50,23 +50,25 @@ public class DatabaseIndividualReport {
 	public static Student getStudentById(int studentId, int teacherId) {
 	    String query = """
 	        SELECT 
-	            s.student_id,
-	            s.last_name,
-	            s.first_name,
-	            s.middle_name,
-	            s.year_level,
-	            s.program,
-	            s.section,
-	            u.email,
-	            COUNT(DISTINCT e.class_id) AS total_classes
-	        FROM Students s
-	        JOIN Users u ON s.user_id = u.user_id
-	        JOIN Enrollments e ON s.student_id = e.student_id
-	        JOIN Classes c ON e.class_id = c.class_id
-	        WHERE s.student_id = ? AND c.teacher_id = ?
-	        GROUP BY 
-	            s.student_id, s.last_name, s.first_name, s.middle_name, 
-	            s.year_level, s.program, s.section, u.email
+	    		s.student_id,
+	    		s.last_name,
+	    		s.first_name,
+	    		s.middle_name,
+	    		s.year_level,
+	    		s.program,
+	    		s.section,
+	    		u.email,
+	    		u.profile_path,
+	    		COUNT(DISTINCT e.class_id) AS total_classes
+	    	FROM Students s
+	    	JOIN Users u ON s.user_id = u.user_id
+	    	JOIN Enrollments e ON s.student_id = e.student_id
+	    	JOIN Classes c ON e.class_id = c.class_id
+	    	WHERE s.student_id = ? AND c.teacher_id = ?
+	    	GROUP BY 
+	    		s.student_id, s.last_name, s.first_name, s.middle_name, 
+	    		s.year_level, s.program, s.section, u.email, u.profile_path
+
 	    """;
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
@@ -78,19 +80,20 @@ public class DatabaseIndividualReport {
 	            pstmt.setInt(2, teacherId);
 
 	            try (ResultSet rs = pstmt.executeQuery()) {
-	                if (rs.next()) {
-	                    Student student = new Student();
-	                    student.setStudentId(rs.getInt("student_id"));
-	                    student.setFirstName(rs.getString("first_name"));
-	                    student.setMiddleName(rs.getString("middle_name"));
-	                    student.setLastName(rs.getString("last_name"));
-	                    student.setYearLevel(rs.getString("year_level"));
-	                    student.setProgram(rs.getString("program"));
-	                    student.setSection(rs.getString("section"));
-	                    student.setEmail(rs.getString("email"));
-	                    student.setTotalClasses(rs.getInt("total_classes"));
-
-	                    return student;
+	            	if (rs.next()) {
+	            	    Student student = new Student();
+	            	    student.setStudentId(rs.getInt("student_id"));
+	            	    student.setFirstName(rs.getString("first_name"));
+	            	    student.setMiddleName(rs.getString("middle_name"));
+	            	    student.setLastName(rs.getString("last_name"));
+	            	    student.setYearLevel(rs.getString("year_level"));
+	            	    student.setProgram(rs.getString("program"));
+	            	    student.setSection(rs.getString("section"));
+	            	    student.setEmail(rs.getString("email"));
+	            	    student.setProfilePath(rs.getString("profile_path")); // <--- ADD THIS
+	            	    student.setTotalClasses(rs.getInt("total_classes"));
+	            	    return student;
+	            	
 	                }
 	            }
 	        }
@@ -198,8 +201,9 @@ public class DatabaseIndividualReport {
 
 	public static List<Student> getStudentsForCurrentTeacherClass(String courseName, String section, String program) {
 	    List<Student> students = new ArrayList<>();
-	    
-	    String query = "SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, u.email, s.year_level " +
+
+	    String query = "SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, " +
+	                   "u.email, s.year_level, u.profile_path " +
 	                   "FROM Students s " +
 	                   "JOIN Users u ON s.user_id = u.user_id " +
 	                   "JOIN Enrollments e ON s.student_id = e.student_id " +
@@ -211,12 +215,12 @@ public class DatabaseIndividualReport {
 	    if (currentUser != null) {
 	        teacherId = currentUser.getTeacherId();
 	    }
-	    
+
 	    if (teacherId == null) {
 	        System.err.println("No logged-in teacher found.");
-	        return students;  // empty list
+	        return students;  // Return empty list
 	    }
-	    
+
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
 	        dbConn.connectToSQLServer();
@@ -237,6 +241,7 @@ public class DatabaseIndividualReport {
 	                    student.setLastName(rs.getString("last_name"));
 	                    student.setEmail(rs.getString("email"));
 	                    student.setYearLevel(rs.getString("year_level"));
+	                    student.setProfilePath(rs.getString("profile_path")); // ✅ Fetch profile path
 	                    students.add(student);
 	                }
 	            }
@@ -244,8 +249,8 @@ public class DatabaseIndividualReport {
 	    } catch (SQLException e) {
 	        System.err.println("Error fetching students for current teacher's class: " + e.getMessage());
 	    }
+
 	    return students;
 	}
-
 
 }

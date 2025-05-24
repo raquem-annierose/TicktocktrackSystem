@@ -22,6 +22,10 @@ public class Student {
     private int absent;
     private int late;
     private int excused;
+    private String profilePath;
+    public String getProfilePath() { return profilePath; }
+    public void setProfilePath(String profilePath) { this.profilePath = profilePath; }
+
 
     public Student() {
         // Default constructor

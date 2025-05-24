@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ticktocktrack.database.DatabaseIndividualReport;
@@ -64,10 +65,25 @@ public class CardIndividualReport {
 	    // Header
 	    HBox profileHeader = new HBox(15);
 	    profileHeader.setAlignment(Pos.CENTER_LEFT);
-	    String userIconPath = CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
-	    ImageView userIcon = new ImageView(new Image(userIconPath));
+	    ImageView userIcon;
+	    if (fullStudent.getProfilePath() != null && !fullStudent.getProfilePath().isEmpty()) {
+	        try {
+	            Image profileImage = new Image(fullStudent.getProfilePath(), true);
+	            userIcon = new ImageView(profileImage);
+	        } catch (Exception e) {
+	            System.err.println("Failed to load profile image: " + e.getMessage());
+	            userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+	        }
+	    } else {
+	        userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+	    }
 	    userIcon.setFitWidth(80);
 	    userIcon.setFitHeight(80);
+
+	    // Make image circular
+	    Circle clip = new Circle(40, 40, 40); // x, y, radius
+	    userIcon.setClip(clip);
+
 
 	    VBox studentInfo = new VBox(5,
 	        styledLabel("Name: " + fullStudent.getLastName() + ", " + fullStudent.getFirstName() + " " + fullStudent.getMiddleName()),

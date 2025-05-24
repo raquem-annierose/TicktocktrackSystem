@@ -153,5 +153,17 @@ public class UsersModel {
     public void setDateCreated(String dateCreated) {
         this.dateCreated = dateCreated;
     }
+    
+    private String profilePath;
+
+    public String getProfilePath() {
+        return profilePath;
+    }
+
+    public void setProfilePath(String profilePath) {
+        this.profilePath = profilePath;
+    }
+    
+    
 
 }
