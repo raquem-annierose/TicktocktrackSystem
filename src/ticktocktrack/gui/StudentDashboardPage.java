@@ -309,13 +309,20 @@ public class StudentDashboardPage extends Application {
             onSubmitExcuseClicked(e);
         });
         
+        //student Individual report
+        String studentIndividualReportIconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_report_icon.png").toExternalForm();
+        ImageView studentIndividualReportIcon = new ImageView(new Image(studentIndividualReportIconPath));
+        studentIndividualReportIcon.setFitWidth(35);   // width
+        studentIndividualReportIcon.setFitHeight(35);  // height
+        studentIndividualReportIcon.setLayoutX(46);    // x position
+        studentIndividualReportIcon.setLayoutY(507);   // y position
         
-        // Create "Submit Excuse" Text
+        // Create "Individual Report" Text
         Text studentIndividualReportText = new Text("Individual Report");
         studentIndividualReportText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));
         studentIndividualReportText.setFill(Color.web("#02383E"));
         studentIndividualReportText.setLayoutX(93);
-        studentIndividualReportText.setLayoutY(490);
+        studentIndividualReportText.setLayoutY(530);
         studentIndividualReportText.setWrappingWidth(135);
 
         // Hover effect for Submit Excuse text
@@ -345,7 +352,7 @@ public class StudentDashboardPage extends Application {
         // Add all elements to topPanel
         topPanel.getChildren().addAll(logoView,  studentText);
 
-        sidePanel.getChildren().addAll( dashboardIcon, line1, viewAttendanceIcon, viewAttendanceText, line2, attendanceStatusIcon, attendanceStatusText,   line3, submitExcuseIcon, submitExcuseText, studentIndividualReportText);
+        sidePanel.getChildren().addAll( dashboardIcon, line1, viewAttendanceIcon, viewAttendanceText, line2, attendanceStatusIcon, attendanceStatusText,   line3, submitExcuseIcon, submitExcuseText, studentIndividualReportText,studentIndividualReportIcon );
 
         // Overlay all to root
         overlayPane.getChildren().addAll(topPanel, sidePanel, centerContentPane, userIcon, dashboardText, notificationPane.getNotificationIconWrapper());
