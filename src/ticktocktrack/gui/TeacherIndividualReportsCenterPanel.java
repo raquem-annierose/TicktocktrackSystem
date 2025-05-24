@@ -309,7 +309,7 @@ public class TeacherIndividualReportsCenterPanel {
                     }
 
                     userIcon.setFitWidth(40);
-                    userIcon.setFitHeight(402);
+                    userIcon.setFitHeight(40);
                     userIcon.setPreserveRatio(true);
                     
                     // Make image circular

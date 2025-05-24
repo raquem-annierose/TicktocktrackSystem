@@ -1,231 +1,236 @@
 package ticktocktrack.gui;
 
-import javafx.animation.FadeTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.geometry.VPos;
+import javafx.scene.Cursor;
+
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
-import javafx.util.Duration;
+import javafx.scene.text.FontWeight;
+import ticktocktrack.database.DatabaseStudentViewMyAttendance;
 
-import java.sql.*;
-import java.time.LocalDate;
-import java.util.Objects;
+
+import java.util.List;
+
 
 public class StudentViewMyAttendanceCenterPanel {
 
-    private static final ObservableList<AttendanceRecord> data = FXCollections.observableArrayList();
-    private static final ImageView studentImageView = new ImageView();
-    private static final Label statusLabel = new Label();
+    private static final int CARDS_PER_PAGE = 9;
+    private static int currentPage = 0;
 
-    public static Pane createPanel(int studentId) {
-        Pane centerPanel = new Pane();
-        centerPanel.setPrefSize(1300, 750);
-        centerPanel.setStyle("-fx-background-color: white;");
+    // Color palette for top bar cycling
+    private static final Color[] TOP_BAR_COLORS = new Color[]{
+            Color.web("#1a73e8"), // Blue
+            Color.web("#d93025"), // Red
+            Color.web("#fbbc04"), // Yellow
+            Color.web("#188038"), // Green
+            Color.web("#5f6368"), // Gray
+            Color.web("#a142f4"), // Purple
+            Color.web("#f4511e"), // Orange
+            Color.web("#00897b"), // Teal
+            Color.web("#6d4c41")  // Brown
+    };
 
-        // Background shadow
-        try {
-            String shadowPath = Objects.requireNonNull(StudentViewMyAttendanceCenterPanel.class.getResource("/resources/SHADOW.png")).toExternalForm();
-            ImageView shadowView = new ImageView(new Image(shadowPath));
-            shadowView.setFitWidth(1300);
-            shadowView.setFitHeight(250);
-            shadowView.setLayoutY(-115);
-            centerPanel.getChildren().add(shadowView);
-        } catch (Exception e) {
-            System.out.println("Shadow image error: " + e.getMessage());
-        }
+    public static Pane createPanel() {
+        List<String> classes = DatabaseStudentViewMyAttendance.getStudentClassesWithTeachers();
 
-        // Rectangle
-        Rectangle centeredRect = new Rectangle(840, 511);
-        centeredRect.setFill(Color.WHITE);
-        centeredRect.setStroke(Color.web("#CBCBCB"));
-        centeredRect.setStrokeWidth(2);
-        centeredRect.setLayoutX((1300 - 1075) / 2.0);
-        centeredRect.setLayoutY((750 - 630) / 2.0);
+        Pane root = new Pane();
+        root.setPrefSize(1300, 750);
+        root.setStyle("-fx-background-color: white;");
 
-        DropShadow dropShadow = new DropShadow();
-        dropShadow.setOffsetY(4);
-        dropShadow.setRadius(10);
-        dropShadow.setColor(Color.rgb(0, 0, 0, 0.15));
-        centeredRect.setEffect(dropShadow);
-        centerPanel.getChildren().add(centeredRect);
+        // Title Label
+        Label titleLabel = new Label("Classes Enrolled:");
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
+        titleLabel.setTextFill(Color.web("#202124"));
+        titleLabel.setPadding(new Insets(20, 0, 10, 20));
 
-        // "TODAY:" Label
-        Label todayLabel = new Label("TODAY:");
-        todayLabel.setFont(Font.font("Poppins", 16));
-        todayLabel.setLayoutX(150);
-        todayLabel.setLayoutY(90);
-        centerPanel.getChildren().add(todayLabel);
+        // HBox for horizontal scrolling cards
+        HBox hbox = new HBox(40);
+        hbox.setPrefHeight(600);
+        hbox.setPadding(new Insets(5));
+        hbox.setAlignment(Pos.TOP_LEFT);
 
-        // Status Label
-        statusLabel.setFont(Font.font("Poppins", 20));
-        statusLabel.setLayoutX(240);
-        statusLabel.setLayoutY(88);
-        centerPanel.getChildren().add(statusLabel);
+        for (int i = 0; i < classes.size(); i++) {
+            String classInfo = classes.get(i);
+            Region card = createClassCard(classInfo, i);
 
-        // Student Image
-        studentImageView.setFitWidth(120);
-        studentImageView.setFitHeight(120);
-        studentImageView.setLayoutX(900);
-        studentImageView.setLayoutY(100);
-        centerPanel.getChildren().add(studentImageView);
+            // Add top margin (15 px)
+            HBox.setMargin(card, new Insets(15, 0, 0, 0));
 
-        // Table
-        TableView<AttendanceRecord> table = new TableView<>();
-        table.setPrefSize(780, 300);
-        table.setLayoutX(145);
-        table.setLayoutY(200);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            card.setOnMouseClicked(e -> {
+                // Remove existing overlay if any
+                root.getChildren().removeIf(node -> "overlayBackground".equals(node.getId()) || "overlayPanel".equals(node.getId()));
 
-        TableColumn<AttendanceRecord, String> dateCol = new TableColumn<>("DATE");
-        dateCol.setCellValueFactory(cell -> cell.getValue().dateProperty());
+                // Create dim background to block interaction and darken background
+                Region backgroundDim = new Region();
+                backgroundDim.setId("overlayBackground");
+                backgroundDim.setPrefSize(root.getPrefWidth(), root.getPrefHeight());
+                backgroundDim.setStyle("-fx-background-color: rgba(0,0,0,0.3);");
+                backgroundDim.setLayoutX(0);
+                backgroundDim.setLayoutY(0);
+                backgroundDim.setOnMouseClicked(ev -> {
+                    root.getChildren().removeIf(node -> "overlayBackground".equals(node.getId()) || "overlayPanel".equals(node.getId()));
+                });
 
-        TableColumn<AttendanceRecord, String> statusCol = new TableColumn<>("STATUS");
-        statusCol.setCellValueFactory(cell -> cell.getValue().statusProperty());
+                // Extract course name from classInfo (before first ' | ')
+                String courseName = classInfo.split("\\|")[0].trim();
 
-        statusCol.setCellFactory(column -> new TableCell<>() {
-            final Label label = new Label();
-            @Override
-            protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setGraphic(null);
-                } else {
-                    label.setText(status.toUpperCase());
-                    label.setFont(Font.font("Poppins", 14));
-                    label.setPadding(new Insets(2, 12, 2, 12));
-                    label.setStyle(getStyleForStatus(status.toLowerCase()));
-                    setGraphic(label);
-                    setAlignment(Pos.CENTER);
-                }
-            }
-        });
+                // Get attendance status for today
+                String attendanceStatus = DatabaseStudentViewMyAttendance.getTodayAttendanceStatusForCourse(courseName);
 
-        table.getColumns().addAll(dateCol, statusCol);
-        table.setItems(data);
+                // Get attendance history for the course
+                List<AttendanceStatusPanel.AttendanceRecord> history = DatabaseStudentViewMyAttendance.getAttendanceHistoryForCourse(courseName);
 
-        // Load attendance from DB
-        loadAttendanceFromDatabase("123456"); // Replace with student ID
+                // Create new overlay panel for clicked class with attendance status and history
+                Pane overlayPanel = AttendanceStatusPanel.createStatusPanel(courseName, attendanceStatus, history, () -> {
+                    root.getChildren().removeIf(node -> "overlayBackground".equals(node.getId()) || "overlayPanel".equals(node.getId()));
+                });
 
-        // Show today's image
-        AttendanceRecord today = data.stream().filter(r -> r.getDate().equals(LocalDate.now().toString())).findFirst().orElse(null);
-        if (today != null) {
-            updateStatusAndImage(today.getStatus());
-        }
+                overlayPanel.setId("overlayPanel");
+                overlayPanel.setStyle(overlayPanel.getStyle() + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 15, 0, 0, 0);");
 
-        // Handle click event for yesterday's or any day
-        table.setRowFactory(tv -> {
-            TableRow<AttendanceRecord> row = new TableRow<>();
-            row.setOnMouseClicked(e -> {
-                if (!row.isEmpty()) {
-                    AttendanceRecord clickedRecord = row.getItem();
-                    updateStatusAndImage(clickedRecord.getStatus());
-                }
+                root.getChildren().addAll(backgroundDim, overlayPanel);
             });
-            return row;
+
+
+
+
+            hbox.getChildren().add(card);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(hbox);
+        scrollPane.setPrefSize(1100, 600);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background-color: white;");
+        scrollPane.setPadding(new Insets(0, 0, 0, 20));
+
+        VBox vbox = new VBox();
+        vbox.getChildren().addAll(titleLabel, scrollPane);
+        vbox.setLayoutX(0);
+        vbox.setLayoutY(30);
+
+        // Shadow image at the top
+        String shadowPath = StudentViewMyAttendanceCenterPanel.class.getResource("/resources/SHADOW.png").toExternalForm();
+        ImageView shadowView = new ImageView(new Image(shadowPath));
+        shadowView.setFitWidth(1300);
+        shadowView.setFitHeight(250);
+        shadowView.setLayoutX(0);
+        shadowView.setLayoutY(-115);
+
+        root.getChildren().addAll(shadowView, vbox);
+
+        return root;
+    }
+
+
+    private static Region createClassCard(String classInfoWithTeacher, int indexOnPage) {
+        String[] parts = classInfoWithTeacher.split("\\|");
+        String courseName = parts[0].trim();
+        String teacherName = (parts.length > 1) ? parts[1].trim() : "";
+        String profilePath = (parts.length > 2) ? parts[2].trim() : "";
+
+        VBox card = new VBox();
+        card.setPrefSize(280, 140);
+        card.setStyle(
+                "-fx-background-color: white; " +
+                "-fx-background-radius: 12px; " +
+                "-fx-border-radius: 12px; " +
+                "-fx-border-color: #ddd; " +
+                "-fx-border-width: 1;"
+        );
+        card.setEffect(new DropShadow(6, Color.rgb(0, 0, 0, 0.12)));
+        card.setCursor(Cursor.HAND);
+
+        // Colored Top Bar
+        Color barColor = TOP_BAR_COLORS[indexOnPage % TOP_BAR_COLORS.length];
+        String barColorHex = toHexString(barColor);
+
+        Region topBar = new Region();
+        topBar.setPrefHeight(40);
+        topBar.setMaxWidth(Double.MAX_VALUE);
+        topBar.setStyle("-fx-background-color: " + barColorHex + "; -fx-background-radius: 12 12 0 0;");
+
+        // Main content with adjusted spacing and padding
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15, 20, 15, 20));
+        content.setAlignment(Pos.TOP_LEFT);
+
+        Label classLabel = new Label(courseName);
+        classLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
+        classLabel.setTextFill(Color.web("#202124"));
+
+        // Load profile image or default icon
+        Image userImage;
+        try {
+            if (!profilePath.isEmpty()) {
+                // Assuming profilePath is a valid URL or a file path accessible by your app
+                userImage = new Image(profilePath, 70, 70, true, true);
+                if (userImage.isError()) {
+                    throw new IllegalArgumentException("Image loading error");
+                }
+            } else {
+                throw new IllegalArgumentException("Empty profile path");
+            }
+        } catch (Exception e) {
+            // fallback to default icon if loading fails
+            userImage = new Image(StudentViewMyAttendanceCenterPanel.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm(), 70, 70, true, true);
+        }
+
+        ImageView userIcon = new ImageView(userImage);
+        userIcon.setFitWidth(70);
+        userIcon.setFitHeight(70);
+        userIcon.setPreserveRatio(true);
+        userIcon.setSmooth(true);
+        
+        Circle clip = new Circle(35, 35, 35);  // centerX=35, centerY=35, radius=35 (half of 70)
+        userIcon.setClip(clip);
+        
+        // Container VBox to center icon and teacher label vertically stacked
+        VBox teacherBox = new VBox(4); // spacing between icon and label
+        teacherBox.setAlignment(Pos.CENTER);
+        Label teacherLabel = new Label(teacherName);
+        teacherLabel.setFont(Font.font("System", 14));
+        teacherLabel.setTextFill(Color.web("#5f6368"));
+        teacherBox.getChildren().addAll(userIcon, teacherLabel);
+
+        content.getChildren().addAll(classLabel, teacherBox);
+
+        card.getChildren().addAll(topBar, content);
+
+        // Hover effects unchanged
+        card.setOnMouseEntered(e -> {
+            card.setEffect(new DropShadow(12, Color.rgb(26, 115, 232, 0.3)));
+            card.setScaleX(1.03);
+            card.setScaleY(1.03);
         });
 
-        centerPanel.getChildren().add(table);
-        return centerPanel;
+        card.setOnMouseExited(e -> {
+            card.setEffect(new DropShadow(6, Color.rgb(0, 0, 0, 0.12)));
+            card.setScaleX(1);
+            card.setScaleY(1);
+        });
+
+        card.setOnMouseClicked(e -> System.out.println("Selected class: " + courseName));
+
+        return card;
     }
 
-    private static void updateStatusAndImage(String status) {
-        statusLabel.setText(status.toUpperCase());
-        statusLabel.setTextFill(Color.web(getTextColorForStatus(status.toLowerCase())));
 
-        String imagePath = switch (status.toLowerCase()) {
-            case "present" -> "/resources/Student_Dashboard/Present_student.png";
-            case "absent" -> "/resources/Student_Dashboard/Absent_student.png";
-            case "late" -> "/resources/Student_Dashboard/Late_student.png";
-            case "excused" -> "/resources/Student_Dashboard/Excused_student.png";
-            default -> null;
-        };
-
-        try {
-            Image newImage = new Image(Objects.requireNonNull(StudentViewMyAttendanceCenterPanel.class.getResource(imagePath)).toExternalForm());
-            studentImageView.setImage(newImage);
-
-            FadeTransition fade = new FadeTransition(Duration.millis(800), studentImageView);
-            fade.setFromValue(0);
-            fade.setToValue(1);
-            fade.play();
-        } catch (Exception e) {
-            System.out.println("Failed to load image for status: " + status);
-        }
-    }
-
-    private static String getStyleForStatus(String status) {
-        return switch (status) {
-            case "present" -> "-fx-background-color: #E7FAF1; -fx-text-fill: #40A79B; -fx-border-color: #55DC93; -fx-border-width: 1; -fx-background-radius: 15px;";
-            case "absent" -> "-fx-background-color: #FFC9CA; -fx-text-fill: #DC5046; -fx-border-color: #FFC9CA; -fx-border-width: 1; -fx-background-radius: 15px;";
-            case "late" -> "-fx-background-color: #E9D1FF; -fx-text-fill: #8B43BC; -fx-border-color: #A976E8; -fx-border-width: 1; -fx-background-radius: 15px;";
-            case "excused" -> "-fx-background-color: #CCE4FF; -fx-text-fill: #3A3CC0; -fx-border-color: #76A2E8; -fx-border-width: 1; -fx-background-radius: 15px;";
-            default -> "-fx-background-color: gray;";
-        };
-    }
-
-    private static String getTextColorForStatus(String status) {
-        return switch (status) {
-            case "present" -> "#40A79B";
-            case "absent" -> "#DC5046";
-            case "late" -> "#8B43BC";
-            case "excused" -> "#3A3CC0";
-            default -> "black";
-        };
-    }
-
-    private static void loadAttendanceFromDatabase(String studentId) {
-        String url = "jdbc:mysql://localhost:3306/your_database";
-        String user = "your_username";
-        String password = "your_password";
-
-        try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            String query = "SELECT date, status FROM attendance WHERE student_id = ? ORDER BY date DESC";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, studentId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String date = rs.getString("date");
-                String status = rs.getString("status");
-                data.add(new AttendanceRecord(date, status));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static class AttendanceRecord {
-        private final javafx.beans.property.SimpleStringProperty date;
-        private final javafx.beans.property.SimpleStringProperty status;
-
-        public AttendanceRecord(String date, String status) {
-            this.date = new javafx.beans.property.SimpleStringProperty(date);
-            this.status = new javafx.beans.property.SimpleStringProperty(status);
-        }
-
-        public String getDate() {
-            return date.get();
-        }
-
-        public String getStatus() {
-            return status.get();
-        }
-
-        public javafx.beans.property.StringProperty dateProperty() {
-            return date;
-        }
-
-        public javafx.beans.property.StringProperty statusProperty() {
-            return status;
-        }
+    private static String toHexString(Color color) {
+        return String.format("#%02X%02X%02X",
+                (int)(color.getRed() * 255),
+                (int)(color.getGreen() * 255),
+                (int)(color.getBlue() * 255));
     }
 }

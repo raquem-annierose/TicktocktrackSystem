@@ -343,12 +343,6 @@ public class DatabaseViewClassList {
         }
         return students;
     }
-
-
-
-
-
-
    
     public static int getClassId(String courseName, String section, String program, int teacherId) {
         DatabaseConnection dbConn = new DatabaseConnection();

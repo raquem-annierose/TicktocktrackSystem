@@ -441,19 +441,12 @@ public class StudentDashboardPage extends Application {
         System.out.println("View My Attendance clicked!");
         selectSidebarText((Text) event.getSource());
         centerContentPane.getChildren().clear();
-        UsersModel currentUser = Session.getCurrentUser();
-        if (currentUser == null) {
-            System.err.println("No user is logged in.");
-            return;
-        }
-        Integer studentId = currentUser.getStudentId();
-        if (studentId == null) {
-            System.err.println("Current user is not a student.");
-            return;
-        }
-        Pane attendancePanel = StudentViewMyAttendanceCenterPanel.createPanel(studentId);
+
+        // No need to get studentId here, DB method uses Session internally
+        Pane attendancePanel = StudentViewMyAttendanceCenterPanel.createPanel();
         centerContentPane.getChildren().add(attendancePanel);
     }
+
 
     private void onAttendanceStatusClicked(MouseEvent event) {
         System.out.println("Attendance Status clicked!");
