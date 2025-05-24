@@ -3,27 +3,28 @@ package ticktocktrack.gui;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.Cursor;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import ticktocktrack.logic.Session;
+import ticktocktrack.logic.UserIconUpdate;
 import ticktocktrack.logic.UsersModel;
 
 public class AdminDashboardPage extends Application {
 	private Stage adminDashboardStage;
 	private Pane centerContentPane;
+	private ImageView userIcon;
 	// Store reference to the currently selected text
 	 @Override
 	    public void start(Stage primaryStage) {
@@ -81,15 +82,22 @@ public class AdminDashboardPage extends Application {
         adminText.setLayoutX(1050);
         adminText.setLayoutY(65);
         
-        // User Icon
+        // User icon setup
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
-        ImageView userIcon = new ImageView(new Image(userIconPath));
+
+        Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
+        Image userImage = profileImage != null ? profileImage : new Image(userIconPath);
+
+        userIcon = new ImageView(userImage);
         userIcon.setFitWidth(67);
         userIcon.setFitHeight(67);
         userIcon.setLayoutX(1190);
         userIcon.setLayoutY(20);
         userIcon.setCursor(Cursor.HAND);
-        
+
+        Circle clip = new Circle(33.5, 33.5, 33.5);
+        userIcon.setClip(clip);
+
      // --- User Icon Popup Handling (keep your event here) ---
         userIcon.setOnMouseClicked(event -> {
         Popup popup = new Popup();
@@ -99,27 +107,27 @@ public class AdminDashboardPage extends Application {
         box.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 8; -fx-background-radius: 8;");
 
         Label profileLabel = new Label("Profile");
-        Label settingsLabel = new Label("Settings");
+      
         Label logoutLabel = new Label("Logout");
 
         profileLabel.setCursor(Cursor.HAND);
-        settingsLabel.setCursor(Cursor.HAND);
+       
         logoutLabel.setCursor(Cursor.HAND);
 
         String normalStyle = "-fx-text-fill: black; -fx-font-size: 16px;";
         String hoverStyle = "-fx-text-fill: #0077cc; -fx-font-size: 16px; -fx-underline: true;";
 
-        for (Label label : new Label[]{profileLabel, settingsLabel, logoutLabel}) {
+        for (Label label : new Label[]{profileLabel,  logoutLabel}) {
             label.setStyle(normalStyle);
             label.setOnMouseEntered(e -> label.setStyle(hoverStyle));
             label.setOnMouseExited(e -> label.setStyle(normalStyle));
         }
 
         profileLabel.setOnMouseClicked(this::onProfileClicked);
-        settingsLabel.setOnMouseClicked(this::onSettingsClicked);
+       
         logoutLabel.setOnMouseClicked(this::onLogoutClicked);
 
-        box.getChildren().addAll(profileLabel, settingsLabel, logoutLabel);
+        box.getChildren().addAll(profileLabel,  logoutLabel);
         popup.getContent().add(box);
         popup.setAutoHide(true);
 
@@ -326,17 +334,33 @@ public class AdminDashboardPage extends Application {
         
        
     }
+	 
+	 public void loadUserIcon() {
+	        Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
+	        if (profileImage != null) {
+	            userIcon.setImage(profileImage);
+	        } else {
+	            String defaultIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
+	            userIcon.setImage(new Image(defaultIconPath));
+	        }
+	    }
  
-    // Profile Functions
-    private void onProfileClicked(MouseEvent event) {
-        System.out.println("Profile clicked");
-        // TODO: Open Profile page
-    }
+	 private void onProfileClicked(MouseEvent event) {
+		    System.out.println("Profile clicked");
 
-    private void onSettingsClicked(MouseEvent event) {
-        System.out.println("Settings clicked");
-        // TODO: Open Settings page
-    }
+		    try {
+		        UserProfile userProfileWindow = new UserProfile(() -> {
+		            loadUserIcon();
+		        });
+		        Stage stage = new Stage();
+		        userProfileWindow.start(stage);
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}
+
+
+   
 
     // Define the logout click handler
     private void onLogoutClicked(MouseEvent event) {

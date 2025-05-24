@@ -26,13 +26,21 @@ public class Session {
         System.out.println("Successfully logged out.");
 
         // Close the current window
-        currentStage.close();
+        if (currentStage != null) {
+            currentStage.close();
+        }
 
         // Launch the login screen (HomePage)
-        HomePage homePage = new HomePage();
-        Stage homeStage = new Stage();
-        homePage.start(homeStage);
+        try {
+            HomePage homePage = new HomePage();
+            Stage homeStage = new Stage();
+            homePage.start(homeStage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to open HomePage after logout.");
+        }
     }
+
     
     public static int getSenderUserId() {
         return currentUser != null ? currentUser.getUserId() : -1;

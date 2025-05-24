@@ -13,12 +13,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import ticktocktrack.logic.Session;
+import ticktocktrack.logic.UserIconUpdate;
 import ticktocktrack.logic.UsersModel;
 
 public class StudentDashboardPage extends Application {
@@ -27,6 +29,7 @@ public class StudentDashboardPage extends Application {
     private Pane centerContentPane;
     private StudentNotificationPane notificationPane;
     private Text selectedText;
+    private ImageView userIcon;
 
     @Override
     public void start(Stage primaryStage) {
@@ -102,40 +105,55 @@ public class StudentDashboardPage extends Application {
         studentText.setLayoutX(1080);
         studentText.setLayoutY(65);
 
-        // User Icon
+     // --- User Icon Setup with Dynamic Image and Circular Clip ---
         String userIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
-        ImageView userIcon = new ImageView(new Image(userIconPath));
+
+        // Try getting updated profile image (if available)
+        Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
+        Image userImage = profileImage != null ? profileImage : new Image(userIconPath);
+
+        // Create and configure ImageView
+        userIcon = new ImageView(userImage);
         userIcon.setFitWidth(67);
         userIcon.setFitHeight(67);
         userIcon.setLayoutX(1190);
         userIcon.setLayoutY(20);
         userIcon.setCursor(Cursor.HAND);
-        
+
+        // Circular clip for round profile display
+        Circle clip = new Circle(33.5, 33.5, 33.5);
+        userIcon.setClip(clip);
+
         // --- User Icon Popup Handling ---
         userIcon.setOnMouseClicked(event -> {
             Popup popup = new Popup();
+
             VBox box = new VBox(10);
             box.setPadding(new Insets(10));
             box.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 8; -fx-background-radius: 8;");
+
             Label profileLabel = new Label("Profile");
-            Label settingsLabel = new Label("Settings");
             Label logoutLabel = new Label("Logout");
+
             profileLabel.setCursor(Cursor.HAND);
-            settingsLabel.setCursor(Cursor.HAND);
             logoutLabel.setCursor(Cursor.HAND);
+
             String normalStyle = "-fx-text-fill: black; -fx-font-size: 16px;";
             String hoverStyle = "-fx-text-fill: #0077cc; -fx-font-size: 16px; -fx-underline: true;";
-            for (Label label : new Label[]{profileLabel, settingsLabel, logoutLabel}) {
+
+            for (Label label : new Label[]{profileLabel, logoutLabel}) {
                 label.setStyle(normalStyle);
                 label.setOnMouseEntered(e -> label.setStyle(hoverStyle));
                 label.setOnMouseExited(e -> label.setStyle(normalStyle));
             }
+
             profileLabel.setOnMouseClicked(this::onProfileClicked);
-            settingsLabel.setOnMouseClicked(this::onSettingsClicked);
             logoutLabel.setOnMouseClicked(this::onLogoutClicked);
-            box.getChildren().addAll(profileLabel, settingsLabel, logoutLabel);
+
+            box.getChildren().addAll(profileLabel, logoutLabel);
             popup.getContent().add(box);
             popup.setAutoHide(true);
+
             double popupX = userIcon.localToScreen(userIcon.getBoundsInLocal()).getMinX() + userIcon.getFitWidth() / 2 - 50;
             double popupY = userIcon.localToScreen(userIcon.getBoundsInLocal()).getMaxY() + 5;
             popup.show(userIcon.getScene().getWindow(), popupX, popupY);
@@ -362,18 +380,34 @@ public class StudentDashboardPage extends Application {
         dashboardText.setOnMouseClicked(this::onDashboardClicked);
     }
 
-   
+    public void loadUserIcon() {
+        Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
+        if (profileImage != null) {
+            userIcon.setImage(profileImage);
+        } else {
+            String defaultIconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
+            userIcon.setImage(new Image(defaultIconPath));
+        }
+    }
 
-    // Profile Functions
+ // Profile Functions
     private void onProfileClicked(MouseEvent event) {
         System.out.println("Profile clicked");
-        // TODO: Open Profile page
+
+        try {
+            // Open the UserProfile window and pass a callback to reload the icon after profile updates
+            UserProfile userProfileWindow = new UserProfile(() -> {
+                loadUserIcon(); // Method to refresh the user icon
+            });
+
+            Stage stage = new Stage();
+            userProfileWindow.start(stage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void onSettingsClicked(MouseEvent event) {
-        System.out.println("Settings clicked");
-        // TODO: Open Settings page
-    }
+  
 
     private void onLogoutClicked(MouseEvent event) {
         Session.logoutAndGoHome(studentDashboardStage);

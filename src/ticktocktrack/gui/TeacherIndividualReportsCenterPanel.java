@@ -12,6 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -21,7 +22,6 @@ import javafx.util.Duration;
 import ticktocktrack.database.DatabaseAttendance;
 import ticktocktrack.database.DatabaseIndividualReport;
 import ticktocktrack.logic.CourseInfo;
-import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 
 
@@ -47,17 +47,28 @@ public class TeacherIndividualReportsCenterPanel {
         title.setLayoutX(50);
         title.setLayoutY(70);
         
-     // Student card container VBox
+        // Create the VBox container for student cards
         VBox studentCardContainer = new VBox(10);
         studentCardContainer.setPadding(new Insets(20));
-        studentCardContainer.setLayoutX(0); // this matches TranslateTransition targetX
-        studentCardContainer.setLayoutY(100); // position below title
-        studentCardContainer.setPrefWidth(400);
-        studentCardContainer.setPrefHeight(900);
+        studentCardContainer.setPrefWidth(700);
         studentCardContainer.setStyle("-fx-background-color: #EEF5F9;");
         studentCardContainer.setVisible(false);  // initially hidden
-       
 
+        // Create a ScrollPane and put the VBox inside
+        ScrollPane studentScrollPane = new ScrollPane(studentCardContainer);
+
+        // Configure the ScrollPane size and position
+        studentScrollPane.setLayoutX(0);
+        studentScrollPane.setLayoutY(100);
+        studentScrollPane.setPrefWidth(700);
+        studentScrollPane.setPrefHeight(520);  // <-- set desired scrollable height
+
+        // Only vertical scroll
+        studentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        studentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+        studentScrollPane.setFitToWidth(true);  // VBox fills width
+        studentScrollPane.setFitToHeight(false); // Let VBox grow vertically
 
         // Right panel VBox
         VBox rightPanelVBox = new VBox(15);
@@ -139,8 +150,6 @@ public class TeacherIndividualReportsCenterPanel {
                 "-fx-background-radius: 5;" +
                 "-fx-border-radius: 5;"
             );
-            
-
 
             Label courseName = new Label(course.getCourseName());
             courseName.setFont(Font.font("Poppins", FontWeight.BOLD, 14));
@@ -283,6 +292,33 @@ public class TeacherIndividualReportsCenterPanel {
                         "-fx-background-radius: 4;" +
                         "-fx-border-radius: 4;"
                     );
+
+                    String profilePath = s.getProfilePath();
+                    ImageView userIcon;
+
+                    if (profilePath != null && !profilePath.trim().isEmpty()) {
+                        try {
+                            Image profileImage = new Image(profilePath, true);
+                            userIcon = new ImageView(profileImage);
+                        } catch (Exception e1) {
+                            System.err.println("Failed to load profile image: " + e1.getMessage());
+                            userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+                        }
+                    } else {
+                        userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+                    }
+
+                    userIcon.setFitWidth(40);
+                    userIcon.setFitHeight(402);
+                    userIcon.setPreserveRatio(true);
+                    
+                    // Make image circular
+            	    Circle clip = new Circle(20, 20, 20); // x, y, radius
+            	    userIcon.setClip(clip);
+
+
+
+                    // Create labels
                     Label nameLabel = new Label(s.getLastName() + ", " + s.getFirstName() + " " + s.getMiddleName());
                     nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 13));
                     nameLabel.setTextFill(Color.web("#02383E"));
@@ -291,18 +327,26 @@ public class TeacherIndividualReportsCenterPanel {
                     yearLabel.setFont(Font.font("Poppins", 12));
                     yearLabel.setTextFill(Color.web("#555555"));
 
-                    studentCard.getChildren().addAll(nameLabel, yearLabel);
-                    
+                    // Put labels in a VBox (so labels are stacked vertically)
+                    VBox labelsVBox = new VBox(2, nameLabel, yearLabel);
+
+                    // Create an HBox to hold icon and labels side-by-side
+                    HBox contentHBox = new HBox(10, userIcon, labelsVBox);
+                    contentHBox.setAlignment(Pos.CENTER_LEFT);
+
+                    // Add the HBox to the student card VBox
+                    studentCard.getChildren().add(contentHBox);
+
                     Student selectedStudent = s;  // capture for lambda
-                   
+
                     studentCard.setOnMouseClicked(evt -> {
                         Pane overlay = CardIndividualReport.createStudentDetailOverlay(selectedStudent);
-                        centerPanel.getChildren().add(overlay);  // This will overlay on top of everything inside the panel
+                        centerPanel.getChildren().add(overlay);
                     });
-
 
                     studentCardContainer.getChildren().add(studentCard);
                 }
+
 
                 studentCardContainer.setVisible(true);
             });
@@ -317,7 +361,7 @@ public class TeacherIndividualReportsCenterPanel {
         studentCardContainer.setVisible(true);
         
         
-        centerPanel.getChildren().addAll(title,studentCardContainer, rightPanelScrollPane, shadowView);
+        centerPanel.getChildren().addAll(title,studentScrollPane, rightPanelScrollPane, shadowView);
         return centerPanel;
     }
 }
