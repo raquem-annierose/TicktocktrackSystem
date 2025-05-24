@@ -42,11 +42,11 @@ public class TeacherIndividualReportsCenterPanel {
         
         String reportImagePath = TeacherIndividualReportsCenterPanel.class.getResource("/resources/Teacher_Dashboard/Teacher_Report_Image.png").toExternalForm();
         ImageView reportImageView = new ImageView(new Image(reportImagePath));
-        reportImageView.setFitWidth(600);  // Adjust width
-        reportImageView.setFitHeight(600);
+        reportImageView.setFitWidth(450);  // Adjust width
+        reportImageView.setFitHeight(450);
         reportImageView.setPreserveRatio(true);
-        reportImageView.setLayoutX(600);  // Position it to the right
-        reportImageView.setLayoutY(30);    // Slightly down from the top
+        reportImageView.setLayoutX(565);  // Position it to the right
+        reportImageView.setLayoutY(70);    // Slightly down from the top
         
         
         // Title
@@ -371,7 +371,7 @@ public class TeacherIndividualReportsCenterPanel {
         studentCardContainer.setVisible(true);
         
         
-        centerPanel.getChildren().addAll(title, studentScrollPane, rightPanelScrollPane, shadowView, reportImageView);
+        centerPanel.getChildren().addAll(title,studentScrollPane, rightPanelScrollPane, shadowView, reportImageView);
 
         return centerPanel;
     }
