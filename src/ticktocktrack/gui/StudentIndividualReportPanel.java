@@ -14,7 +14,7 @@ import ticktocktrack.logic.Student;
 
 public class StudentIndividualReportPanel {
 
-    public static Pane createPanel(Student loggedInStudent) {
+    public static Pane createPanel(int studentId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: #EEF5F9; -fx-border-color: #cccccc; -fx-border-width: 1px;");
@@ -41,20 +41,32 @@ public class StudentIndividualReportPanel {
 
         studentSummaryContainer.setPrefWidth(1200);
         studentSummaryContainer.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
-        
-        // Display basic student information
-        Label nameLabel = new Label(loggedInStudent.getLastName() + ", " +
-                                    loggedInStudent.getFirstName() + " " +
-                                    loggedInStudent.getMiddleName());
-        nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
-        nameLabel.setTextFill(Color.web("#02383E"));
 
-        Label yearLabel = new Label("Year Level: " + loggedInStudent.getYearLevel());
-        yearLabel.setFont(Font.font("Poppins", 14));
-        yearLabel.setTextFill(Color.web("#555555"));
+        // Get student data
+        Student student = DatabaseIndividualReport.getStudentById(studentId);
+        if (student == null) {
+            Label errorLabel = new Label("Unable to load student data.");
+            errorLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
+            errorLabel.setTextFill(Color.RED);
+            studentSummaryContainer.getChildren().add(errorLabel);
+        } else {
+            // Display student information
+            Label nameLabel = new Label(
+                student.getLastName() + ", " +
+                student.getFirstName() + " " +
+                student.getMiddleName()
+            );
+            nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+            nameLabel.setTextFill(Color.web("#02383E"));
 
-        // Attendance summary from database
-        
+            Label yearLabel = new Label("Year Level: " + student.getYearLevel());
+            yearLabel.setFont(Font.font("Poppins", 14));
+            yearLabel.setTextFill(Color.web("#555555"));
+
+            studentSummaryContainer.getChildren().addAll(nameLabel, yearLabel);
+
+            // You can add more attendance summary UI elements here
+        }
 
         centerPanel.getChildren().addAll(title, studentSummaryContainer, shadowView);
         return centerPanel;

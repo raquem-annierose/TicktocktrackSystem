@@ -308,7 +308,33 @@ public class StudentDashboardPage extends Application {
             selectSidebarText(submitExcuseText);
             onSubmitExcuseClicked(e);
         });
+        
+        
+        // Create "Submit Excuse" Text
+        Text studentIndividualReportText = new Text("Individual Report");
+        studentIndividualReportText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));
+        studentIndividualReportText.setFill(Color.web("#02383E"));
+        studentIndividualReportText.setLayoutX(93);
+        studentIndividualReportText.setLayoutY(490);
+        studentIndividualReportText.setWrappingWidth(135);
 
+        // Hover effect for Submit Excuse text
+        studentIndividualReportText.setOnMouseMoved(e -> {
+            if (selectedText != studentIndividualReportText) {
+            	studentIndividualReportText.setFill(Color.web("#20B2AA"));
+            }
+            studentIndividualReportText.setStyle("-fx-cursor: hand;");
+        });
+        studentIndividualReportText.setOnMouseExited(e -> {
+            if (selectedText != studentIndividualReportText) {
+            	studentIndividualReportText.setFill(Color.web("#02383E"));
+            }
+        });
+        // Click event for Submit Excuse text
+        studentIndividualReportText.setOnMouseClicked(e -> {
+            selectSidebarText(studentIndividualReportText);
+            onstudentIndividualReportTextClicked(e);
+        });
         // center panel (initially set to dashboard panel content)
         centerContentPane = StudentDashboardCenterPanel.createPanel();
         centerContentPane.setLayoutX(258);
@@ -319,7 +345,7 @@ public class StudentDashboardPage extends Application {
         // Add all elements to topPanel
         topPanel.getChildren().addAll(logoView,  studentText);
 
-        sidePanel.getChildren().addAll( dashboardIcon, line1, viewAttendanceIcon, viewAttendanceText, line2, attendanceStatusIcon, attendanceStatusText,   line3, submitExcuseIcon, submitExcuseText);
+        sidePanel.getChildren().addAll( dashboardIcon, line1, viewAttendanceIcon, viewAttendanceText, line2, attendanceStatusIcon, attendanceStatusText,   line3, submitExcuseIcon, submitExcuseText, studentIndividualReportText);
 
         // Overlay all to root
         overlayPane.getChildren().addAll(topPanel, sidePanel, centerContentPane, userIcon, dashboardText, notificationPane.getNotificationIconWrapper());
@@ -421,6 +447,24 @@ public class StudentDashboardPage extends Application {
             return;
         }
         Pane excusePanel = StudentSubmitExcuseCenterPanel.createPanel(studentId);
+        centerContentPane.getChildren().add(excusePanel);
+    }
+    
+    private void onstudentIndividualReportTextClicked(MouseEvent event) {
+        System.out.println("Individual Report clicked!");
+        selectSidebarText((Text) event.getSource());
+        centerContentPane.getChildren().clear();
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+        Integer studentId = currentUser.getStudentId();
+        if (studentId == null) {
+            System.err.println("Current user is not a student.");
+            return;
+        }
+        Pane excusePanel = StudentIndividualReportPanel.createPanel(studentId);
         centerContentPane.getChildren().add(excusePanel);
     }
 
