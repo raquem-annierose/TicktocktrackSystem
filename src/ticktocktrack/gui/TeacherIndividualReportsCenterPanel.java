@@ -39,7 +39,16 @@ public class TeacherIndividualReportsCenterPanel {
         shadowView.setFitHeight(250);
         shadowView.setLayoutX(0);
         shadowView.setLayoutY(-115);
-
+        
+        String reportImagePath = TeacherIndividualReportsCenterPanel.class.getResource("/resources/Teacher_Dashboard/Teacher_Report_Image.png").toExternalForm();
+        ImageView reportImageView = new ImageView(new Image(reportImagePath));
+        reportImageView.setFitWidth(450);  // Adjust width
+        reportImageView.setFitHeight(450);
+        reportImageView.setPreserveRatio(true);
+        reportImageView.setLayoutX(565);  // Position it to the right
+        reportImageView.setLayoutY(70);    // Slightly down from the top
+        
+        
         // Title
         Text title = new Text("Individual Reports of Students");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
@@ -84,7 +93,6 @@ public class TeacherIndividualReportsCenterPanel {
         	    "-fx-effect: none;"
         	);
         	
-
 
         rightPanelVBox.setAlignment(Pos.TOP_LEFT);
         rightPanelVBox.setFillWidth(false);
@@ -349,11 +357,13 @@ public class TeacherIndividualReportsCenterPanel {
 
 
                 studentCardContainer.setVisible(true);
+                reportImageView.setVisible(false);
             });
 
 
 
             rightPanelVBox.getChildren().add(card);
+          
             colorIndex++;
             card.setFocusTraversable(false);
         }
@@ -361,7 +371,9 @@ public class TeacherIndividualReportsCenterPanel {
         studentCardContainer.setVisible(true);
         
         
-        centerPanel.getChildren().addAll(title,studentScrollPane, rightPanelScrollPane, shadowView);
+        centerPanel.getChildren().addAll(title,studentScrollPane, rightPanelScrollPane, shadowView, reportImageView);
+
         return centerPanel;
     }
 }
+
