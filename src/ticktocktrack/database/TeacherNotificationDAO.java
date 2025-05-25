@@ -220,7 +220,7 @@ public class TeacherNotificationDAO {
      * @param userId the recipient user's ID
      * @return a list of Notification objects representing the user's notifications
      */
-    public static List<Notification> getNotificationsForUser(int userId) {
+    public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "

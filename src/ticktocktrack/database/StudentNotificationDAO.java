@@ -282,17 +282,13 @@ public class StudentNotificationDAO {
         return role + " " + fullName; // e.g. "Teacher John Smith"
     }
 
-<<<<<<< HEAD
-    public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
-=======
     /**
      * Retrieves all notifications for a specific user, ordered by the date sent in descending order.
      *
      * @param userId The user ID for whom notifications are retrieved.
      * @return A list of Notification objects for the user.
      */
-    public static List<Notification> getNotificationsForUser(int userId) {
->>>>>>> 70196dff123f7434b44b7492e8002a94c607bb09
+    public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "
@@ -331,6 +327,7 @@ public class StudentNotificationDAO {
 
         return notifications;
     }
+
 
 
 
