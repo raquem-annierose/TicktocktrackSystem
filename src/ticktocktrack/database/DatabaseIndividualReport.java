@@ -15,6 +15,36 @@ import ticktocktrack.logic.UsersModel;
 
 public class DatabaseIndividualReport {
 	
+	public static List<String> getCourseNamesForStudent(int studentId) {
+	    List<String> courseNames = new ArrayList<>();
+
+	    String query = """
+	        SELECT DISTINCT c.course_name
+	        FROM Classes c
+	        JOIN Enrollments e ON c.class_id = e.class_id
+	        WHERE e.student_id = ?
+	    """;
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(query)) {
+	            pstmt.setInt(1, studentId);
+
+	            try (ResultSet rs = pstmt.executeQuery()) {
+	                while (rs.next()) {
+	                    courseNames.add(rs.getString("course_name"));
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error fetching course names for student: " + e.getMessage());
+	    }
+
+	    return courseNames;
+	}
+
 	public static List<String> getCourseNamesForStudent(int studentId, int teacherId) {
 	    List<String> courseNames = new ArrayList<>();
 

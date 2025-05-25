@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Side;
+import ticktocktrack.database.DatabaseIndividualReport;
 
 // Removed import of DatabaseSubmitExcuse
 // import ticktocktrack.database.DatabaseSubmitExcuse;
 
 import ticktocktrack.database.TeacherNotificationDAO;
+import ticktocktrack.logic.Session;
 
 public class StudentSubmitExcuseCenterPanel {
 
@@ -33,6 +35,8 @@ public class StudentSubmitExcuseCenterPanel {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: #F2F2F2;");
+        
+        
 
         List<Button> excuseButtons = new ArrayList<>();
 
@@ -64,9 +68,11 @@ public class StudentSubmitExcuseCenterPanel {
 
         Text fillUpText = new Text("Fill Up Form:");
         fillUpText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
-        fillUpText.setLayoutX(685);
-        fillUpText.setLayoutY(100);
+        fillUpText.setLayoutX(575);
+        fillUpText.setLayoutY(70);
+        
 
+        	
         String comboBoxStyle =
             "-fx-background-color: white;" +
             "-fx-font-size: 11px;" +
@@ -118,6 +124,19 @@ public class StudentSubmitExcuseCenterPanel {
         monthBox.setPrefHeight(18);
         dayBox.setPrefHeight(18);
         yearBox.setPrefHeight(18);
+        
+    
+         List<String> studentCourses = DatabaseIndividualReport.getCourseNamesForStudent(studentId);
+
+        // Create ComboBox with courses
+        ComboBox<String> courseBox = new ComboBox<>(FXCollections.observableArrayList(studentCourses));
+        courseBox.setPromptText("Select Course");
+        courseBox.setLayoutX(570);
+        courseBox.setLayoutY(80);
+        courseBox.setPrefWidth(375);
+        courseBox.setStyle(comboBoxStyle);
+
+        
 
         // TEACHER NAME AUTOCOMPLETE FIELD
         Text teacherText = new Text("Send to");
@@ -216,57 +235,68 @@ public class StudentSubmitExcuseCenterPanel {
             yearBox.getSelectionModel().clearSelection();
             remarks.clear();
             teacherField.clear();
+            courseBox.getSelectionModel().clearSelection();  // Clear ComboBox selection
             selectedReason = null;
             excuseButtons.forEach(b -> b.setStyle(defaultButtonStyle()));
         });
 
-        messageOverlay.getChildren().addAll(submissionCard, confirmationMsg, okBtn);
+
+     // At UI initialization (before submit button handler)
+        messageOverlay.getChildren().addAll(submissionCard, confirmationMsg, okBtn, courseBox);
 
         submitButton.setOnAction(e -> {
-            if (selectedReason != null && !remarks.getText().trim().isEmpty()
-                && monthBox.getValue() != null && dayBox.getValue() != null && yearBox.getValue() != null
-                && !teacherField.getText().trim().isEmpty()) {
+            // Validate all required fields are filled
+            if (selectedReason != null
+                && !remarks.getText().trim().isEmpty()
+                && monthBox.getValue() != null
+                && dayBox.getValue() != null
+                && yearBox.getValue() != null
+                && !teacherField.getText().trim().isEmpty()
+                && courseBox.getValue() != null) {
 
+                // Format date as YYYY-MM-DD
                 String dateString = yearBox.getValue() + "-" +
                     String.format("%02d", monthBox.getSelectionModel().getSelectedIndex() + 1) + "-" +
                     String.format("%02d", Integer.parseInt(dayBox.getValue()));
 
-                // Use TeacherNotificationDAO to get teacher ID
+                // Get teacher ID by teacher name
                 int teacherId = TeacherNotificationDAO.getTeacherIdByName(teacherField.getText().trim());
                 if (teacherId == -1) {
                     new Alert(Alert.AlertType.ERROR, "Invalid teacher name.").showAndWait();
                     return;
                 }
 
-                // Use TeacherNotificationDAO to submit excuse
-                boolean submitted = TeacherNotificationDAO.submitExcuse(
-                    studentId,
-                    dateString,
-                    selectedReason,
-                    teacherId,
-                    remarks.getText().trim()
-                );
+                String selectedCourse = courseBox.getValue();
 
-                if (submitted) {
-                    // Send notification to teacher
-                    String eventMessage = "submitted an excuse for " + dateString + ": " + selectedReason;
-                    TeacherNotificationDAO.sendTeacherNotification(
-                        teacherId,
-                        eventMessage,
-                        "Excuse Submission"
-                    );
+                // Compose notification message
+                String eventMessage = "submitted an excuse for " + dateString
+                    + " in course " + selectedCourse + ": " + selectedReason
+                    + " | Reason: " + remarks.getText().trim();
 
-                    messageOverlay.setVisible(true);
-                    messageOverlay.toFront();
-                } else {
-                    new Alert(Alert.AlertType.ERROR, "Failed to submit excuse. Please try again later.")
-                        .showAndWait();
+                // Get current logged-in user's ID
+                int senderUserId = -1;
+                if (Session.getCurrentUser() != null) {
+                    senderUserId = Session.getCurrentUser().getUserId();
                 }
+
+                System.out.println("Sending notification from senderUserId: " + senderUserId);
+
+                if (senderUserId == -1) {
+                    new Alert(Alert.AlertType.ERROR, "You must be logged in to submit an excuse.").showAndWait();
+                    return;
+                }
+
+                // Send notification via DAO method
+                TeacherNotificationDAO.sendTeacherNotification(teacherId, eventMessage, "Excuse Submission", senderUserId);
+
+                messageOverlay.setVisible(true);
+                messageOverlay.toFront();
+
             } else {
-                new Alert(Alert.AlertType.WARNING, "Please complete all fields before submitting.")
-                    .showAndWait();
+                new Alert(Alert.AlertType.WARNING, "Please complete all fields before submitting.").showAndWait();
             }
         });
+
 
         // Excuse reason buttons grid
         Pane excuseGrid = new Pane();
@@ -323,7 +353,7 @@ public class StudentSubmitExcuseCenterPanel {
 
         centerPanel.getChildren().addAll(
             shadowView, container, instructions, fillUpText, dateText, remarksLabel,
-            monthBox, dayBox, yearBox,
+            monthBox, dayBox, yearBox, courseBox,
             teacherText, teacherField,
             remarks, submitButton, excuseGrid, messageOverlay
         );

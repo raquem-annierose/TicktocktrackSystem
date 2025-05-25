@@ -30,6 +30,8 @@ public class StudentDashboardPage extends Application {
     private StudentNotificationPane notificationPane;
     private Text selectedText;
     private ImageView userIcon;
+    private Text submitExcuseText;
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -48,8 +50,7 @@ public class StudentDashboardPage extends Application {
         // Get userId from currentUser
         Integer userId = currentUser.getUserId(); // assuming method exists
 
-        // Initialize NotificationPane with userId
-        notificationPane = new StudentNotificationPane();
+       
 
         // Root pane
         StackPane root = new StackPane();
@@ -58,6 +59,10 @@ public class StudentDashboardPage extends Application {
 
         // Create the center content using your StudentDashboardCenterPanel class
         centerContentPane = StudentDashboardCenterPanel.createPanel();
+        // Initialize NotificationPane with userId
+        notificationPane = new StudentNotificationPane(this);
+
+
 
         Scene scene = new Scene(root, 1300, 750);
         primaryStage.setScene(scene);
@@ -302,7 +307,7 @@ public class StudentDashboardPage extends Application {
         submitExcuseIcon.setLayoutY(418);
 
         // Create "Submit Excuse" Text
-        Text submitExcuseText = new Text("Submit Excuse");
+        submitExcuseText = new Text("Submit Excuse");
         submitExcuseText.setFont(Font.font("Poppins", FontWeight.MEDIUM, 15));
         submitExcuseText.setFill(Color.web("#02383E"));
         submitExcuseText.setLayoutX(93);
@@ -325,6 +330,7 @@ public class StudentDashboardPage extends Application {
         submitExcuseText.setOnMouseClicked(e -> {
             selectSidebarText(submitExcuseText);
             onSubmitExcuseClicked(e);
+            
         });
         
         //student Individual report
@@ -378,6 +384,7 @@ public class StudentDashboardPage extends Application {
       
         // Add click handler
         dashboardText.setOnMouseClicked(this::onDashboardClicked);
+        
     }
 
     public void loadUserIcon() {
@@ -418,8 +425,11 @@ public class StudentDashboardPage extends Application {
             selectedText.setFill(Color.web("#02383E")); // Reset old
         }
         selectedText = newSelectedText;
-        selectedText.setFill(Color.web("#20B2AA")); // New selection color
+        if (selectedText != null) {
+            selectedText.setFill(Color.web("#20B2AA")); // New selection color
+        }
     }
+
 
     @SuppressWarnings("unused")
     private void clearSidebarHighlights() {
@@ -468,7 +478,8 @@ public class StudentDashboardPage extends Application {
 
     private void onSubmitExcuseClicked(MouseEvent event) {
         System.out.println("Submit Excuse clicked!");
-        selectSidebarText((Text) event.getSource());
+
+        
         centerContentPane.getChildren().clear();
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null) {
@@ -483,6 +494,31 @@ public class StudentDashboardPage extends Application {
         Pane excusePanel = StudentSubmitExcuseCenterPanel.createPanel(studentId);
         centerContentPane.getChildren().add(excusePanel);
     }
+    
+    public void openSubmitExcuseFromNotification() {
+        System.out.println("Opening Submit Excuse from notification...");
+
+        selectSidebarText(submitExcuseText);
+
+
+        // ✅ Load the excuse submission panel
+        centerContentPane.getChildren().clear();
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null) {
+            System.err.println("No user is logged in.");
+            return;
+        }
+        Integer studentId = currentUser.getStudentId();
+        if (studentId == null) {
+            System.err.println("Current user is not a student.");
+            return;
+        }
+
+        Pane excusePanel = StudentSubmitExcuseCenterPanel.createPanel(studentId);
+        centerContentPane.getChildren().add(excusePanel);
+    }
+
+
     
     private void onstudentIndividualReportTextClicked(MouseEvent event) {
         System.out.println("Individual Report clicked!");

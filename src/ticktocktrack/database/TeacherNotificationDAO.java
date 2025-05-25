@@ -17,38 +17,65 @@ public class TeacherNotificationDAO {
     /**
      * Sends a notification to a teacher when an event (e.g., excuse submission) occurs.
      */
-    public static void sendTeacherNotification(int teacherId, String eventMessage, String eventType, int senderUserId) {
-        int teacherUserId = getUserIdByTeacherId(teacherId);
-        if (teacherUserId == -1) {
-            System.err.println("Error: No user_id found for teacher_id " + teacherId);
-            return;
-        }
+	
+	public static String getUserRoleByUserId(int userId) {
+	    String role = "user"; // default role if unknown
+	    String sql = "SELECT role FROM Users WHERE user_id = ?";  // adjust table/column as needed
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement ps = conn.prepareStatement(sql)) {
+	            ps.setInt(1, userId);
+	            try (ResultSet rs = ps.executeQuery()) {
+	                if (rs.next()) {
+	                    role = rs.getString("role").toLowerCase();
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error retrieving role for user_id " + userId + ": " + e.getMessage());
+	    }
+	    return role;
+	}
 
-        String senderRole = Session.getCurrentUser().getRole(); // You may also pass this if needed
-        String senderDisplay = getSenderFullNameAndRole(senderUserId, senderRole);
+	public static void sendTeacherNotification(int teacherId, String eventMessage, String eventType, int senderUserId) {
+	    int teacherUserId = getUserIdByTeacherId(teacherId);
+	    if (teacherUserId == -1) {
+	        System.err.println("Error: No user_id found for teacher_id " + teacherId);
+	        return;
+	    }
 
-        String message = senderDisplay + " " + eventMessage;
+	    String senderRole = getUserRoleByUserId(senderUserId);
+	    String senderDisplay = getSenderFullNameAndRole(senderUserId, senderRole);
 
-        String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) "
-                   + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        DatabaseConnection dbConn = new DatabaseConnection();
-        try {
-            dbConn.connectToSQLServer();
-            try (Connection conn = dbConn.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, teacherUserId);
-                ps.setInt(2, senderUserId);
-                ps.setString(3, message);
-                ps.setString(4, eventType);
-                ps.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-                ps.setBoolean(6, false);
-                ps.executeUpdate();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error sending teacher notification: " + e.getMessage());
-        }
-    }
+	    String message = senderDisplay + " " + eventMessage;
+
+	    String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) "
+	               + "VALUES (?, ?, ?, ?, ?, ?)";
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement ps = conn.prepareStatement(sql)) {
+	            ps.setInt(1, teacherUserId);
+	            ps.setInt(2, senderUserId);  // This is critical to save sender user id!
+	            ps.setString(3, message);
+	            ps.setString(4, eventType);
+	            ps.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+	            ps.setBoolean(6, false);
+	            ps.executeUpdate();
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error sending teacher notification: " + e.getMessage());
+	    }
+	}
+
+    
+    
+
 
     /**
      * Overloaded method that sends a teacher notification using the current session user as sender.
@@ -157,12 +184,9 @@ public class TeacherNotificationDAO {
         return role + " " + name;
     }
 
-    /**
-     * Fetches notifications for a given teacher user, with debug logging.
-     */
     public static List<Notification> getNotificationsForUser(int userId) {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT message, notification_type, date_sent "
+        String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "
                    + "ORDER BY date_sent DESC";
 
@@ -183,31 +207,27 @@ public class TeacherNotificationDAO {
                         String message = rs.getString("message");
                         String status = rs.getString("notification_type");
                         LocalDateTime dateSent = rs.getTimestamp("date_sent").toLocalDateTime();
+                        int senderUserId = rs.getInt("sender_user_id");
 
-                        notifications.add(new Notification(message, dateSent, status));
+                        notifications.add(new Notification(message, dateSent, status, senderUserId));
                         count++;
                         System.out.println("DEBUG: Retrieved Notification #" + count
-                                         + " � Message: " + message
+                                         + " • Message: " + message
                                          + ", Status: " + status
-                                         + ", Date: " + dateSent);
+                                         + ", Date: " + dateSent
+                                         + ", SenderUserId: " + senderUserId);
                     }
                     System.out.println("DEBUG: Total notifications retrieved: " + count);
                 }
             }
         } catch (SQLException e) {
             System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
-                              + " � " + e.getMessage());
+                              + " • " + e.getMessage());
+        } finally {
+            // Always close the connection after done
+            dbConn.closeConnection();
         }
         return notifications;
     }
 
-    
-    public static boolean submitExcuse(int studentId,
-            String dateSubmitted,
-            String reason,
-            int teacherUserId,
-            String remarks) {
-    	
-    	return true;
-    }
 }

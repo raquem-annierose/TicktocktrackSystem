@@ -233,12 +233,15 @@ public class DatabaseAttendance {
     /**
      * Saves or updates attendance record for a student on a specific date.
      */
-    public static void saveAttendance(int studentId, String date, String status, String reason, String program, String courseName, String section) throws SQLException {
-        DatabaseConnection dbConn = new DatabaseConnection();
+    public static int saveAttendance(int studentId, String date, String status, String reason,
+            String program, String courseName, String section) throws SQLException {
+DatabaseConnection dbConn = new DatabaseConnection();
+int attendanceId = -1;
         try {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
             conn.setAutoCommit(false);
+
             // Get enrollment_id
             String enrollmentSql = "SELECT e.enrollment_id " +
                                    "FROM Enrollments e " +
@@ -254,10 +257,12 @@ public class DatabaseAttendance {
                     if (rs.next()) {
                         enrollmentId = rs.getInt("enrollment_id");
                     } else {
-                        throw new SQLException("Enrollment not found for studentId " + studentId + ", course " + courseName + ", program " + program + ", section " + section);
+                        throw new SQLException("Enrollment not found for studentId " + studentId +
+                                               ", course " + courseName + ", program " + program + ", section " + section);
                     }
                 }
             }
+
             // Check for existing attendance
             String checkSql = "SELECT attendance_id FROM Attendance WHERE enrollment_id = ? AND date = ?";
             try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
@@ -266,7 +271,7 @@ public class DatabaseAttendance {
                 try (ResultSet rsCheck = psCheck.executeQuery()) {
                     if (rsCheck.next()) {
                         // Update
-                        int attendanceId = rsCheck.getInt("attendance_id");
+                        attendanceId = rsCheck.getInt("attendance_id");
                         String updateSql = "UPDATE Attendance SET status = ?, reason = ? WHERE attendance_id = ?";
                         try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                             psUpdate.setString(1, status);
@@ -275,20 +280,36 @@ public class DatabaseAttendance {
                             psUpdate.executeUpdate();
                         }
                     } else {
-                        // Insert with default approval status
-                        String insertSql = "INSERT INTO Attendance (enrollment_id, date, status, reason, approval_status) VALUES (?, ?, ?, ?, ?)";
-                        try (PreparedStatement psInsert = conn.prepareStatement(insertSql)) {
+                        // Insert and retrieve generated key
+                        String insertSql = "INSERT INTO Attendance (enrollment_id, date, status, reason, approval_status) " +
+                                           "VALUES (?, ?, ?, ?, ?)";
+                        try (PreparedStatement psInsert = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                             psInsert.setInt(1, enrollmentId);
                             psInsert.setString(2, date);
                             psInsert.setString(3, status);
                             psInsert.setString(4, reason);
-                            psInsert.setString(5, "Pending"); // default approval status
-                            psInsert.executeUpdate();
+                            psInsert.setString(5, "Pending");
+
+                            int rowsAffected = psInsert.executeUpdate();
+                            if (rowsAffected == 0) {
+                                throw new SQLException("Inserting attendance failed, no rows affected.");
+                            }
+
+                            try (ResultSet generatedKeys = psInsert.getGeneratedKeys()) {
+                                if (generatedKeys.next()) {
+                                    attendanceId = generatedKeys.getInt(1);
+                                } else {
+                                    throw new SQLException("Inserting attendance failed, no ID obtained.");
+                                }
+                            }
                         }
                     }
                 }
             }
+
             conn.commit(); // commit all changes
+            return attendanceId;
+
         } catch (SQLException ex) {
             ex.printStackTrace();
             throw ex;
@@ -296,6 +317,7 @@ public class DatabaseAttendance {
             dbConn.closeConnection();
         }
     }
+
 
     public static void updateStudentAttendance(int studentId, String date, String status, String program, String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();

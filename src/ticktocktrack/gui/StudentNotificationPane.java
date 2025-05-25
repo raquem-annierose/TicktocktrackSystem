@@ -3,10 +3,12 @@ package ticktocktrack.gui;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.Cursor;
 import javafx.scene.layout.StackPane;
 import javafx.collections.FXCollections;
@@ -24,8 +26,11 @@ import javafx.scene.control.ScrollPane;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class StudentNotificationPane {
+	
+	private StudentDashboardPage dashboardPage;
     private int userId;
     private Popup notificationPopup;
     private ImageView notificationIcon;
@@ -34,9 +39,12 @@ public class StudentNotificationPane {
     // Declare the notifications list as a class field
     private ObservableList<Notification> notifications;
 
-    public StudentNotificationPane() {
+    public StudentNotificationPane(StudentDashboardPage dashboardPage) {
+        this.dashboardPage = dashboardPage;
+        
         UsersModel currentUser = Session.getCurrentUser();
-
+        
+        
         if (currentUser == null) {
             throw new IllegalStateException("No user is logged in. Notifications cannot be loaded.");
         }
@@ -118,20 +126,25 @@ public class StudentNotificationPane {
         }
     }
 
+ // Original method with no senderUserId; calls overloaded method with default senderUserId = 0
     public void addNotification(String message, LocalDateTime dateSent, String status) {
-        Notification newNotification = new Notification(message, dateSent, status);
-        notifications.add(newNotification);
-        addNotificationToHolder(newNotification);
+        addNotification(message, dateSent, status, 0); // default senderUserId
     }
+
+    // New overloaded method with senderUserId parameter
+    public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
+        Notification note = new Notification(message, dateSent, status, senderUserId);
+        notifications.add(note);
+        addNotificationToHolder(note);
+    }
+
 
     private void addNotificationToHolder(Notification notification) {
         // Create notification message label
         Label notificationLabel = new Label("� " + notification.getMessage());
-        // Correct font setting
         notificationLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         notificationLabel.setWrapText(true);
         notificationLabel.setMaxWidth(240);
-        // Fix TextAlignment
         notificationLabel.setTextAlignment(TextAlignment.LEFT);
 
         // Date and status label
@@ -144,14 +157,25 @@ public class StudentNotificationPane {
         HBox notificationBox = new HBox(content);
         notificationBox.setPadding(new Insets(5));
         notificationBox.setStyle(
-                "-fx-background-color: #f9f9f9; " +
-                "-fx-border-radius: 5px; " +
-                "-fx-background-radius: 5px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);"
+            "-fx-background-color: #f9f9f9; " +
+            "-fx-border-radius: 5px; " +
+            "-fx-background-radius: 5px; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);"
         );
 
         addHoverEffect(notificationBox);
         notificationHolder.getChildren().add(notificationBox);
+        
+        if (notification.getMessage().contains("marked you as Absent")) {
+            notificationBox.setOnMouseClicked(e -> {
+                System.out.println("DEBUG: Notification clicked, opening Submit Excuse from dashboard...");
+                dashboardPage.openSubmitExcuseFromNotification(); // DIRECTLY call the method!
+                notificationPopup.hide();
+            });
+        }
+
+
+
     }
 
     private void addHoverEffect(HBox notificationBox) {

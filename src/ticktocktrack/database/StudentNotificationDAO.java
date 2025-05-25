@@ -1,12 +1,14 @@
 package ticktocktrack.database;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import ticktocktrack.logic.Notification;
@@ -14,8 +16,49 @@ import ticktocktrack.logic.Session;
 
 
 public class StudentNotificationDAO {
+	
+	public static void sendExcuseAcceptedNotification(int studentId, String courseName, LocalDate attendanceDate) {
+        int studentUserId = getUserIdByStudentId(studentId);
+        if (studentUserId == -1) {
+            System.err.println("Error: No user_id found for student_id " + studentId);
+            return;
+        }
 
-	public static void sendAttendanceNotification(int studentId, String attendanceStatus) {
+        int senderUserId = Session.getCurrentUser().getUserId();
+        String senderRole = Session.getCurrentUser().getRole();
+        String senderDisplayName = getSenderFullNameAndRole(senderUserId, senderRole);
+
+        String message = senderDisplayName + " accepted your excuse letter for the course " + courseName + " on " + attendanceDate + ". Your attendance is now marked as Excused.";
+
+        String type = "Attendance";
+
+        String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+
+        DatabaseConnection dbConn = new DatabaseConnection();
+
+        try {
+            dbConn.connectToSQLServer();
+
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setInt(1, studentUserId);
+                pstmt.setInt(2, senderUserId);
+                pstmt.setString(3, message);
+                pstmt.setString(4, type);
+                pstmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+                pstmt.setBoolean(6, false);
+
+                pstmt.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error sending excuse accepted notification: " + e.getMessage());
+        }
+    }
+
+	public static void sendAttendanceNotification(int studentId, String attendanceStatus, int enrollmentId, LocalDate attendanceDate, String course) {
 	    int studentUserId = getUserIdByStudentId(studentId);
 	    if (studentUserId == -1) {
 	        System.err.println("Error: No user_id found for student_id " + studentId);
@@ -24,15 +67,22 @@ public class StudentNotificationDAO {
 
 	    int senderUserId = Session.getCurrentUser().getUserId(); 
 	    String senderRole = Session.getCurrentUser().getRole();
-
-	    // Get sender full name + role
 	    String senderDisplayName = getSenderFullNameAndRole(senderUserId, senderRole);
+	    String message;
 
-	    // Compose customized message
-	    String message = senderDisplayName + " marked you as " + attendanceStatus;
+	    if (attendanceStatus.equalsIgnoreCase("Absent")) {
+	        // Check if this absence is already excused
+	        if (isAlreadyExcused(enrollmentId, attendanceDate)) {
+	            message = senderDisplayName + " marked you as Excused for the course " + course + ".";
+	        } else {
+	            message = senderDisplayName + " marked you as Absent in " + course + ". Please send an excuse letter.";
+	        }
+	    } else {
+	        // Default message for other statuses like Present, Late, Excused
+	        message = senderDisplayName + " marked you as " + attendanceStatus + " in " + course + ".";
+	    }
 
 	    String type = "Attendance";
-
 	    String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
 	                 "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -53,14 +103,38 @@ public class StudentNotificationDAO {
 
 	            pstmt.executeUpdate();
 	        }
-	        
-	        
+
 	    } catch (SQLException e) {
 	        System.err.println("Error sending notification: " + e.getMessage());
 	    }
 	}
 
+	
+	private static boolean isAlreadyExcused(int enrollmentId, LocalDate attendanceDate) {
+	    String sql = "SELECT status FROM Attendance WHERE enrollment_id = ? AND date = ?";
+	    DatabaseConnection dbConn = new DatabaseConnection();
 
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+	            stmt.setInt(1, enrollmentId);
+	            stmt.setDate(2, Date.valueOf(attendanceDate));
+
+	            try (ResultSet rs = stmt.executeQuery()) {
+	                if (rs.next()) {
+	                    String status = rs.getString("status");
+	                    return "Excused".equalsIgnoreCase(status);
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error checking attendance status: " + e.getMessage());
+	    }
+
+	    return false;
+	}
 
 
     // Helper method to resolve user_id from student_id
@@ -145,13 +219,13 @@ public class StudentNotificationDAO {
         return role + " " + fullName; // e.g. "Teacher John Smith"
     }
 
-    // New method to fetch notifications for a given user
     public static List<Notification> getNotificationsForUser(int userId) {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT message, notification_type, date_sent FROM Notifications WHERE recipient_user_id = ? ORDER BY date_sent DESC";
+        String sql = "SELECT message, notification_type, date_sent, sender_user_id "
+                   + "FROM Notifications WHERE recipient_user_id = ? "
+                   + "ORDER BY date_sent DESC";
 
         System.out.println("DEBUG: Starting getNotificationsForUser for userId = " + userId);
-
         DatabaseConnection dbConn = new DatabaseConnection();
 
         try {
@@ -164,28 +238,35 @@ public class StudentNotificationDAO {
                 stmt.setInt(1, userId);
                 System.out.println("DEBUG: Executing SQL query with userId = " + userId);
 
-                ResultSet rs = stmt.executeQuery();
+                try (ResultSet rs = stmt.executeQuery()) {
+                    int count = 0;
+                    while (rs.next()) {
+                        String message = rs.getString("message");
+                        String status = rs.getString("notification_type");
+                        LocalDateTime dateSent = rs.getTimestamp("date_sent").toLocalDateTime();
+                        int senderUserId = rs.getInt("sender_user_id");
 
-                int count = 0;
-                while (rs.next()) {
-                    String message = rs.getString("message");
-                    String status = rs.getString("notification_type");
-                    LocalDateTime dateSent = rs.getTimestamp("date_sent").toLocalDateTime();
+                        notifications.add(new Notification(message, dateSent, status, senderUserId));
+                        count++;
 
-                    notifications.add(new Notification(message, dateSent, status));
-                    count++;
-
-                    System.out.println("DEBUG: Retrieved Notification #" + count + " � Message: " + message + ", Status: " + status + ", Date: " + dateSent);
+                        System.out.println("DEBUG: Retrieved Notification #" + count
+                                         + " • Message: " + message
+                                         + ", Status: " + status
+                                         + ", Date: " + dateSent
+                                         + ", SenderUserId: " + senderUserId);
+                    }
+                    System.out.println("DEBUG: Total notifications retrieved: " + count);
                 }
-
-                System.out.println("DEBUG: Total notifications retrieved: " + count);
             }
-
         } catch (SQLException e) {
-            System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId + " � " + e.getMessage());
+            System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
+                              + " • " + e.getMessage());
+        } finally {
+            dbConn.closeConnection();
         }
 
         return notifications;
     }
+
 
 }

@@ -26,7 +26,7 @@ import ticktocktrack.logic.UsersModel;
 
 import ticktocktrack.database.StudentNotificationDAO;
 
-
+import java.time.LocalDate;
 import java.util.*;
 
 public class TeacherMarkAttendanceCenterPanel {
@@ -392,6 +392,19 @@ public class TeacherMarkAttendanceCenterPanel {
                 }
 
                 int studentId = student.getStudentId();
+                
+                String date = student.getDate();
+                String status = student.getStatus();
+
+                int attendanceId = DatabaseAttendance.saveAttendance(
+                    studentId,
+                    date,
+                    status,
+                    student.getReason(),
+                    studentProgram,
+                    course,
+                    studentSection
+                );
 
                 DatabaseAttendance.saveAttendance(
                     studentId,
@@ -412,8 +425,8 @@ public class TeacherMarkAttendanceCenterPanel {
                 	    studentSection
                 	);
 
-                
-                StudentNotificationDAO.sendAttendanceNotification(studentId, student.getStatus());
+                StudentNotificationDAO.sendAttendanceNotification(studentId, status, attendanceId, LocalDate.parse(date), course);
+
 
             }
 

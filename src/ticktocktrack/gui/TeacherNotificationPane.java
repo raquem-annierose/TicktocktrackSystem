@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -13,11 +14,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Popup;
+import ticktocktrack.database.StudentNotificationDAO;
+import ticktocktrack.database.TeacherApproval;
 import ticktocktrack.database.TeacherNotificationDAO;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import javafx.collections.FXCollections;
@@ -30,6 +34,11 @@ public class TeacherNotificationPane {
     private StackPane notificationIconWrapper;
     private ObservableList<Notification> notifications;
     private VBox notificationHolder;
+    private int senderUserId;
+    private String message;
+
+    public int getSenderUserId() { return senderUserId; }
+    public String getMessage() { return message; }
 
     public TeacherNotificationPane() {
         UsersModel currentUser = Session.getCurrentUser();
@@ -93,10 +102,17 @@ public class TeacherNotificationPane {
     }
 
     public void addNotification(String message, LocalDateTime dateSent, String status) {
-        Notification note = new Notification(message, dateSent, status);
+        addNotification(message, dateSent, status, 0); // default senderUserId
+    }
+
+    public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
+        Notification note = new Notification(message, dateSent, status, senderUserId);
         notifications.add(note);
         addNotificationToHolder(note);
     }
+
+
+
 
     private void addNotificationToHolder(Notification note) {
         Label msgLabel = new Label("\u2022 " + note.getMessage());
@@ -134,7 +150,6 @@ public class TeacherNotificationPane {
     }
 
     private void showDetailedNotificationPopup(Notification note) {
-        // Hide main notification popup so it won't cover detailed popup
         if (notificationPopup.isShowing()) {
             notificationPopup.hide();
         }
@@ -148,10 +163,12 @@ public class TeacherNotificationPane {
         title.setFont(javafx.scene.text.Font.font("Poppins", 13));
         title.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
 
-        Label message = new Label(note.getMessage());
+        // Wrap message text every 60 chars
+        String wrappedMessage = wrapText(note.getMessage(), 60);
+        Label message = new Label(wrappedMessage);
         message.setFont(javafx.scene.text.Font.font("Poppins", 12));
         message.setMaxWidth(500);
-        message.setMaxHeight(500);
+        message.setWrapText(true);  // enable wrapping inside label
 
         Label date = new Label("Sent: " + note.getDateSent().toString());
         date.setFont(javafx.scene.text.Font.font("Poppins", 10));
@@ -172,8 +189,92 @@ public class TeacherNotificationPane {
         acceptButton.setPrefHeight(35);
         acceptButton.setCursor(Cursor.HAND);
         acceptButton.setOnAction(e -> {
-            System.out.println("Accepted notification: " + note.getMessage());
-            // TODO: Add accept logic here
+            int senderUserId = note.getSenderUserId();
+            System.out.println("Sender UserId: " + senderUserId);
+
+            if (senderUserId <= 0) {
+                System.out.println("Invalid sender userId from notification.");
+                new Alert(Alert.AlertType.ERROR, "Invalid sender user ID in the notification.").showAndWait();
+                return;
+            }
+
+            // Verify senderUserId corresponds to a student
+            if (!TeacherApproval.isUserStudent(senderUserId)) {
+                System.out.println("UserId " + senderUserId + " is not a student.");
+                new Alert(Alert.AlertType.ERROR, "Notification sender is not a student.").showAndWait();
+                return;
+            }
+
+            int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
+            if (studentId == -1) {
+                System.out.println("Could not resolve student from sender userId: " + senderUserId);
+                new Alert(Alert.AlertType.ERROR, "Cannot find student linked to this notification sender.").showAndWait();
+                return;
+            }
+            System.out.println("Resolved studentId: " + studentId);
+
+            // Parse message fields
+            String fullMessage = note.getMessage();
+            String dateString;
+            String reason;
+            String courseName;
+
+            try {
+                int dateKeywordIndex = fullMessage.indexOf("for ");
+                int dateStart = dateKeywordIndex + 4;
+                int dateEnd = fullMessage.indexOf(" in course", dateStart);
+                dateString = fullMessage.substring(dateStart, dateEnd).trim();
+
+                // Validate date format
+                LocalDate.parse(dateString);
+
+                int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
+                int courseEnd = fullMessage.indexOf(":", courseStart);
+                courseName = fullMessage.substring(courseStart, courseEnd).trim();
+
+                int reasonKeywordIndex = fullMessage.indexOf("| Reason:");
+                int reasonStart = reasonKeywordIndex + "| Reason:".length();
+                reason = fullMessage.substring(reasonStart).trim();
+            } catch (Exception ex) {
+                System.out.println("Failed to parse date/course/reason: " + ex.getMessage());
+                new Alert(Alert.AlertType.ERROR, "Failed to parse excuse details from notification message.").showAndWait();
+                return;
+            }
+
+            System.out.println("Parsed details -> Date: " + dateString + ", Course: " + courseName + ", Reason: " + reason);
+
+            // Get enrollment ID
+            int enrollmentId = TeacherApproval.getEnrollmentId(studentId, courseName);
+            if (enrollmentId == -1) {
+                System.out.println("Enrollment not found for student " + studentId + " and course " + courseName);
+                new Alert(Alert.AlertType.ERROR, "Enrollment not found for this student and course.").showAndWait();
+                return;
+            }
+
+            // Get current teacher ID from logged-in user ID (recipient_id)
+            int currentUserId = Session.getCurrentUser().getUserId();
+            int teacherId = TeacherApproval.getTeacherIdByUserId(currentUserId);
+
+            if (teacherId == -1) {
+                System.out.println("Current user is not a teacher or teacher ID not found.");
+                new Alert(Alert.AlertType.ERROR, "You must be logged in as a teacher to approve excuses.").showAndWait();
+                return;
+            }
+
+            // Approve excuse and update attendance table
+            boolean success = TeacherApproval.approveExcuse(studentId, courseName, dateString, reason, teacherId);
+
+            if (success) {
+                System.out.println("Attendance updated to Excused.");
+                new Alert(Alert.AlertType.INFORMATION, "Excuse approved and attendance updated.").showAndWait();
+
+                // Send notification to student that excuse is accepted
+                StudentNotificationDAO.sendExcuseAcceptedNotification(studentId, courseName, LocalDate.parse(dateString));
+            } else {
+                // ...
+            }
+
+
             closePopup(dimOverlay);
         });
 
@@ -192,10 +293,89 @@ public class TeacherNotificationPane {
         rejectButton.setPrefHeight(35);
         rejectButton.setCursor(Cursor.HAND);
         rejectButton.setOnAction(e -> {
-            System.out.println("Rejected notification: " + note.getMessage());
-            // TODO: Add reject logic here
+            int senderUserId = note.getSenderUserId();
+            System.out.println("Sender UserId: " + senderUserId);
+
+            if (senderUserId <= 0) {
+                System.out.println("Invalid sender userId from notification.");
+                new Alert(Alert.AlertType.ERROR, "Invalid sender user ID in the notification.").showAndWait();
+                return;
+            }
+
+            // Verify senderUserId corresponds to a student
+            if (!TeacherApproval.isUserStudent(senderUserId)) {
+                System.out.println("UserId " + senderUserId + " is not a student.");
+                new Alert(Alert.AlertType.ERROR, "Notification sender is not a student.").showAndWait();
+                return;
+            }
+
+            int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
+            if (studentId == -1) {
+                System.out.println("Could not resolve student from sender userId: " + senderUserId);
+                new Alert(Alert.AlertType.ERROR, "Cannot find student linked to this notification sender.").showAndWait();
+                return;
+            }
+            System.out.println("Resolved studentId: " + studentId);
+
+            // Parse message fields
+            String fullMessage = note.getMessage();
+            String dateString;
+            String courseName;
+
+            try {
+                int dateKeywordIndex = fullMessage.indexOf("for ");
+                int dateStart = dateKeywordIndex + 4;
+                int dateEnd = fullMessage.indexOf(" in course", dateStart);
+                dateString = fullMessage.substring(dateStart, dateEnd).trim();
+
+                // Validate date format
+                LocalDate.parse(dateString);
+
+                int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
+                int courseEnd = fullMessage.indexOf(":", courseStart);
+                courseName = fullMessage.substring(courseStart, courseEnd).trim();
+
+            } catch (Exception ex) {
+                System.out.println("Failed to parse date/course: " + ex.getMessage());
+                new Alert(Alert.AlertType.ERROR, "Failed to parse excuse details from notification message.").showAndWait();
+                return;
+            }
+
+            System.out.println("Parsed details -> Date: " + dateString + ", Course: " + courseName);
+
+            // Get enrollment ID
+            int enrollmentId = TeacherApproval.getEnrollmentId(studentId, courseName);
+            if (enrollmentId == -1) {
+                System.out.println("Enrollment not found for student " + studentId + " and course " + courseName);
+                new Alert(Alert.AlertType.ERROR, "Enrollment not found for this student and course.").showAndWait();
+                return;
+            }
+
+            // Get current teacher ID from logged-in user ID (recipient_id)
+            int currentUserId = Session.getCurrentUser().getUserId();
+            int teacherId = TeacherApproval.getTeacherIdByUserId(currentUserId);
+
+            if (teacherId == -1) {
+                System.out.println("Current user is not a teacher or teacher ID not found.");
+                new Alert(Alert.AlertType.ERROR, "You must be logged in as a teacher to reject excuses.").showAndWait();
+                return;
+            }
+
+            // Reject excuse (mark absent)
+            boolean success = TeacherApproval.rejectExcuse(studentId, courseName, dateString, teacherId);
+
+            if (success) {
+                System.out.println("Excuse rejected and marked as Absent.");
+                new Alert(Alert.AlertType.INFORMATION, "Excuse rejected and attendance marked as absent.").showAndWait();
+            } else {
+                System.out.println("Failed to reject excuse.");
+                new Alert(Alert.AlertType.ERROR, "Failed to update attendance record.").showAndWait();
+            }
+
             closePopup(dimOverlay);
         });
+
+
 
         // Close button (X)
         Button closeButton = new Button("X");
@@ -210,7 +390,6 @@ public class TeacherNotificationPane {
             closePopup(dimOverlay);
         });
 
-        // Title bar
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_LEFT);
         titleBar.setSpacing(10);
@@ -219,7 +398,7 @@ public class TeacherNotificationPane {
         titleBar.getChildren().addAll(title, spacer, closeButton);
 
         VBox contentBox = new VBox(10, message, date);
-        VBox.setVgrow(contentBox, Priority.ALWAYS); // Pushes buttons to the bottom
+        VBox.setVgrow(contentBox, Priority.ALWAYS);
 
         HBox buttonsBox = new HBox(20, acceptButton, rejectButton);
         buttonsBox.setAlignment(Pos.CENTER);
@@ -234,7 +413,6 @@ public class TeacherNotificationPane {
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.2, 0, 0);"
         );
 
-
         StackPane popupWrapper = new StackPane(popupBox);
         popupWrapper.setPrefSize(1300, 750);
         popupWrapper.setAlignment(Pos.CENTER);
@@ -247,11 +425,30 @@ public class TeacherNotificationPane {
             root.getChildren().add(fullOverlay);
             fullOverlay.toFront();
 
-            // Clicking outside popup closes it
             dimOverlay.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
                 root.getChildren().remove(fullOverlay);
             });
         }
+    }
+
+    // Helper method to insert newlines every 'lineLength' characters without breaking words
+    private String wrapText(String text, int lineLength) {
+        if (text == null) return "";
+        StringBuilder wrapped = new StringBuilder();
+        int index = 0;
+        while (index < text.length()) {
+            int nextBreak = Math.min(index + lineLength, text.length());
+            // Try to break at space if possible to avoid breaking words
+            if (nextBreak < text.length()) {
+                int lastSpace = text.lastIndexOf(' ', nextBreak);
+                if (lastSpace > index) {
+                    nextBreak = lastSpace;
+                }
+            }
+            wrapped.append(text, index, nextBreak).append("\n");
+            index = nextBreak + 1; // skip the space
+        }
+        return wrapped.toString().trim();
     }
 
 
