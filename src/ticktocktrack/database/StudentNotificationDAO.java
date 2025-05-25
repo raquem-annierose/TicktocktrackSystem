@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
@@ -69,17 +70,18 @@ public class StudentNotificationDAO {
 	    String senderRole = Session.getCurrentUser().getRole();
 	    String senderDisplayName = getSenderFullNameAndRole(senderUserId, senderRole);
 	    String message;
+	    String formattedDate = attendanceDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")); // e.g., May 25, 2025
 
 	    if (attendanceStatus.equalsIgnoreCase("Absent")) {
 	        // Check if this absence is already excused
 	        if (isAlreadyExcused(enrollmentId, attendanceDate)) {
-	            message = senderDisplayName + " marked you as Excused for the course " + course + ".";
+	            message = senderDisplayName + " marked you as Excused for the course " + course + " on " + formattedDate + ".";
 	        } else {
-	            message = senderDisplayName + " marked you as Absent in " + course + ". Please send an excuse letter.";
+	            message = senderDisplayName + " marked you as Absent in " + course + " on " + formattedDate + ". Please submit an excuse letter.";
 	        }
 	    } else {
 	        // Default message for other statuses like Present, Late, Excused
-	        message = senderDisplayName + " marked you as " + attendanceStatus + " in " + course + ".";
+	        message = senderDisplayName + " marked you as " + attendanceStatus + " in " + course + " on " + formattedDate + ".";
 	    }
 
 	    String type = "Attendance";
@@ -108,6 +110,7 @@ public class StudentNotificationDAO {
 	        System.err.println("Error sending notification: " + e.getMessage());
 	    }
 	}
+
 
 	
 	private static boolean isAlreadyExcused(int enrollmentId, LocalDate attendanceDate) {
