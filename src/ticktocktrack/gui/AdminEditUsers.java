@@ -40,7 +40,7 @@ public class AdminEditUsers {
 
         // Top colored bar based on role
         Region roleBar = new Region();
-        roleBar.setPrefHeight(8);
+        roleBar.setPrefHeight(5);
         roleBar.setMaxWidth(Double.MAX_VALUE);
         roleBar.getStyleClass().add("role-bar");
         roleBar.getStyleClass().add(user.getRole().toLowerCase()); // expects css classes admin, teacher, student
@@ -114,10 +114,36 @@ public class AdminEditUsers {
         Button saveBtn = new Button("Save");
         Button cancelBtn = new Button("Cancel");
 
-        saveBtn.getStyleClass().addAll("btn", "btn-save");
-        cancelBtn.getStyleClass().addAll("btn", "btn-cancel");
+        String saveButtonStyle =
+                "-fx-background-color: #FFFFFF;" +
+                "-fx-text-fill: #4CB17B;" +
+                "-fx-font-size: 11px;" +
+                "-fx-padding: 6 18 6 18;" +
+                "-fx-background-radius: 5;" +
+                "-fx-border-radius: 5;" +
+                "-fx-border-color: #4CB17B;" +
+                "-fx-border-width: 0.7;" +
+                "-fx-font-family: 'Poppins';" +
+                "-fx-font-weight: bold;" +
+                "-fx-cursor: hand;";
 
+        String cancelButtonStyle =
+                "-fx-background-color: #FFFFFF;" +
+                "-fx-text-fill: #DC5E55;" +
+                "-fx-font-size: 11px;" +
+                "-fx-padding: 6 18 6 18;" +
+                "-fx-background-radius: 5;" +
+                "-fx-border-radius: 5;" +
+                "-fx-border-color: #DC5E55;" +
+                "-fx-border-width: 0.7;" +
+                "-fx-font-family: 'Poppins';" +
+                "-fx-font-weight: bold;" +
+                "-fx-cursor: hand;";
+
+        saveBtn.setStyle(saveButtonStyle);
+        cancelBtn.setStyle(cancelButtonStyle);
         buttons.getChildren().addAll(saveBtn, cancelBtn);
+
 
         // Center the GridPane horizontally by wrapping it in an HBox
         HBox formContainer = new HBox();
@@ -125,6 +151,7 @@ public class AdminEditUsers {
         formContainer.getChildren().add(form);
 
         // Add role bar, form container, and buttons to root
+        
         root.getChildren().addAll(roleBar, formContainer, buttons);
 
         // Add a role-specific style class to input fields to color their border

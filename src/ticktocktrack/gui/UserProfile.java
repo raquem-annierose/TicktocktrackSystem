@@ -60,23 +60,20 @@ public class UserProfile extends Application {
         infoBox.setAlignment(Pos.CENTER_LEFT);
 
         if (user != null) {
-            String role = user.getRole().toLowerCase(); // Assuming getRole() returns role string
+            String role = user.getRole().toLowerCase();
 
-            // Common fields for all roles
             Label nameLabel = new Label("Name: " + user.getFullName());
             Label emailLabel = new Label("Email: " + user.getEmail());
 
             infoBox.getChildren().addAll(nameLabel, emailLabel);
 
             if (role.equals("student")) {
-                // Show student-specific fields
                 Label programLabel = new Label("Program: " + user.getProgram());
                 Label sectionLabel = new Label("Section: " + user.getSection());
                 Label yearLabel = new Label("Year Level: " + user.getYearLevel());
 
                 infoBox.getChildren().addAll(programLabel, sectionLabel, yearLabel);
             } else if (role.equals("admin") || role.equals("teacher")) {
-                // Show username for admin and teacher only
                 Label usernameLabel = new Label("Username: " + user.getUsername());
                 infoBox.getChildren().add(usernameLabel);
             }
@@ -85,9 +82,34 @@ public class UserProfile extends Application {
         }
 
         Button changeProfileBtn = new Button("Change Profile Picture");
+        Button saveBtn = new Button("Save Profile Picture");
+        Button removeBtn = new Button("Remove Profile Picture");
+
+        // Style definition
+        String modernButtonStyle = ""
+            + "-fx-background-color: transparent;"
+            + "-fx-border-color: #BA8200;"
+            + "-fx-border-width: 2px;"
+            + "-fx-text-fill: #BA8200;"
+            + "-fx-font-size: 12px;"
+            + "-fx-font-weight: normal;"
+            + "-fx-background-radius: 6;"
+            + "-fx-border-radius: 6;"
+            + "-fx-padding: 8 12;"
+            + "-fx-cursor: hand;";
+
+        // Apply default style
+        changeProfileBtn.setStyle(modernButtonStyle);
+        saveBtn.setStyle(modernButtonStyle);
+        removeBtn.setStyle(modernButtonStyle);
+
+        // Hover effects
+        applyHoverEffect(changeProfileBtn, modernButtonStyle);
+        applyHoverEffect(saveBtn, modernButtonStyle);
+        applyHoverEffect(removeBtn, modernButtonStyle);
+
         changeProfileBtn.setOnAction(e -> chooseImage());
 
-        Button saveBtn = new Button("Save Profile Picture");
         saveBtn.setOnAction(e -> {
             if (selectedFile != null && user != null) {
                 String absolutePath = selectedFile.toURI().toString();
@@ -102,8 +124,7 @@ public class UserProfile extends Application {
                 showAlert("Please select an image first.");
             }
         });
-        
-        Button removeBtn = new Button("Remove Profile Picture");
+
         removeBtn.setOnAction(e -> {
             if (user != null) {
                 imageView.setImage(null);
@@ -121,9 +142,7 @@ public class UserProfile extends Application {
             }
         });
 
-
         HBox buttonsBox = new HBox(10, changeProfileBtn, saveBtn, removeBtn);
-
         buttonsBox.setAlignment(Pos.CENTER);
 
         GridPane mainPane = new GridPane();
@@ -162,6 +181,15 @@ public class UserProfile extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void applyHoverEffect(Button button, String baseStyle) {
+        button.setOnMouseEntered(e ->
+            button.setStyle(baseStyle + "-fx-background-color: #BA8200; -fx-text-fill: white;")
+        );
+        button.setOnMouseExited(e ->
+            button.setStyle(baseStyle)
+        );
     }
 
     public static void main(String[] args) {

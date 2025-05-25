@@ -273,8 +273,34 @@ public class AdminManageAccountsCenterPanel {
             private final HBox manageBox = new HBox(5); // Reduced spacing
 
             {
-                deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 10px;");
-                editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 10px;");
+            	deleteButton.setStyle(
+            		    "-fx-background-color: #FFFFFF; " +
+            		    "-fx-text-fill: #e74c3c; " +
+            		    "-fx-font-size: 10 px; " +
+            		    "-fx-padding: 5 10 6 10; " +
+            		    "-fx-background-radius: 5; " +
+            		    "-fx-border-radius: 5; " +
+            		    "-fx-border-color: #e74c3c; " +
+            		    "-fx-border-width: 0.7; " +
+            		    "-fx-font-family: 'Poppins'; " +
+            		    "-fx-font-weight: bold; " +
+            		    "-fx-cursor: hand;"
+            		);
+
+            		editButton.setStyle(
+            		    "-fx-background-color: #FFFFFF; " +
+            		    "-fx-text-fill: #3498db; " +
+            		    "-fx-font-size: 10 px; " +
+            		    "-fx-padding: 5 18 6 18; " +
+            		    "-fx-background-radius: 5; " +
+            		    "-fx-border-radius: 5; " +
+            		    "-fx-border-color: #3498db; " +
+            		    "-fx-border-width: 0.7; " +
+            		    "-fx-font-family: 'Poppins'; " +
+            		    "-fx-font-weight: bold; " +
+            		    "-fx-cursor: hand;"
+            		);
+
                 deleteButton.setPrefWidth(55);
                 editButton.setPrefWidth(55);
 
