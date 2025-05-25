@@ -16,11 +16,9 @@ public class TeacherApproval {
 	        db.connectToSQLServer();
 	        Connection conn = db.getConnection();
 
-	        String query = """
-	            SELECT e.enrollment_id FROM Enrollments e
-	            JOIN Classes c ON e.class_id = c.class_id
-	            WHERE e.student_id = ? AND c.course_name = ?
-	        """;
+	        String query = "SELECT e.enrollment_id FROM Enrollments e " +
+                    "JOIN Classes c ON e.class_id = c.class_id " +
+                    "WHERE e.student_id = ? AND c.course_name = ?";
 
 	        PreparedStatement stmt = conn.prepareStatement(query);
 	        stmt.setInt(1, studentId);
@@ -52,11 +50,10 @@ public class TeacherApproval {
 	        LocalDate attendanceDate = LocalDate.parse(dateString);
 
 	        // Step 1: Get enrollment ID
-	        String enrollmentQuery = """
-	            SELECT e.enrollment_id FROM Enrollments e
-	            JOIN Classes c ON e.class_id = c.class_id
-	            WHERE e.student_id = ? AND c.course_name = ?
-	        """;
+	        String enrollmentQuery = "SELECT e.enrollment_id FROM Enrollments e " +
+                    "JOIN Classes c ON e.class_id = c.class_id " +
+                    "WHERE e.student_id = ? AND c.course_name = ?";
+	        
 	        PreparedStatement enrollmentStmt = conn.prepareStatement(enrollmentQuery);
 	        enrollmentStmt.setInt(1, studentId);
 	        enrollmentStmt.setString(2, courseName);
@@ -68,10 +65,9 @@ public class TeacherApproval {
 	            int enrollmentId = enrollmentRs.getInt("enrollment_id");
 
 	            // Step 2: Check for existing attendance
-	            String attendanceCheck = """
-	                SELECT attendance_id FROM Attendance
-	                WHERE enrollment_id = ? AND date = ?
-	            """;
+	            String attendanceCheck = "SELECT attendance_id FROM Attendance " +
+                        "WHERE enrollment_id = ? AND date = ?";
+
 	            PreparedStatement attendanceStmt = conn.prepareStatement(attendanceCheck);
 	            attendanceStmt.setInt(1, enrollmentId);
 	            attendanceStmt.setDate(2, java.sql.Date.valueOf(attendanceDate));
@@ -80,12 +76,11 @@ public class TeacherApproval {
 	            if (attendanceRs.next()) {
 	                // Update existing attendance
 	                int attendanceId = attendanceRs.getInt("attendance_id");
-	                String updateQuery = """
-	                    UPDATE Attendance
-	                    SET status = 'Excused', reason = ?, approval_status = 'Approved',
-	                        approved_by = ?, approval_date = ?
-	                    WHERE attendance_id = ?
-	                """;
+	                String updateQuery = "UPDATE Attendance " +
+                            "SET status = 'Excused', reason = ?, approval_status = 'Approved', " +
+                            "approved_by = ?, approval_date = ? " +
+                            "WHERE attendance_id = ?";
+	                
 	                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
 	                updateStmt.setString(1, reason);
 	                updateStmt.setInt(2, teacherId);
@@ -95,10 +90,10 @@ public class TeacherApproval {
 	                updateStmt.close();
 	            } else {
 	                // Insert new attendance
-	                String insertQuery = """
-	                    INSERT INTO Attendance (enrollment_id, date, status, reason, approval_status, approved_by, approval_date)
-	                    VALUES (?, ?, 'Excused', ?, 'Approved', ?, ?)
-	                """;
+	            	String insertQuery = "INSERT INTO Attendance " +
+                            "(enrollment_id, date, status, reason, approval_status, approved_by, approval_date) " +
+                            "VALUES (?, ?, 'Excused', ?, 'Approved', ?, ?)";
+	            	
 	                PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
 	                insertStmt.setInt(1, enrollmentId);
 	                insertStmt.setDate(2, java.sql.Date.valueOf(attendanceDate));
@@ -121,10 +116,10 @@ public class TeacherApproval {
 	                if (userRs.next()) {
 	                    int recipientUserId = userRs.getInt("user_id");
 	                    String message = "Your excuse on " + attendanceDate + " for " + courseName + " has been approved.";
-	                    String notifyQuery = """
-	                        INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read)
-	                        VALUES (?, ?, ?, 'ExcuseApproval', ?, 0)
-	                    """;
+	                    String notifyQuery = "INSERT INTO Notifications " +
+                                "(recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
+                                "VALUES (?, ?, ?, 'ExcuseApproval', ?, 0)";
+	                    
 	                    PreparedStatement notifyStmt = conn.prepareStatement(notifyQuery);
 	                    notifyStmt.setInt(1, recipientUserId);
 	                    notifyStmt.setInt(2, teacherId);  // <-- Include sender_user_id here
@@ -161,11 +156,10 @@ public class TeacherApproval {
 
 	        LocalDate attendanceDate = LocalDate.parse(dateString);
 
-	        String enrollmentQuery = """
-	            SELECT e.enrollment_id FROM Enrollments e
-	            JOIN Classes c ON e.class_id = c.class_id
-	            WHERE e.student_id = ? AND c.course_name = ?
-	        """;
+	        String enrollmentQuery = "SELECT e.enrollment_id FROM Enrollments e " +
+                    "JOIN Classes c ON e.class_id = c.class_id " +
+                    "WHERE e.student_id = ? AND c.course_name = ?";
+	        
 	        PreparedStatement enrollmentStmt = conn.prepareStatement(enrollmentQuery);
 	        enrollmentStmt.setInt(1, studentId);
 	        enrollmentStmt.setString(2, courseName);
@@ -178,10 +172,9 @@ public class TeacherApproval {
 	        while (enrollmentRs.next()) {
 	            int enrollmentId = enrollmentRs.getInt("enrollment_id");
 
-	            String attendanceCheck = """
-	                SELECT attendance_id FROM Attendance
-	                WHERE enrollment_id = ? AND date = ?
-	            """;
+	            String attendanceCheck = "SELECT attendance_id FROM Attendance " +
+                        "WHERE enrollment_id = ? AND date = ?";
+	            
 	            PreparedStatement attendanceStmt = conn.prepareStatement(attendanceCheck);
 	            attendanceStmt.setInt(1, enrollmentId);
 	            attendanceStmt.setDate(2, java.sql.Date.valueOf(attendanceDate));
@@ -190,10 +183,10 @@ public class TeacherApproval {
 	                // No attendance record found, so insert one with Absent + Rejected
 	                System.out.println("No attendance record found for enrollment " + enrollmentId + " on date " + attendanceDate + ", inserting absent record.");
 
-	                String insertQuery = """
-	                    INSERT INTO Attendance (enrollment_id, date, status, reason, approval_status, approved_by, approval_date)
-	                    VALUES (?, ?, 'Absent', NULL, 'Rejected', ?, ?)
-	                """;
+	                String insertQuery = "INSERT INTO Attendance " +
+                            "(enrollment_id, date, status, reason, approval_status, approved_by, approval_date) " +
+                            "VALUES (?, ?, 'Absent', NULL, 'Rejected', ?, ?)";
+	                
 	                PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
 	                insertStmt.setInt(1, enrollmentId);
 	                insertStmt.setDate(2, java.sql.Date.valueOf(attendanceDate));
@@ -211,12 +204,11 @@ public class TeacherApproval {
 	                while (attendanceRs.next()) {
 	                    int attendanceId = attendanceRs.getInt("attendance_id");
 
-	                    String updateQuery = """
-	                        UPDATE Attendance
-	                        SET status = 'Absent', reason = NULL, approval_status = 'Rejected',
-	                            approved_by = ?, approval_date = ?
-	                        WHERE attendance_id = ?
-	                    """;
+	                    String updateQuery = "UPDATE Attendance " +
+                                "SET status = 'Absent', reason = NULL, approval_status = 'Rejected', " +
+                                "approved_by = ?, approval_date = ? " +
+                                "WHERE attendance_id = ?";
+	                    
 	                    PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
 	                    updateStmt.setInt(1, teacherId);
 	                    updateStmt.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
@@ -239,10 +231,10 @@ public class TeacherApproval {
 	                if (userRs.next()) {
 	                    int recipientUserId = userRs.getInt("user_id");
 	                    String message = "Your excuse on " + attendanceDate + " for " + courseName + " has been rejected.";
-	                    String notifyQuery = """
-	                        INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read)
-	                        VALUES (?, ?, ?, 'ExcuseRejection', ?, 0)
-	                    """;
+	                    String notifyQuery = "INSERT INTO Notifications " +
+                                "(recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
+                                "VALUES (?, ?, ?, 'ExcuseRejection', ?, 0)";
+	                    
 	                    PreparedStatement notifyStmt = conn.prepareStatement(notifyQuery);
 	                    notifyStmt.setInt(1, recipientUserId);
 	                    notifyStmt.setInt(2, teacherId);  // assuming teacherId as sender_user_id

@@ -17,18 +17,17 @@ public class DatabaseStudentViewMyAttendance {
 	        return classes;
 	    }
 
-	    String query = """
-	        SELECT c.course_name,
-	               t.first_name AS teacher_first,
-	               t.last_name AS teacher_last,
-	               u.profile_path
-	        FROM Students s
-	        JOIN Enrollments e ON s.student_id = e.student_id
-	        JOIN Classes c ON e.class_id = c.class_id
-	        JOIN Teachers t ON c.teacher_id = t.teacher_id
-	        JOIN Users u ON t.user_id = u.user_id
-	        WHERE s.user_id = ?
-	    """;
+	    String query = 
+	            "SELECT c.course_name, " +
+	            "       t.first_name AS teacher_first, " +
+	            "       t.last_name AS teacher_last, " +
+	            "       u.profile_path " +
+	            "FROM Students s " +
+	            "JOIN Enrollments e ON s.student_id = e.student_id " +
+	            "JOIN Classes c ON e.class_id = c.class_id " +
+	            "JOIN Teachers t ON c.teacher_id = t.teacher_id " +
+	            "JOIN Users u ON t.user_id = u.user_id " +
+	            "WHERE s.user_id = ?";
 
 	    DatabaseConnection db = new DatabaseConnection();
 	    Connection conn = null;
@@ -78,16 +77,15 @@ public class DatabaseStudentViewMyAttendance {
             return history;
         }
 
-        String query = """
-            SELECT a.date, a.status
-            FROM Attendance a
-            JOIN Enrollments e ON a.enrollment_id = e.enrollment_id
-            JOIN Students s ON e.student_id = s.student_id
-            JOIN Classes c ON e.class_id = c.class_id
-            WHERE s.user_id = ?
-              AND c.course_name = ?
-            ORDER BY a.date DESC
-        """;
+        String query = 
+                "SELECT a.date, a.status " +
+                "FROM Attendance a " +
+                "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                "JOIN Students s ON e.student_id = s.student_id " +
+                "JOIN Classes c ON e.class_id = c.class_id " +
+                "WHERE s.user_id = ? " +
+                "  AND c.course_name = ? " +
+                "ORDER BY a.date DESC";
 
         DatabaseConnection db = new DatabaseConnection();
         Connection conn = null;
@@ -139,16 +137,15 @@ public class DatabaseStudentViewMyAttendance {
 
         String attendanceStatus = "No attendance record for today";
 
-        String query = """
-            SELECT a.status
-            FROM Attendance a
-            JOIN Enrollments e ON a.enrollment_id = e.enrollment_id
-            JOIN Students s ON e.student_id = s.student_id
-            JOIN Classes c ON e.class_id = c.class_id
-            WHERE s.user_id = ?
-              AND c.course_name = ?
-              AND a.date = CAST(GETDATE() AS DATE)
-        """;
+        String query = 
+                "SELECT a.status " +
+                "FROM Attendance a " +
+                "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+                "JOIN Students s ON e.student_id = s.student_id " +
+                "JOIN Classes c ON e.class_id = c.class_id " +
+                "WHERE s.user_id = ? " +
+                "  AND c.course_name = ? " +
+                "  AND a.date = CAST(GETDATE() AS DATE)";
 
         DatabaseConnection db = new DatabaseConnection();
         Connection conn = null;

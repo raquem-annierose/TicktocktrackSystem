@@ -18,12 +18,11 @@ public class DatabaseIndividualReport {
 	public static List<String> getCourseNamesForStudent(int studentId) {
 	    List<String> courseNames = new ArrayList<>();
 
-	    String query = """
-	        SELECT DISTINCT c.course_name
-	        FROM Classes c
-	        JOIN Enrollments e ON c.class_id = e.class_id
-	        WHERE e.student_id = ?
-	    """;
+	    String query =
+	            "SELECT DISTINCT c.course_name " +
+	            "FROM Classes c " +
+	            "JOIN Enrollments e ON c.class_id = e.class_id " +
+	            "WHERE e.student_id = ?";
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
@@ -48,12 +47,11 @@ public class DatabaseIndividualReport {
 	public static List<String> getCourseNamesForStudent(int studentId, int teacherId) {
 	    List<String> courseNames = new ArrayList<>();
 
-	    String query = """
-	        SELECT DISTINCT c.course_name
-	        FROM Classes c
-	        JOIN Enrollments e ON c.class_id = e.class_id
-	        WHERE e.student_id = ? AND c.teacher_id = ?
-	    """;
+	    String query =
+	            "SELECT DISTINCT c.course_name " +
+	            "FROM Classes c " +
+	            "JOIN Enrollments e ON c.class_id = e.class_id " +
+	            "WHERE e.student_id = ? AND c.teacher_id = ?";
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
@@ -78,28 +76,18 @@ public class DatabaseIndividualReport {
 
 	
 	public static Student getStudentById(int studentId, int teacherId) {
-	    String query = """
-	        SELECT 
-	    		s.student_id,
-	    		s.last_name,
-	    		s.first_name,
-	    		s.middle_name,
-	    		s.year_level,
-	    		s.program,
-	    		s.section,
-	    		u.email,
-	    		u.profile_path,
-	    		COUNT(DISTINCT e.class_id) AS total_classes
-	    	FROM Students s
-	    	JOIN Users u ON s.user_id = u.user_id
-	    	JOIN Enrollments e ON s.student_id = e.student_id
-	    	JOIN Classes c ON e.class_id = c.class_id
-	    	WHERE s.student_id = ? AND c.teacher_id = ?
-	    	GROUP BY 
-	    		s.student_id, s.last_name, s.first_name, s.middle_name, 
-	    		s.year_level, s.program, s.section, u.email, u.profile_path
-
-	    """;
+		String query =
+	            "SELECT " +
+	            "s.student_id, s.last_name, s.first_name, s.middle_name, " +
+	            "s.year_level, s.program, s.section, u.email, u.profile_path, " +
+	            "COUNT(DISTINCT e.class_id) AS total_classes " +
+	            "FROM Students s " +
+	            "JOIN Users u ON s.user_id = u.user_id " +
+	            "JOIN Enrollments e ON s.student_id = e.student_id " +
+	            "JOIN Classes c ON e.class_id = c.class_id " +
+	            "WHERE s.student_id = ? AND c.teacher_id = ? " +
+	            "GROUP BY s.student_id, s.last_name, s.first_name, s.middle_name, " +
+	            "s.year_level, s.program, s.section, u.email, u.profile_path";
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
@@ -137,20 +125,17 @@ public class DatabaseIndividualReport {
 	public static List<ClassAttendanceSummary> getAttendanceSummaryForStudent(int studentId, int teacherId) {
 	    List<ClassAttendanceSummary> summaries = new ArrayList<>();
 
-	    String query = """
-	        SELECT
-	            c.class_id,
-	            c.course_name,
-	            COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count,
-	            COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count,
-	            COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count,
-	            COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count
-	        FROM Classes c
-	        JOIN Enrollments e ON c.class_id = e.class_id
-	        LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id
-	        WHERE e.student_id = ? AND c.teacher_id = ?
-	        GROUP BY c.class_id, c.course_name
-	    """;
+	    String query =
+	            "SELECT c.class_id, c.course_name, " +
+	            "COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count, " +
+	            "COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count, " +
+	            "COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count, " +
+	            "COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count " +
+	            "FROM Classes c " +
+	            "JOIN Enrollments e ON c.class_id = e.class_id " +
+	            "LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id " +
+	            "WHERE e.student_id = ? AND c.teacher_id = ? " +
+	            "GROUP BY c.class_id, c.course_name";
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
 	    try {
@@ -184,21 +169,18 @@ public class DatabaseIndividualReport {
 	public static List<MonthlyAttendanceSummary> getMonthlyAttendanceSummaryForStudent(int studentId, int teacherId) {
 	    List<MonthlyAttendanceSummary> summaries = new ArrayList<>();
 
-	    String query = """
-	    	    SELECT
-	    	        YEAR(a.date) AS year,
-	    	        MONTH(a.date) AS month,
-	    	        COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count,
-	    	        COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count,
-	    	        COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count,
-	    	        COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count
-	    	    FROM Enrollments e
-	    	    LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id
-	    	    JOIN Classes c ON e.class_id = c.class_id
-	    	    WHERE e.student_id = ? AND c.teacher_id = ? AND a.date IS NOT NULL
-	    	    GROUP BY YEAR(a.date), MONTH(a.date)
-	    	    ORDER BY YEAR(a.date), MONTH(a.date)
-	    	""";
+	    String query =
+	            "SELECT YEAR(a.date) AS year, MONTH(a.date) AS month, " +
+	            "COUNT(CASE WHEN a.status = 'Present' THEN 1 END) AS present_count, " +
+	            "COUNT(CASE WHEN a.status = 'Absent' THEN 1 END) AS absent_count, " +
+	            "COUNT(CASE WHEN a.status = 'Excused' THEN 1 END) AS excused_count, " +
+	            "COUNT(CASE WHEN a.status = 'Late' THEN 1 END) AS late_count " +
+	            "FROM Enrollments e " +
+	            "LEFT JOIN Attendance a ON e.enrollment_id = a.enrollment_id " +
+	            "JOIN Classes c ON e.class_id = c.class_id " +
+	            "WHERE e.student_id = ? AND c.teacher_id = ? AND a.date IS NOT NULL " +
+	            "GROUP BY YEAR(a.date), MONTH(a.date) " +
+	            "ORDER BY YEAR(a.date), MONTH(a.date)";
 
 
 	    DatabaseConnection dbConn = new DatabaseConnection();
