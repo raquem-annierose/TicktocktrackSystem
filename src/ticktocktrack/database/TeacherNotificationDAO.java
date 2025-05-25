@@ -74,9 +74,6 @@ public class TeacherNotificationDAO {
 	}
 
     
-    
-
-
     /**
      * Overloaded method that sends a teacher notification using the current session user as sender.
      */
@@ -184,25 +181,26 @@ public class TeacherNotificationDAO {
         return role + " " + name;
     }
 
-    public static List<Notification> getNotificationsForUser(int userId) {
+    public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "
-                   + "ORDER BY date_sent DESC";
+                   + "ORDER BY date_sent DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        System.out.println("DEBUG: Starting getNotificationsForUser for userId = " + userId);
         DatabaseConnection dbConn = new DatabaseConnection();
+
         try {
             dbConn.connectToSQLServer();
-            System.out.println("DEBUG: Connected to SQL Server successfully.");
+
             try (Connection conn = dbConn.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
                 stmt.setInt(1, userId);
-                System.out.println("DEBUG: Executing SQL query with userId = " + userId);
+                stmt.setInt(2, offset);
+                stmt.setInt(3, limit);
 
                 try (ResultSet rs = stmt.executeQuery()) {
-                    int count = 0;
                     while (rs.next()) {
                         String message = rs.getString("message");
                         String status = rs.getString("notification_type");
@@ -210,23 +208,16 @@ public class TeacherNotificationDAO {
                         int senderUserId = rs.getInt("sender_user_id");
 
                         notifications.add(new Notification(message, dateSent, status, senderUserId));
-                        count++;
-                        System.out.println("DEBUG: Retrieved Notification #" + count
-                                         + " • Message: " + message
-                                         + ", Status: " + status
-                                         + ", Date: " + dateSent
-                                         + ", SenderUserId: " + senderUserId);
                     }
-                    System.out.println("DEBUG: Total notifications retrieved: " + count);
                 }
             }
         } catch (SQLException e) {
             System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
                               + " • " + e.getMessage());
         } finally {
-            // Always close the connection after done
             dbConn.closeConnection();
         }
+
         return notifications;
     }
 

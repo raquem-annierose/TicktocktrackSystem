@@ -159,7 +159,7 @@ public class TeacherMarkAttendanceCenterPanel {
 
 
         courseComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            sectionComboBox.getItems().clear();
+           
             if (newVal != null) {
                 Set<String> combinedSections = courseSectionsMap.get(newVal);
                 if (combinedSections != null) {

@@ -8,7 +8,8 @@
 	    private String message;
 	    private LocalDateTime dateSent;
 	    private String status;
-	    private int senderUserId;  // Add this field
+	    private int senderUserId;  
+	    private String senderProfilePath;// Add this field
 	
 	    // Update constructor to accept senderUserId
 	    public Notification(String message, LocalDateTime dateSent, String status, int senderUserId) {
@@ -58,10 +59,13 @@
 	        return dateSent.format(formatter);
 	    }
 	    
-	    private String relatedDate; // YYYY-MM-DD format
+	    public String getSenderProfilePath() {
+	        return senderProfilePath;
+	    }
 
-	    private String teacherName;
-	    private String courseName;
+	    public void setSenderProfilePath(String senderProfilePath) {
+	        this.senderProfilePath = senderProfilePath;
+	    }
 	    
 	    
 	    
