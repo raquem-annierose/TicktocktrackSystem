@@ -36,18 +36,18 @@ public class StudentAttendanceStatusCenterPanel {
     private static VBox cardsContainer;
     private static List<String> allSubjects;
     private static int currentPage = 0;
-    private static final int CARDS_PER_PAGE = 2;
+    private static final int CARDS_PER_PAGE = 3;
 
     public static Pane createPanel(int studentId) {
         BorderPane root = new BorderPane();
-        root.setPrefSize(1300, 750);
+        root.setPrefSize(1700, 350);
         root.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
         root.setTop(buildHeader());
 
         allSubjects = DatabaseStatusAttendance.getEnrolledStudentSubjects(studentId);
 
         VBox verticalLayout = new VBox(10);
-        verticalLayout.setPadding(new Insets(20));
+        verticalLayout.setPadding(new Insets(10));
         verticalLayout.setAlignment(Pos.TOP_CENTER);
 
         cardsContainer = new VBox(15);
@@ -60,36 +60,43 @@ public class StudentAttendanceStatusCenterPanel {
         verticalLayout.getChildren().addAll(paginationControls, cardsContainer);
 
         StackPane content = new StackPane(verticalLayout);
-        content.setPadding(new Insets(30, 30, 30, 30));
+        content.setPadding(new Insets(15, 15, 15, 15));
         root.setCenter(content);
         return root;
     }
 
     private static Pane buildHeader() {
         Pane headerPane = new Pane();
-        headerPane.setPrefHeight(135);
+        headerPane.setPrefHeight(70);
 
         ImageView shadow = new ImageView(new Image(StudentAttendanceStatusCenterPanel.class
                 .getResource("/resources/SHADOW.png").toExternalForm()));
-        shadow.setFitWidth(1300);
-        shadow.setFitHeight(250);
-        shadow.setLayoutY(-115);
+        shadow.setFitWidth(1700);
+        shadow.setFitHeight(120);
+        shadow.setLayoutY(-60);
 
         Text title = new Text("Attendance Status");
-        title.setFont(Font.font("Poppins", FontWeight.MEDIUM, 25));
+        title.setFont(Font.font("Poppins", FontWeight.MEDIUM, 22));
         title.setFill(Color.web("#02383E"));
-        title.relocate(90, 50);
+        title.relocate(90, 25);
 
         headerPane.getChildren().addAll(shadow, title);
         return headerPane;
     }
 
     private static HBox buildPaginationControls(int studentId) {
-        HBox controls = new HBox(10);
+        HBox controls = new HBox(15);
         controls.setAlignment(Pos.CENTER_LEFT);
 
         javafx.scene.control.Button prevButton = new javafx.scene.control.Button("Previous");
         javafx.scene.control.Button nextButton = new javafx.scene.control.Button("Next");
+
+        prevButton.setPrefHeight(35);
+        nextButton.setPrefHeight(35);
+        prevButton.setPrefWidth(90);
+        nextButton.setPrefWidth(90);
+        prevButton.setStyle("-fx-font-size: 14px;");
+        nextButton.setStyle("-fx-font-size: 14px;");
 
         prevButton.setOnAction(e -> {
             if (currentPage > 0) {
@@ -127,21 +134,21 @@ public class StudentAttendanceStatusCenterPanel {
     }
 
     private static HBox buildSubjectCard(String subject, int studentId) {
-        final double COLLAPSED_WIDTH = 1200;
-        final double COLLAPSED_HEIGHT = 100;
-        final double EXPANDED_HEIGHT = 250;
+        final double COLLAPSED_WIDTH = 800;  // made smaller to fit horizontally
+        final double COLLAPSED_HEIGHT = 140; // taller cards
+        final double EXPANDED_HEIGHT = 270;  // slightly taller expanded
 
         AttendanceStats stats = DatabaseStatusAttendance.getAttendanceStats(studentId, subject);
 
         ImageView icon = new ImageView(new Image(SUBJECT_ICON));
-        icon.setFitWidth(60);
-        icon.setFitHeight(60);
+        icon.setFitWidth(50);
+        icon.setFitHeight(50);
 
         Text subjectName = new Text(subject);
-        subjectName.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
+        subjectName.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18));
         subjectName.setFill(Color.web("#02383E"));
 
-        VBox summary = new VBox(5);
+        VBox summary = new VBox(6);
         summary.setAlignment(Pos.CENTER_LEFT);
 
         String professorName = DatabaseStatusAttendance.getProfessorNameBySubject(subject);
@@ -153,12 +160,12 @@ public class StudentAttendanceStatusCenterPanel {
         Text excused = new Text("📝 Excused: " + stats.excused);
 
         for (Text t : List.of(professor, summaryLabel, present, absent, late, excused)) {
-            t.setFont(Font.font("Poppins", 12));
+            t.setFont(Font.font("Poppins", 13));
             t.setFill(Color.web("#555555"));
         }
 
         Text status = new Text();
-        status.setFont(Font.font("Poppins", FontWeight.BOLD, 13));
+        status.setFont(Font.font("Poppins", FontWeight.BOLD, 14));
         if (stats.absent == 0) {
             status.setText("Attendance Status: Good");
             status.setFill(Color.GREEN);
@@ -175,14 +182,14 @@ public class StudentAttendanceStatusCenterPanel {
         summary.setManaged(false);
         summary.setId("details-box");
 
-        VBox centerContent = new VBox(8, subjectName, summary);
+        VBox centerContent = new VBox(10, subjectName, summary);
         centerContent.setAlignment(Pos.CENTER_LEFT);
 
         PieChart pie = new PieChart();
         pie.setLegendVisible(false);
         pie.setLabelsVisible(false);
         pie.setStartAngle(90);
-        pie.setPrefSize(100, 100);
+        pie.setPrefSize(90, 90);
         pie.getData().addAll(
                 new PieChart.Data("Present", stats.present),
                 new PieChart.Data("Absent", stats.absent),
@@ -193,8 +200,8 @@ public class StudentAttendanceStatusCenterPanel {
         pie.setManaged(false);
         pie.setId("pie-chart");
 
-        HBox card = new HBox(15, icon, centerContent, pie);
-        card.setPadding(new Insets(15));
+        HBox card = new HBox(20, icon, centerContent, pie);
+        card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER_LEFT);
         card.setPrefSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT);
         card.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -211,7 +218,7 @@ public class StudentAttendanceStatusCenterPanel {
 
     private static void setCardExpanded(HBox card) {
         if (selectedCard != null && selectedCard != card) {
-            selectedCard.setPrefHeight(100);
+            selectedCard.setPrefHeight(140);
             VBox oldContent = (VBox) selectedCard.getChildren().get(1);
             Node oldDetails = oldContent.lookup("#details-box");
             if (oldDetails != null) {
