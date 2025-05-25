@@ -1,10 +1,12 @@
 package ticktocktrack.gui;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
-import javafx.scene.effect.DropShadow;
+import javafx.scene.Node;
+import javafx.scene.chart.PieChart;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -12,6 +14,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
+
 import ticktocktrack.database.DatabaseStatusAttendance;
 import ticktocktrack.logic.AttendanceStats;
 
@@ -22,237 +26,251 @@ public class StudentAttendanceStatusCenterPanel {
     private static final String SUBJECT_ICON = StudentAttendanceStatusCenterPanel.class
             .getResource("/resources/Subject_icon.png").toExternalForm();
 
-    private static final String[] SUBJECT_COLORS = {"#8B43BC", "#BA8200", "#147F8A", "#55DC93"};
-    private static final Color VIEW_GLOW_COLOR = Color.web("#8B43BC");
+    private static final double BASE_HUE = 210.0;
+    private static final double HUE_RANGE = 15.0;
+    private static final double SATURATION = 0.3;
+    private static final double BRIGHTNESS = 0.9;
+
+    private static HBox selectedCard = null;
+
+    private static VBox cardsContainer;
+    private static List<String> allSubjects;
+    private static int currentPage = 0;
+    private static final int CARDS_PER_PAGE = 3;
 
     public static Pane createPanel(int studentId) {
         BorderPane root = new BorderPane();
-        root.setPrefSize(1300, 750);
+        root.setPrefSize(1700, 350);
         root.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
         root.setTop(buildHeader());
 
-        StackPane content = new StackPane();
-        content.setPadding(new Insets(20, 20, 20, 50));
+        allSubjects = DatabaseStatusAttendance.getEnrolledStudentSubjects(studentId);
 
-        List<String> subjects = DatabaseStatusAttendance.getEnrolledStudentSubjects(studentId);
+        VBox verticalLayout = new VBox(10);
+        verticalLayout.setPadding(new Insets(10));
+        verticalLayout.setAlignment(Pos.TOP_CENTER);
 
-        content.getChildren().add(buildSubjectGrid(content, subjects, studentId));
+        cardsContainer = new VBox(15);
+        cardsContainer.setAlignment(Pos.TOP_CENTER);
+
+        updateCards(studentId);
+
+        HBox paginationControls = buildPaginationControls(studentId);
+
+        verticalLayout.getChildren().addAll(paginationControls, cardsContainer);
+
+        StackPane content = new StackPane(verticalLayout);
+        content.setPadding(new Insets(15, 15, 15, 15));
         root.setCenter(content);
         return root;
     }
 
     private static Pane buildHeader() {
         Pane headerPane = new Pane();
-        headerPane.setPrefHeight(135);
+        headerPane.setPrefHeight(70);
 
         ImageView shadow = new ImageView(new Image(StudentAttendanceStatusCenterPanel.class
                 .getResource("/resources/SHADOW.png").toExternalForm()));
-        shadow.setFitWidth(1300);
-        shadow.setFitHeight(250);
-        shadow.setLayoutY(-115);
+        shadow.setFitWidth(1700);
+        shadow.setFitHeight(120);
+        shadow.setLayoutY(-60);
 
         Text title = new Text("Attendance Status");
-        title.setFont(Font.font("Poppins", FontWeight.MEDIUM, 25));
+        title.setFont(Font.font("Poppins", FontWeight.MEDIUM, 22));
         title.setFill(Color.web("#02383E"));
-        title.relocate(90, 50);
+        title.relocate(90, 25);
 
         headerPane.getChildren().addAll(shadow, title);
         return headerPane;
     }
 
-    private static GridPane buildSubjectGrid(StackPane content, List<String> subjects, int studentId) {
-        GridPane grid = new GridPane();
-        grid.setHgap(40);
-        grid.setVgap(40);
+    private static HBox buildPaginationControls(int studentId) {
+        HBox controls = new HBox(15);
+        controls.setAlignment(Pos.CENTER_LEFT);
 
-        if (subjects.isEmpty()) {
-            Text noSubjects = new Text("No enrolled subjects found.");
-            noSubjects.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18));
-            noSubjects.setFill(Color.web("#666666"));
-            grid.add(noSubjects, 0, 0);
-            return grid;
-        }
+        javafx.scene.control.Button prevButton = new javafx.scene.control.Button("Previous");
+        javafx.scene.control.Button nextButton = new javafx.scene.control.Button("Next");
 
-        for (int i = 0; i < subjects.size(); i++) {
-            String subjectName = subjects.get(i);
-            VBox card = createSubjectCard(subjectName, i, studentId);
-            grid.add(card, i % 4, i / 4);
-        }
-        return grid;
+        prevButton.setPrefHeight(35);
+        nextButton.setPrefHeight(35);
+        prevButton.setPrefWidth(90);
+        nextButton.setPrefWidth(90);
+        prevButton.setStyle("-fx-font-size: 14px;");
+        nextButton.setStyle("-fx-font-size: 14px;");
+
+        prevButton.setOnAction(e -> {
+            if (currentPage > 0) {
+                currentPage--;
+                updateCards(studentId);
+            }
+        });
+
+        nextButton.setOnAction(e -> {
+            if ((currentPage + 1) * CARDS_PER_PAGE < allSubjects.size()) {
+                currentPage++;
+                updateCards(studentId);
+            }
+        });
+
+        controls.getChildren().addAll(prevButton, nextButton);
+        return controls;
     }
 
-    private static VBox createSubjectCard(String name, int idx, int studentId) {
-        final double originalWidth = 180;
-        final double originalHeight = 280;
-        final double expandedWidth = 210;
-        final double expandedHeight = 340;
+    private static void updateCards(int studentId) {
+        cardsContainer.getChildren().clear();
 
-        ImageView icon = new ImageView(new Image(SUBJECT_ICON));
-        icon.setFitWidth(80);
-        icon.setFitHeight(80);
+        int start = currentPage * CARDS_PER_PAGE;
+        int end = Math.min(start + CARDS_PER_PAGE, allSubjects.size());
+        List<String> subjectsToShow = allSubjects.subList(start, end);
 
-        VBox.setMargin(icon, new Insets(15, 0, 0, 0));  // 15px top margin
-
-        Text label = new Text(name);
-        label.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
-        label.setFill(Color.web("#02383E"));
-        VBox.setMargin(label, new Insets(5, 0, 0, 0)); 
-
-        String professorName = DatabaseStatusAttendance.getProfessorNameBySubject(name);
-        Text professor = new Text("Professor: " + professorName);
-        professor.setFont(Font.font("Poppins", 10));
-        professor.setFill(Color.web("#555555"));
-        professor.setWrappingWidth(160);
-        professor.setVisible(false);
-
-        Text summaryLabel = new Text("Attendance Summary:");
-        summaryLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 12));
-        summaryLabel.setFill(Color.web("#02383E"));
-        summaryLabel.setVisible(false);
-
-        Text presentText = new Text("✔ Present: 0");
-        Text absentText = new Text("✖ Absent: 0");
-        Text lateText = new Text("🕓 Late: 0");
-        Text excusedText = new Text("📝 Excused: 0");
-
-        for (Text t : List.of(presentText, absentText, lateText, excusedText)) {
-            t.setFont(Font.font("Poppins", 10));
-            t.setFill(Color.web("#555555"));
-            t.setVisible(false);
+        for (String subject : subjectsToShow) {
+            HBox card = buildSubjectCard(subject, studentId);
+            cardsContainer.getChildren().add(card);
         }
 
-        Tooltip.install(presentText, new Tooltip("Number of times you were present."));
-        Tooltip.install(absentText, new Tooltip("Number of times you were absent."));
-        Tooltip.install(lateText, new Tooltip("Number of times you were late."));
-        Tooltip.install(excusedText, new Tooltip("Number of excused absences."));
+        if (!cardsContainer.getChildren().isEmpty()) {
+            setCardExpanded((HBox) cardsContainer.getChildren().get(0));
+        }
+    }
 
-        Button view = new Button("View");
-        view.setFont(Font.font("Poppins", FontWeight.MEDIUM, 12));
-        view.setPrefWidth(100);
-        view.setStyle("-fx-background-radius: 5; -fx-background-color: #FFFFFF; -fx-border-color: #8B43BC; -fx-border-width: 1.5; -fx-text-fill: #8B43BC;");
-        DropShadow glow = new DropShadow(5, VIEW_GLOW_COLOR);
-        glow.setSpread(0.2);
+    private static HBox buildSubjectCard(String subject, int studentId) {
+        final double COLLAPSED_WIDTH = 800;  // made smaller to fit horizontally
+        final double COLLAPSED_HEIGHT = 140; // taller cards
+        final double EXPANDED_HEIGHT = 270;  // slightly taller expanded
 
-        VBox.setMargin(view, new Insets(0, 0, 10, 0));  // bottom margin for collapsed
+        AttendanceStats stats = DatabaseStatusAttendance.getAttendanceStats(studentId, subject);
 
-        view.setOnMouseEntered(e -> view.setEffect(glow));
-        view.setOnMouseExited(e -> view.setEffect(null));
+        ImageView icon = new ImageView(new Image(SUBJECT_ICON));
+        icon.setFitWidth(50);
+        icon.setFitHeight(50);
 
-        VBox card = new VBox(10,
-                icon, label, professor,
-                summaryLabel,
-                presentText, absentText, lateText, excusedText,
-                view);
-        card.setPrefWidth(originalWidth);
-        card.setMinWidth(originalWidth);
-        card.setMaxWidth(originalWidth);
-        card.setPrefHeight(originalHeight);
-        card.setMinHeight(originalHeight);
-        card.setMaxHeight(originalHeight);
+        Text subjectName = new Text(subject);
+        subjectName.setFont(Font.font("Poppins", FontWeight.MEDIUM, 18));
+        subjectName.setFill(Color.web("#02383E"));
+
+        VBox summary = new VBox(6);
+        summary.setAlignment(Pos.CENTER_LEFT);
+
+        String professorName = DatabaseStatusAttendance.getProfessorNameBySubject(subject);
+        Text professor = new Text("Professor: " + professorName);
+        Text summaryLabel = new Text("Attendance Summary:");
+        Text present = new Text("✔ Present: " + stats.present);
+        Text absent = new Text("✖ Absent: " + stats.absent);
+        Text late = new Text("🕓 Late: " + stats.late);
+        Text excused = new Text("📝 Excused: " + stats.excused);
+
+        for (Text t : List.of(professor, summaryLabel, present, absent, late, excused)) {
+            t.setFont(Font.font("Poppins", 13));
+            t.setFill(Color.web("#555555"));
+        }
+
+        Text status = new Text();
+        status.setFont(Font.font("Poppins", FontWeight.BOLD, 14));
+        if (stats.absent == 0) {
+            status.setText("Attendance Status: Good");
+            status.setFill(Color.GREEN);
+        } else if (stats.absent <= 2) {
+            status.setText("Attendance Status: Warning");
+            status.setFill(Color.ORANGE);
+        } else {
+            status.setText("Attendance Status: Critical");
+            status.setFill(Color.RED);
+        }
+
+        summary.getChildren().addAll(professor, summaryLabel, present, absent, late, excused, status);
+        summary.setVisible(false);
+        summary.setManaged(false);
+        summary.setId("details-box");
+
+        VBox centerContent = new VBox(10, subjectName, summary);
+        centerContent.setAlignment(Pos.CENTER_LEFT);
+
+        PieChart pie = new PieChart();
+        pie.setLegendVisible(false);
+        pie.setLabelsVisible(false);
+        pie.setStartAngle(90);
+        pie.setPrefSize(90, 90);
+        pie.getData().addAll(
+                new PieChart.Data("Present", stats.present),
+                new PieChart.Data("Absent", stats.absent),
+                new PieChart.Data("Late", stats.late),
+                new PieChart.Data("Excused", stats.excused)
+        );
+        pie.setVisible(false);
+        pie.setManaged(false);
+        pie.setId("pie-chart");
+
+        HBox card = new HBox(20, icon, centerContent, pie);
         card.setPadding(new Insets(20));
-        card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-background-color: white; -fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; -fx-border-width: 1.5; -fx-background-radius: 5; -fx-border-radius: 5;");
-        card.setTranslateX(50);
-        card.setTranslateY(-3);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPrefSize(COLLAPSED_WIDTH, COLLAPSED_HEIGHT);
+        card.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        view.setOnAction(e -> {
-            boolean expanded = professor.isVisible();
-            if (expanded) {
-                // Collapse
-                professor.setVisible(false);
-                summaryLabel.setVisible(false);
-                presentText.setVisible(false);
-                absentText.setVisible(false);
-                lateText.setVisible(false);
-                excusedText.setVisible(false);
+        animateBorderColor(card);
 
-                // Remove attendanceStatus if exists
-                card.getChildren().removeIf(node -> node.getUserData() != null && node.getUserData().equals("attendanceStatus"));
-
-                label.setFont(Font.font("Poppins", FontWeight.MEDIUM, 16));
-                professor.setFont(Font.font("Poppins", 10));
-                summaryLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 12));
-                for (Text t : List.of(presentText, absentText, lateText, excusedText)) {
-                    t.setFont(Font.font("Poppins", 10));
-                }
-                view.setFont(Font.font("Poppins", FontWeight.MEDIUM, 12));
-
-                card.setPrefWidth(originalWidth);
-                card.setMinWidth(originalWidth);
-                card.setMaxWidth(originalWidth);
-                card.setPrefHeight(originalHeight);
-                card.setMinHeight(originalHeight);
-                card.setMaxHeight(originalHeight);
-                card.setSpacing(10);
-
-                VBox.setMargin(icon, new Insets(15, 0, 0, 0));
-                VBox.setMargin(view, new Insets(0, 0, 10, 0));
-
-                view.setText("View");
-            } else {
-                // Expand
-                AttendanceStats stats = DatabaseStatusAttendance.getAttendanceStats(studentId, name);
-                presentText.setText("✔ Present: " + stats.present);
-                absentText.setText("✖ Absent: " + stats.absent);
-                lateText.setText("🕓 Late: " + stats.late);
-                excusedText.setText("📝 Excused: " + stats.excused);
-
-                // Attendance Status Text
-                Text attendanceStatus = new Text();
-                attendanceStatus.setUserData("attendanceStatus"); // tag for removal later
-                attendanceStatus.setFont(Font.font("Poppins", FontWeight.BOLD, 13));
-                String status;
-                int absent = stats.absent;
-                if (absent == 0) {
-                    status = "Good";
-                    attendanceStatus.setFill(Color.web("#008000")); // green
-                } else if (absent <= 2) {
-                    status = "Warning";
-                    attendanceStatus.setFill(Color.web("#FFA500")); // orange
-                } else {
-                    status = "Critical";
-                    attendanceStatus.setFill(Color.web("#BA0000")); // red
-                }
-                attendanceStatus.setText("Attendance Status: " + status);
-
-                // Add attendanceStatus text just before summaryLabel if not already present
-                if (!card.getChildren().contains(attendanceStatus)) {
-                    card.getChildren().add(card.getChildren().indexOf(summaryLabel), attendanceStatus);
-                }
-                attendanceStatus.setVisible(true);
-
-                professor.setVisible(true);
-                summaryLabel.setVisible(true);
-                presentText.setVisible(true);
-                absentText.setVisible(true);
-                lateText.setVisible(true);
-                excusedText.setVisible(true);
-
-                label.setFont(Font.font("Poppins", FontWeight.BOLD, 18));
-                professor.setFont(Font.font("Poppins", 12));
-                summaryLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 13));
-                for (Text t : List.of(presentText, absentText, lateText, excusedText)) {
-                    t.setFont(Font.font("Poppins", 12));
-                }
-                view.setFont(Font.font("Poppins", FontWeight.MEDIUM, 14));
-
-                card.setPrefWidth(expandedWidth);
-                card.setMinWidth(expandedWidth);
-                card.setMaxWidth(expandedWidth);
-                card.setPrefHeight(expandedHeight);
-                card.setMinHeight(expandedHeight);
-                card.setMaxHeight(expandedHeight);
-                card.setSpacing(8);
-
-                VBox.setMargin(icon, Insets.EMPTY);
-                VBox.setMargin(view, Insets.EMPTY);
-
-                view.setText("Hide");
-            }
+        card.setOnMouseClicked(e -> {
+            card.setPrefHeight(EXPANDED_HEIGHT);
+            setCardExpanded(card);
         });
 
         return card;
     }
 
+    private static void setCardExpanded(HBox card) {
+        if (selectedCard != null && selectedCard != card) {
+            selectedCard.setPrefHeight(140);
+            VBox oldContent = (VBox) selectedCard.getChildren().get(1);
+            Node oldDetails = oldContent.lookup("#details-box");
+            if (oldDetails != null) {
+                oldDetails.setVisible(false);
+                oldDetails.setManaged(false);
+            }
+            Node oldPie = selectedCard.lookup("#pie-chart");
+            if (oldPie != null) {
+                oldPie.setVisible(false);
+                oldPie.setManaged(false);
+            }
+        }
 
+        selectedCard = card;
+        VBox newContent = (VBox) selectedCard.getChildren().get(1);
+        Node newDetails = newContent.lookup("#details-box");
+        if (newDetails != null) {
+            newDetails.setVisible(true);
+            newDetails.setManaged(true);
+        }
+        Node newPie = selectedCard.lookup("#pie-chart");
+        if (newPie != null) {
+            newPie.setVisible(true);
+            newPie.setManaged(true);
+        }
+    }
+
+    private static void animateBorderColor(HBox card) {
+        final double[] hue = {BASE_HUE - HUE_RANGE};
+        final boolean[] increasing = {true};
+
+        Timeline colorAnimation = new Timeline(
+                new KeyFrame(Duration.millis(70), event -> {
+                    if (increasing[0]) {
+                        hue[0] += 1;
+                        if (hue[0] >= BASE_HUE + HUE_RANGE) increasing[0] = false;
+                    } else {
+                        hue[0] -= 1;
+                        if (hue[0] <= BASE_HUE - HUE_RANGE) increasing[0] = true;
+                    }
+
+                    Color animatedColor = Color.hsb(hue[0], SATURATION, BRIGHTNESS);
+                    String rgb = String.format("#%02X%02X%02X",
+                            (int) (animatedColor.getRed() * 255),
+                            (int) (animatedColor.getGreen() * 255),
+                            (int) (animatedColor.getBlue() * 255));
+
+                    card.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: " + rgb + ";" +
+                            (card == selectedCard ? ("-fx-background-color: " + rgb + ";") : "-fx-background-color: white;"));
+                })
+        );
+        colorAnimation.setCycleCount(Animation.INDEFINITE);
+        colorAnimation.play();
+    }
 }

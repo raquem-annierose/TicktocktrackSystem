@@ -3,11 +3,20 @@ package ticktocktrack.logic;
 import javafx.scene.image.Image;
 import ticktocktrack.database.DatabaseUserProfile;
 
+/**
+ * Utility class to update and retrieve the user's profile image.
+ */
 public class UserIconUpdate {
 
     /**
-     * Returns the user's profile image if available, otherwise returns null.
-     * Loads image from DB profile path stored for the current logged-in user.
+     * Returns the current logged-in user's profile image if available,
+     * otherwise returns null.
+     * <p>
+     * The profile image is loaded from the profile path stored in the database
+     * for the current user.
+     *
+     * @return the Image object of the user's profile image, or null if not set or
+     *         if an error occurs while loading.
      */
     public static Image getCurrentUserProfileImage() {
         UsersModel currentUser = Session.getCurrentUser();

@@ -15,9 +15,18 @@ import java.time.format.DateTimeFormatter;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
 
-
+/**
+ * Data Access Object (DAO) class for handling student notification-related database operations.
+ */
 public class StudentNotificationDAO {
 	
+    /**
+     * Sends a notification to a student when their excuse letter for an absence is accepted.
+     *
+     * @param studentId      The student ID to whom the notification will be sent.
+     * @param courseName     The name of the course for which the excuse was accepted.
+     * @param attendanceDate The date of the attendance being excused.
+     */
 	public static void sendExcuseAcceptedNotification(int studentId, String courseName, LocalDate attendanceDate) {
         int studentUserId = getUserIdByStudentId(studentId);
         if (studentUserId == -1) {
@@ -85,6 +94,15 @@ public class StudentNotificationDAO {
 
 	
 
+    /**
+     * Sends an attendance notification to a student about their attendance status for a specific date and course.
+     *
+     * @param studentId      The student ID to notify.
+     * @param attendanceStatus The attendance status (e.g., Absent, Present, Excused).
+     * @param enrollmentId   The enrollment ID related to the attendance record.
+     * @param attendanceDate The date of the attendance.
+     * @param course         The course name.
+     */
 	public static void sendAttendanceNotification(int studentId, String attendanceStatus, int enrollmentId, LocalDate attendanceDate, String course) {
 	    int studentUserId = getUserIdByStudentId(studentId);
 	    if (studentUserId == -1) {
@@ -137,8 +155,13 @@ public class StudentNotificationDAO {
 	    }
 	}
 
-
-	
+    /**
+     * Checks if an attendance record for a given enrollment and date is already marked as excused.
+     *
+     * @param enrollmentId   The enrollment ID to check.
+     * @param attendanceDate The date of the attendance record.
+     * @return True if the attendance status is "Excused"; false otherwise.
+     */
 	private static boolean isAlreadyExcused(int enrollmentId, LocalDate attendanceDate) {
 	    String sql = "SELECT status FROM Attendance WHERE enrollment_id = ? AND date = ?";
 	    DatabaseConnection dbConn = new DatabaseConnection();
@@ -164,9 +187,13 @@ public class StudentNotificationDAO {
 
 	    return false;
 	}
-
-
-    // Helper method to resolve user_id from student_id
+	
+    /**
+     * Retrieves the user_id associated with a given student_id.
+     *
+     * @param studentId The student ID to resolve.
+     * @return The corresponding user_id, or -1 if not found.
+     */
     public static int getUserIdByStudentId(int studentId) {
         String sql = "SELECT user_id FROM Students WHERE student_id = ?";
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -192,6 +219,13 @@ public class StudentNotificationDAO {
         return -1;
     }
     
+    /**
+     * Retrieves the sender's full name and role as a formatted string.
+     *
+     * @param userId The user ID of the sender.
+     * @param role   The role of the sender (e.g., "teacher", "admin", "student").
+     * @return A string in the format "Role FullName" or "Role Username".
+     */
     private static String getSenderFullNameAndRole(int userId, String role) {
         DatabaseConnection dbConn = new DatabaseConnection();
         String fullName = "";
@@ -248,7 +282,17 @@ public class StudentNotificationDAO {
         return role + " " + fullName; // e.g. "Teacher John Smith"
     }
 
+<<<<<<< HEAD
     public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
+=======
+    /**
+     * Retrieves all notifications for a specific user, ordered by the date sent in descending order.
+     *
+     * @param userId The user ID for whom notifications are retrieved.
+     * @return A list of Notification objects for the user.
+     */
+    public static List<Notification> getNotificationsForUser(int userId) {
+>>>>>>> 70196dff123f7434b44b7492e8002a94c607bb09
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "

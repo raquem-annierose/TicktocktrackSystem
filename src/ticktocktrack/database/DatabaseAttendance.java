@@ -9,13 +9,21 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Provides database operations related to attendance management, including
+ * fetching courses, students, attendance records, and saving/updating attendance.
+ * 
+ * This class interacts with the database through SQL queries to support
+ * attendance tracking functionality for teachers and students.
+ */
 public class DatabaseAttendance {
 
     /**
-     * Fetches list of students with their attendance status for a given teacher (userId),
-     * course, section, and date.
+     * Retrieves a list of courses, sections, and programs taught by a specific teacher.
+     * 
+     * @param teacherId the ID of the teacher
+     * @return List of String arrays, each containing course name, section, and program
      */
-    
     public static List<String[]> getTeacherCoursesSections(int teacherId) {
         List<String[]> courses = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -52,6 +60,12 @@ public class DatabaseAttendance {
         return courses;
     }
     
+    /**
+     * Retrieves an array of CourseInfo objects representing courses taught by a teacher.
+     * 
+     * @param teacherId the ID of the teacher
+     * @return array of CourseInfo objects
+     */
     public static CourseInfo[] getCoursesForTeacher(int teacherId) {
         List<CourseInfo> courseInfoList = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -88,7 +102,13 @@ public class DatabaseAttendance {
         return courseInfoList.toArray(new CourseInfo[0]);
     }
 
-
+    /**
+     * Gets a list of students enrolled in a given program and section.
+     * 
+     * @param program the program name
+     * @param section the section name
+     * @return list of Student objects
+     */
     public static List<Student> getStudentsByProgramSection(String program, String section) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -125,7 +145,15 @@ public class DatabaseAttendance {
         return students;
     }
 
-
+    /**
+     * Fetches students along with their attendance status for a specific date, course, and section.
+     * 
+     * @param userId the teacher's user ID
+     * @param courseName the course name
+     * @param section the section name
+     * @param date the date string (e.g. "YYYY-MM-DD")
+     * @return list of Student objects with attendance info
+     */
     public static List<Student> fetchStudentsWithAttendanceForDate(int userId, String courseName, String section, String date) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -175,6 +203,14 @@ public class DatabaseAttendance {
         return students;
     }
 
+    /**
+     * Retrieves students enrolled in a specific course, program, and section taught by the logged-in teacher.
+     * 
+     * @param courseName the course name
+     * @param program the program name
+     * @param section the section name
+     * @return list of Student objects
+     */
     public static List<Student> getStudentsEnrolled(String courseName, String program, String section) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -232,6 +268,11 @@ public class DatabaseAttendance {
 
     /**
      * Saves or updates attendance record for a student on a specific date.
+     * 
+     * @param studentId the ID of the student
+     * @param date the date string
+     * @param status attendance status (e.g. Present, Absent, Late, Excused)
+     * @param reason optional reason for the attendance status
      */
     public static int saveAttendance(int studentId, String date, String status, String reason,
             String program, String courseName, String section) throws SQLException {
@@ -318,7 +359,16 @@ int attendanceId = -1;
         }
     }
 
-
+    /**
+     * Updates the attendance status of a student for a specific date, course, program, and section.
+     *
+     * @param studentId   The ID of the student whose attendance is being updated.
+     * @param date        The date of the attendance record in the format "YYYY-MM-DD".
+     * @param status      The new attendance status (e.g., "Present", "Absent", "Late").
+     * @param program     The program the student is enrolled in.
+     * @param courseName  The name of the course.
+     * @param section     The section of the class.
+     */
     public static void updateStudentAttendance(int studentId, String date, String status, String program, String courseName, String section) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -369,7 +419,9 @@ int attendanceId = -1;
 
 
     /**
-     * Fetches all distinct course names from the Courses table.
+     * Fetches a list of all distinct course names from the database.
+     *
+     * @return A list of course names as strings.
      */
     public static List<String> fetchAvailableCourses() {
         List<String> courses = new ArrayList<>();
