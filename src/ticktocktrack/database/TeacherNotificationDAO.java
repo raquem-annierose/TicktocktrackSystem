@@ -12,12 +12,19 @@ import java.util.List;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
 
+/**
+ * Data Access Object for handling notifications related to teachers.
+ * Includes methods for sending notifications, retrieving teacher info,
+ * and fetching notifications for users.
+ */
 public class TeacherNotificationDAO {
 
     /**
-     * Sends a notification to a teacher when an event (e.g., excuse submission) occurs.
+     * Retrieves the role of a user based on their user ID.
+     * 
+     * @param userId the user ID
+     * @return the role of the user as a lowercase string; defaults to "user"
      */
-	
 	public static String getUserRoleByUserId(int userId) {
 	    String role = "user"; // default role if unknown
 	    String sql = "SELECT role FROM Users WHERE user_id = ?";  // adjust table/column as needed
@@ -39,6 +46,14 @@ public class TeacherNotificationDAO {
 	    return role;
 	}
 
+    /**
+     * Sends a notification to a teacher about an event.
+     * 
+     * @param teacherId the ID of the teacher to notify
+     * @param eventMessage the message describing the event
+     * @param eventType the type/category of the notification
+     * @param senderUserId the user ID of the sender
+     */
 	public static void sendTeacherNotification(int teacherId, String eventMessage, String eventType, int senderUserId) {
 	    int teacherUserId = getUserIdByTeacherId(teacherId);
 	    if (teacherUserId == -1) {
@@ -72,13 +87,13 @@ public class TeacherNotificationDAO {
 	        System.err.println("Error sending teacher notification: " + e.getMessage());
 	    }
 	}
-
-    
-    
-
-
+	
     /**
-     * Overloaded method that sends a teacher notification using the current session user as sender.
+     * Sends a notification to a teacher using the current session's user as sender.
+     * 
+     * @param teacherId the ID of the teacher to notify
+     * @param eventMessage the message describing the event
+     * @param eventType the type/category of the notification
      */
     public static void sendTeacherNotification(int teacherId, String eventMessage, String eventType) {
         int senderUserId = Session.getCurrentUser().getUserId();
@@ -86,7 +101,9 @@ public class TeacherNotificationDAO {
     }
 
     /**
-     * Retrieves all teacher full names from the Teachers table (for suggestions/autocomplete).
+     * Retrieves all teacher full names for autocomplete or suggestion purposes.
+     * 
+     * @return a list of teacher full names (first and last concatenated)
      */
     public static List<String> getAllTeacherNames() {
         List<String> teacherNames = new ArrayList<>();
@@ -110,7 +127,10 @@ public class TeacherNotificationDAO {
     }
 
     /**
-     * Helper to resolve application user_id by teacher_id.
+     * Retrieves the application user ID associated with a teacher ID.
+     * 
+     * @param teacherId the teacher's ID
+     * @return the associated user ID, or -1 if none found
      */
     public static int getUserIdByTeacherId(int teacherId) {
         String sql = "SELECT user_id FROM Teachers WHERE teacher_id = ?";
@@ -130,6 +150,12 @@ public class TeacherNotificationDAO {
         return -1;
     }
     
+    /**
+     * Retrieves the teacher ID corresponding to a full teacher name.
+     * 
+     * @param fullName the full name of the teacher (first + last)
+     * @return the teacher ID, or -1 if not found
+     */
     public static int getTeacherIdByName(String fullName) {
         String sql = "SELECT teacher_id FROM Teachers WHERE CONCAT(first_name, ' ', last_name) = ?";
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -149,7 +175,11 @@ public class TeacherNotificationDAO {
     }
 
     /**
-     * Helper to compose sender's display name including role.
+     * Constructs a display string combining the sender's full name and role.
+     * 
+     * @param userId the sender's user ID
+     * @param role the sender's role (e.g., "teacher", "student", "admin")
+     * @return a string of the format "role FullName"
      */
     private static String getSenderFullNameAndRole(int userId, String role) {
         String table;
@@ -184,6 +214,12 @@ public class TeacherNotificationDAO {
         return role + " " + name;
     }
 
+    /**
+     * Retrieves all notifications sent to a given user.
+     * 
+     * @param userId the recipient user's ID
+     * @return a list of Notification objects representing the user's notifications
+     */
     public static List<Notification> getNotificationsForUser(int userId) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "

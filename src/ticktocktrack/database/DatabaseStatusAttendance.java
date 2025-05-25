@@ -9,8 +9,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides methods to retrieve attendance-related information from the database.
+ */
 public class DatabaseStatusAttendance {
 
+    /**
+     * Retrieves the list of subjects that a student is currently enrolled in.
+     *
+     * @param studentId The ID of the student.
+     * @return A list of course names that the student is enrolled in.
+     */
     public static List<String> getEnrolledStudentSubjects(int studentId) {
         List<String> subjects = new ArrayList<>();
         String sql = "SELECT c.course_name FROM Classes c "
@@ -37,6 +46,13 @@ public class DatabaseStatusAttendance {
         return subjects;
     }
 
+    /**
+     * Retrieves attendance statistics for a student in a specific subject.
+     *
+     * @param studentId   The ID of the student.
+     * @param subjectName The name of the subject/course.
+     * @return An AttendanceStats object containing counts of Present, Absent, Late, and Excused statuses.
+     */
     public static AttendanceStats getAttendanceStats(int studentId, String subjectName) {
         AttendanceStats stats = new AttendanceStats(0, 0, 0, 0);
 
@@ -84,6 +100,12 @@ public class DatabaseStatusAttendance {
         return stats;
     }
 
+    /**
+     * Retrieves the full name of the professor teaching a specific subject.
+     *
+     * @param subjectName The name of the subject/course.
+     * @return The full name of the professor, or "Unknown Professor" if not found.
+     */
     public static String getProfessorNameBySubject(String subjectName) {
         String professorName = "Unknown Professor";
         String sql = "SELECT t.first_name, t.last_name FROM Classes c "
@@ -111,6 +133,5 @@ public class DatabaseStatusAttendance {
 
         return professorName;
     }
-
 
 }
