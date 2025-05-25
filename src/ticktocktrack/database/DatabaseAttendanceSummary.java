@@ -10,8 +10,6 @@ import java.util.List;
 
 import ticktocktrack.logic.Student;
 
-
-
 public class DatabaseAttendanceSummary {
 	// Get students enrolled in a specific class taught by a teacher
     public static List<Student> getStudentsEnrolledForTeacher(String courseName, String section, String program, int teacherId) {
