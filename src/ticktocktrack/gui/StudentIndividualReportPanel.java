@@ -1,6 +1,8 @@
 package ticktocktrack.gui;
 
 import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -199,9 +201,23 @@ public class StudentIndividualReportPanel {
         List<AttendanceStatusPanel.AttendanceRecord> history =
             DatabaseStudentViewMyAttendance.getAttendanceHistoryForCourse(courseName);
 
+        // Get current month and year
+        LocalDate now = LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+
         int present = 0, absent = 0, excused = 0, late = 0;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
         for (AttendanceStatusPanel.AttendanceRecord record : history) {
             String status = record.getStatus();
+            LocalDate date;
+            try {
+                date = LocalDate.parse(record.getDate().toString(), dtf);
+            } catch (Exception e) {
+                continue; // skip if date is invalid
+            }
+            if (date.getMonthValue() != currentMonth || date.getYear() != currentYear) continue;
             if (status == null) continue;
             switch (status.trim().toLowerCase()) {
                 case "present": present++; break;
@@ -213,7 +229,7 @@ public class StudentIndividualReportPanel {
 
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
         alert.setTitle("Attendance Summary");
-        alert.setHeaderText("Attendance Summary for " + courseName);
+        alert.setHeaderText("Attendance Summary for " + courseName + " (" + now.getMonth() + " " + currentYear + ")");
 
         StringBuilder sb = new StringBuilder();
         sb.append("Present: ").append(present).append("\n");
