@@ -10,8 +10,20 @@ import java.util.List;
 
 import ticktocktrack.logic.Student;
 
+/**
+ * Provides methods to fetch and calculate attendance data for students enrolled in classes.
+ */
 public class DatabaseAttendanceSummary {
-	// Get students enrolled in a specific class taught by a teacher
+
+    /**
+     * Retrieves a list of students enrolled in a specific class taught by a teacher.
+     *
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program the course belongs to.
+     * @param teacherId  The ID of the teacher teaching the course.
+     * @return A list of students enrolled in the class.
+     */
     public static List<Student> getStudentsEnrolledForTeacher(String courseName, String section, String program, int teacherId) {
         List<Student> students = new ArrayList<>();
         String query = "SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, u.email, s.year_level " +
@@ -50,7 +62,17 @@ public class DatabaseAttendanceSummary {
         }
         return students;
     }
-    
+
+    /**
+     * Counts the number of absences for a specific student in a class.
+     *
+     * @param studentId  The ID of the student.
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program the course belongs to.
+     * @param teacherId  The ID of the teacher teaching the course.
+     * @return The count of absences.
+     */
     public static int countAbsences(int studentId, String courseName, String section, String program, int teacherId) {
         int absenceCount = 0;
         String sql = "SELECT COUNT(*) AS absence_count FROM Attendance a " +
@@ -83,6 +105,16 @@ public class DatabaseAttendanceSummary {
         return absenceCount;
     }
 
+    /**
+     * Counts the number of times a student was present in a class.
+     *
+     * @param studentId  The ID of the student.
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program the course belongs to.
+     * @param teacherId  The ID of the teacher teaching the course.
+     * @return The count of times the student was present.
+     */
     public static int countPresent(int studentId, String courseName, String section, String program, int teacherId) {
         int presentCount = 0;
         String query = "SELECT COUNT(*) AS present_count FROM Attendance a " +
@@ -115,6 +147,16 @@ public class DatabaseAttendanceSummary {
         return presentCount;
     }
 
+    /**
+     * Counts the number of times a student was excused from attendance in a class.
+     *
+     * @param studentId  The ID of the student.
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program the course belongs to.
+     * @param teacherId  The ID of the teacher teaching the course.
+     * @return The count of times the student was excused.
+     */
     public static int countExcused(int studentId, String courseName, String section, String program, int teacherId) {
         int excusedCount = 0;
         String query = "SELECT COUNT(*) AS excused_count FROM Attendance a " +
@@ -146,7 +188,17 @@ public class DatabaseAttendanceSummary {
         }
         return excusedCount;
     }
-   
+
+    /**
+     * Counts the number of times a student was late for attendance in a class.
+     *
+     * @param studentId  The ID of the student.
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program the course belongs to.
+     * @param teacherId  The ID of the teacher teaching the course.
+     * @return The count of times the student was late.
+     */
     public static int countLate(int studentId, String courseName, String section, String program, int teacherId) {
         int lateCount = 0;
         String query = "SELECT COUNT(*) AS late_count FROM Attendance a " +
@@ -178,6 +230,4 @@ public class DatabaseAttendanceSummary {
         }
         return lateCount;
     }
-    
-   
 }

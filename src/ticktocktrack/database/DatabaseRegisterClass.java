@@ -9,8 +9,21 @@ import java.util.Set;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 
+/**
+ * Provides database operations related to class registration,
+ * including adding classes, checking existence, enrollment, and fetching students.
+ */
 public class DatabaseRegisterClass {
 
+    /**
+     * Adds a new class to the database.
+     * 
+     * @param teacherId  The ID of the teacher.
+     * @param courseName The name of the course.
+     * @param section    The section of the class.
+     * @param program    The program under which the class is offered.
+     * @return true if the class was successfully added, false otherwise.
+     */
     public static boolean addClass(int teacherId, String courseName, String section, String program) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -33,6 +46,15 @@ public class DatabaseRegisterClass {
         }
     }
 
+    /**
+     * Retrieves the class ID based on course details.
+     * 
+     * @param courseName The name of the course.
+     * @param teacherId  The ID of the teacher.
+     * @param section    The section of the class.
+     * @param program    The program of the class.
+     * @return The class ID if found, or -1 if not found.
+     */
     public static int getClassId(String courseName, int teacherId, String section, String program) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -59,6 +81,16 @@ public class DatabaseRegisterClass {
         return -1; // Not found
     }
 
+    /**
+     * Checks if a class already exists for a given teacher with specified details,
+     * and that it was created by the current admin user.
+     * 
+     * @param teacherId  The teacher's ID.
+     * @param courseName The course name.
+     * @param section    The class section.
+     * @param program    The program.
+     * @return true if the class exists, false otherwise.
+     */
     public static boolean classExists(int teacherId, String courseName, String section, String program) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -98,6 +130,12 @@ public class DatabaseRegisterClass {
         return false;
     }
 
+    /**
+     * Retrieves the set of student IDs enrolled in a particular class.
+     * 
+     * @param classId The ID of the class.
+     * @return A set of student IDs enrolled in the class.
+     */
     public static Set<Integer> getEnrolledStudentIds(int classId) {
         Set<Integer> ids = new HashSet<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -121,6 +159,13 @@ public class DatabaseRegisterClass {
         return ids;
     }
 
+    /**
+     * Enrolls a student in a specified class.
+     * 
+     * @param studentId The ID of the student.
+     * @param classId   The ID of the class.
+     * @return true if enrollment was successful, false otherwise.
+     */
     public static boolean enrollStudentInClass(int studentId, int classId) {
         DatabaseConnection dbConn = new DatabaseConnection();
         try {
@@ -141,6 +186,12 @@ public class DatabaseRegisterClass {
         }
     }
 
+    /**
+     * Retrieves a list of students who are NOT enrolled in the specified class.
+     * 
+     * @param classId The ID of the class.
+     * @return A list of Student objects representing unenrolled students.
+     */
     public static List<Student> getUnenrolledStudents(int classId) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -182,7 +233,5 @@ public class DatabaseRegisterClass {
         }
         return students;
     }
-    
-   
 
 }

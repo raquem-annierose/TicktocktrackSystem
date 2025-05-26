@@ -5,7 +5,9 @@ import java.util.List;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -23,147 +25,224 @@ import ticktocktrack.logic.UsersModel;
 
 public class CardIndividualReport {
 
-	public static Pane createStudentDetailOverlay(Student student) {
-	    UsersModel currentUser = Session.getCurrentUser();
-	    if (currentUser == null || currentUser.getTeacherId() == null) {
-	        System.err.println("No logged-in teacher found.");
-	        return new VBox(); // empty container
-	    }
-	    int teacherId = currentUser.getTeacherId();
+    public static Pane createStudentDetailOverlay(Student student) {
+        UsersModel currentUser = Session.getCurrentUser();
+        if (currentUser == null || currentUser.getTeacherId() == null) {
+            System.err.println("No logged-in teacher found.");
+            return new VBox(); // empty container
+        }
+        int teacherId = currentUser.getTeacherId();
 
-	    Student fullStudent = DatabaseIndividualReport.getStudentById(student.getStudentId(), teacherId);
-	    if (fullStudent == null) {
-	        System.err.println("Student details not found for ID: " + student.getStudentId());
-	        return new VBox();
-	    }
+        Student fullStudent = DatabaseIndividualReport.getStudentById(student.getStudentId(), teacherId);
+        if (fullStudent == null) {
+            System.err.println("Student details not found for ID: " + student.getStudentId());
+            return new VBox();
+        }
 
-	    List<String> courseNames = DatabaseIndividualReport.getCourseNamesForStudent(fullStudent.getStudentId(), teacherId);
-	    List<ClassAttendanceSummary> attendanceSummaries = DatabaseIndividualReport.getAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
-	    List<MonthlyAttendanceSummary> monthlySummaries = DatabaseIndividualReport.getMonthlyAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
+        List<String> courseNames = DatabaseIndividualReport.getCourseNamesForStudent(fullStudent.getStudentId(), teacherId);
+        List<ClassAttendanceSummary> attendanceSummaries = DatabaseIndividualReport.getAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
+        List<MonthlyAttendanceSummary> monthlySummaries = DatabaseIndividualReport.getMonthlyAttendanceSummaryForStudent(fullStudent.getStudentId(), teacherId);
 
-	    // Overlay root
-	    StackPane overlay = new StackPane();
-	    overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
-	    overlay.setPrefSize(1300, 750);
+        // Overlay root
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
+        overlay.setPrefSize(1300, 750);
 
-	    VBox modal = new VBox(15);
-	    modal.setPadding(new Insets(25));
-	    modal.setStyle("-fx-background-color: #f9f9f9; -fx-background-radius: 10;");
-	    modal.setMaxWidth(750);
-	    modal.setAlignment(Pos.TOP_LEFT);
+        VBox modalContent = new VBox(10);
+        // VERY IMPORTANT: reduce top padding to 0 or small value to make content start at very top
+        modalContent.setPadding(new Insets(5, 30, 10, 30)); // Top padding 5px only
+        modalContent.setStyle(
+            "-fx-background-color: #ffffff;" +
+            "-fx-background-radius: 15;" +
+            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 12, 0, 0, 4);"
+        );
+        modalContent.setMaxWidth(760);
+        modalContent.setAlignment(Pos.TOP_LEFT);
 
-	    Label closeBtn = new Label("✕");
-	    closeBtn.setTextFill(Color.web("#333"));
-	    closeBtn.setStyle("-fx-font-size: 18px;");
-	    closeBtn.setOnMouseClicked(e -> ((Pane)overlay.getParent()).getChildren().remove(overlay));
-	    closeBtn.setPadding(new Insets(5));
-	    closeBtn.setAlignment(Pos.TOP_RIGHT);
+        Label closeBtn = new Label("✕");
+        closeBtn.setTextFill(Color.web("#555"));
+        closeBtn.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-cursor: hand;");
+        closeBtn.setOnMouseEntered(e -> closeBtn.setTextFill(Color.web("#e74c3c")));
+        closeBtn.setOnMouseExited(e -> closeBtn.setTextFill(Color.web("#555")));
+        closeBtn.setOnMouseClicked(e -> ((Pane)overlay.getParent()).getChildren().remove(overlay));
+        closeBtn.setPadding(new Insets(5));
 
-	    HBox closeRow = new HBox(closeBtn);
-	    closeRow.setAlignment(Pos.TOP_RIGHT);
+        HBox closeRow = new HBox(closeBtn);
+        closeRow.setAlignment(Pos.TOP_RIGHT);
 
-	    // Header
-	    HBox profileHeader = new HBox(15);
-	    profileHeader.setAlignment(Pos.CENTER_LEFT);
-	    ImageView userIcon;
-	    if (fullStudent.getProfilePath() != null && !fullStudent.getProfilePath().isEmpty()) {
-	        try {
-	            Image profileImage = new Image(fullStudent.getProfilePath(), true);
-	            userIcon = new ImageView(profileImage);
-	        } catch (Exception e) {
-	            System.err.println("Failed to load profile image: " + e.getMessage());
-	            userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
-	        }
-	    } else {
-	        userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
-	    }
-	    userIcon.setFitWidth(80);
-	    userIcon.setFitHeight(80);
+        // Header
+        HBox profileHeader = new HBox(10);
+        profileHeader.setAlignment(Pos.CENTER_LEFT);
 
-	    // Make image circular
-	    Circle clip = new Circle(40, 40, 40); // x, y, radius
-	    userIcon.setClip(clip);
+        ImageView userIcon;
+        if (fullStudent.getProfilePath() != null && !fullStudent.getProfilePath().isEmpty()) {
+            try {
+                Image profileImage = new Image(fullStudent.getProfilePath(), true);
+                userIcon = new ImageView(profileImage);
+            } catch (Exception e) {
+                System.err.println("Failed to load profile image: " + e.getMessage());
+                userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+            }
+        } else {
+            userIcon = new ImageView(new Image(CardIndividualReport.class.getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm()));
+        }
+        userIcon.setFitWidth(90);
+        userIcon.setFitHeight(90);
+        Circle clip = new Circle(45, 45, 45);
+        userIcon.setClip(clip);
 
+        VBox studentInfo = new VBox(8,
+            styledLabelBold("Name: " + fullStudent.getLastName() + ", " + fullStudent.getFirstName() + " " + fullStudent.getMiddleName()),
+            styledLabel("Email: " + fullStudent.getEmail()),
+            styledLabel("Program: " + fullStudent.getProgram() + " | Year: " + fullStudent.getYearLevel() + " | Section: " + fullStudent.getSection()),
+            styledLabel("Total Classes: " + fullStudent.getTotalClasses())
+        );
 
-	    VBox studentInfo = new VBox(5,
-	        styledLabel("Name: " + fullStudent.getLastName() + ", " + fullStudent.getFirstName() + " " + fullStudent.getMiddleName()),
-	        styledLabel("Email: " + fullStudent.getEmail()),
-	        styledLabel("Program: " + fullStudent.getProgram() + " | Year: " + fullStudent.getYearLevel() + " | Section: " + fullStudent.getSection()),
-	        styledLabel("Total Classes: " + fullStudent.getTotalClasses())
-	    );
+        profileHeader.getChildren().addAll(userIcon, studentInfo);
 
-	    profileHeader.getChildren().addAll(userIcon, studentInfo);
+        modalContent.getChildren().addAll(closeRow, profileHeader, new Separator());
 
-	    modal.getChildren().addAll(closeRow, profileHeader, new Separator());
+        // === TWO COLUMNS SETUP ===
+        GridPane grid = new GridPane();
+        grid.setHgap(50);
+        grid.setVgap(20);
 
-	    // === TWO COLUMNS SETUP ===
-	    GridPane grid = new GridPane();
-	    grid.setHgap(40);
-	    grid.setVgap(10);
+        // LEFT COLUMN (col 0)
+        VBox leftCol = new VBox(15);
+        leftCol.setPrefWidth(350);
+        leftCol.getChildren().add(sectionTitle("Enrolled Courses:"));
+        String coursesText = courseNames.isEmpty() ? "None" : String.join(", ", courseNames);
+        leftCol.getChildren().add(styledLabel(coursesText));
+        leftCol.getChildren().add(new Separator());
 
-	    // LEFT COLUMN (col 0)
-	    VBox leftCol = new VBox(10);
-	    leftCol.getChildren().add(sectionTitle("Enrolled Courses:"));
-	    String coursesText = courseNames.isEmpty() ? "None" : String.join(", ", courseNames);
-	    leftCol.getChildren().add(styledLabel(coursesText));
-	    leftCol.getChildren().add(new Separator());
+        leftCol.getChildren().add(sectionTitle("Monthly Attendance Summary:"));
+        if (monthlySummaries.isEmpty()) {
+            leftCol.getChildren().add(styledLabel("No monthly attendance records found."));
+        } else {
+            for (MonthlyAttendanceSummary summary : monthlySummaries) {
+                String monthName = java.time.Month.of(summary.getMonth()).name();
+                int total = summary.getPresentCount() + summary.getAbsentCount() + summary.getExcusedCount() + summary.getLateCount();
+                int attended = summary.getPresentCount() + summary.getExcusedCount(); // Consider excused as attended
+                double attendancePercent = total == 0 ? 0 : ((double) attended / total) * 100;
 
-	    leftCol.getChildren().add(sectionTitle("Monthly Attendance Summary:"));
-	    if (monthlySummaries.isEmpty()) {
-	        leftCol.getChildren().add(styledLabel("No monthly attendance records found."));
-	    } else {
-	        for (MonthlyAttendanceSummary summary : monthlySummaries) {
-	            String monthName = java.time.Month.of(summary.getMonth()).name();
-	            String attendanceText = String.format(
-	                "%s %d — Present: %d, Absent: %d, Excused: %d, Late: %d",
-	                monthName, summary.getYear(),
-	                summary.getPresentCount(), summary.getAbsentCount(),
-	                summary.getExcusedCount(), summary.getLateCount()
-	            );
-	            leftCol.getChildren().add(styledLabel(attendanceText));
-	        }
-	    }
+                String attendanceText = String.format(
+                    "%s %d — Present: %d, Absent: %d, Excused: %d, Late: %d (%.1f%% attendance)",
+                    monthName, summary.getYear(),
+                    summary.getPresentCount(), summary.getAbsentCount(),
+                    summary.getExcusedCount(), summary.getLateCount(),
+                    attendancePercent
+                );
 
-	    // RIGHT COLUMN (col 1)
-	    VBox rightCol = new VBox(10);
-	    rightCol.getChildren().add(sectionTitle("Attendance Per Class:"));
-	    if (attendanceSummaries.isEmpty()) {
-	        rightCol.getChildren().add(styledLabel("No attendance records found."));
-	    } else {
-	        for (ClassAttendanceSummary summary : attendanceSummaries) {
-	            String classSummary = String.format(
-	                "%s — Present: %d, Absent: %d, Excused: %d, Late: %d",
-	                summary.getCourseName(),
-	                summary.getPresentCount(), summary.getAbsentCount(),
-	                summary.getExcusedCount(), summary.getLateCount()
-	            );
-	            rightCol.getChildren().add(styledLabel(classSummary));
-	        }
-	    }
+                HBox monthBox = new HBox(10);
+                monthBox.setAlignment(Pos.CENTER_LEFT);
 
-	    // Add columns to grid
-	    grid.add(leftCol, 0, 0);
-	    grid.add(rightCol, 1, 0);
+                Label monthLabel = styledLabel(attendanceText);
+                monthLabel.setMaxWidth(230);
+                monthLabel.setWrapText(true);
 
-	    modal.getChildren().add(grid);
+                PieChart pie = createAttendanceStatusPieChart(summary);
 
-	    overlay.getChildren().add(modal);
-	    StackPane.setAlignment(modal, Pos.CENTER_LEFT);
-	    StackPane.setMargin(modal, new Insets(0, 0, 0, 170));
+                pie.setPrefSize(100, 100);
+                pie.setLegendVisible(false);
+                pie.setLabelsVisible(false);
 
-	    return overlay;
-	}
+                monthBox.getChildren().addAll(pie, monthLabel);
+                leftCol.getChildren().add(monthBox);
+            }
+        }
 
-	private static Label styledLabel(String text) {
-	    Label label = new Label(text);
-	    label.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
-	    return label;
-	}
+        // RIGHT COLUMN (col 1)
+        VBox rightCol = new VBox(15);
+        rightCol.setPrefWidth(350);
+        rightCol.getChildren().add(sectionTitle("Attendance Per Class:"));
+        if (attendanceSummaries.isEmpty()) {
+            rightCol.getChildren().add(styledLabel("No attendance records found."));
+        } else {
+            for (ClassAttendanceSummary summary : attendanceSummaries) {
+                String classSummary = String.format(
+                    "%s — Present: %d, Absent: %d, Excused: %d, Late: %d",
+                    summary.getCourseName(),
+                    summary.getPresentCount(), summary.getAbsentCount(),
+                    summary.getExcusedCount(), summary.getLateCount()
+                );
+                rightCol.getChildren().add(styledLabel(classSummary));
+            }
+        }
 
-	private static Label sectionTitle(String text) {
-	    Label label = new Label(text);
-	    label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-	    return label;
-	}
+        // Add columns to grid
+        grid.add(leftCol, 0, 0);
+        grid.add(rightCol, 1, 0);
 
+        modalContent.getChildren().add(grid);
+
+        // Wrap modalContent in ScrollPane
+        ScrollPane scrollPane = new ScrollPane(modalContent);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(false); // Important: don't force vertical fit
+        scrollPane.setMaxHeight(500);
+        scrollPane.setStyle("-fx-background-color:transparent; -fx-padding: 0;");
+
+        scrollPane.setVvalue(0); // scroll to top initially
+
+        // Outer container to hold scrollpane
+        StackPane modalContainer = new StackPane(scrollPane);
+        modalContainer.setMaxWidth(800);
+
+        modalContainer.setPadding(Insets.EMPTY);
+        StackPane.setAlignment(modalContainer, Pos.TOP_LEFT);
+        StackPane.setMargin(modalContainer, new Insets(0, 0, 0, 170));
+        modalContainer.setTranslateY(0); // zero vertical translation for top alignment
+
+        overlay.getChildren().add(modalContainer);
+
+        return overlay;
+    }
+
+    private static PieChart createAttendanceStatusPieChart(MonthlyAttendanceSummary summary) {
+        int present = summary.getPresentCount();
+        int absent = summary.getAbsentCount();
+        int excused = summary.getExcusedCount();
+        int late = summary.getLateCount();
+
+        int total = present + absent + excused + late;
+        int attended = present + excused; // Excused counts as attended here
+
+        PieChart.Data presentSlice = new PieChart.Data("Attended", attended);
+        PieChart.Data absentSlice = new PieChart.Data("Absent", absent);
+        PieChart.Data lateSlice = new PieChart.Data("Late", late);
+
+        PieChart pieChart = new PieChart();
+        pieChart.getData().addAll(presentSlice, absentSlice, lateSlice);
+
+        pieChart.applyCss();
+        pieChart.layout();
+
+        if (presentSlice.getNode() != null) presentSlice.getNode().setStyle("-fx-pie-color: #4CAF50;");
+        if (absentSlice.getNode() != null) absentSlice.getNode().setStyle("-fx-pie-color: #F44336;");
+        if (lateSlice.getNode() != null) lateSlice.getNode().setStyle("-fx-pie-color: #FFC107;");
+
+        pieChart.setLabelsVisible(false);
+        pieChart.setLegendVisible(false);
+
+        return pieChart;
+    }
+
+    private static Label styledLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 13px; -fx-text-fill: #333333;");
+        return label;
+    }
+
+    private static Label styledLabelBold(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #222;");
+        return label;
+    }
+
+    private static Label sectionTitle(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #555;");
+        label.setPadding(new Insets(10, 0, 0, 0));
+        return label;
+    }
 }

@@ -15,9 +15,18 @@ import java.time.format.DateTimeFormatter;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
 
-
+/**
+ * Data Access Object (DAO) class for handling student notification-related database operations.
+ */
 public class StudentNotificationDAO {
 	
+    /**
+     * Sends a notification to a student when their excuse letter for an absence is accepted.
+     *
+     * @param studentId      The student ID to whom the notification will be sent.
+     * @param courseName     The name of the course for which the excuse was accepted.
+     * @param attendanceDate The date of the attendance being excused.
+     */
 	public static void sendExcuseAcceptedNotification(int studentId, String courseName, LocalDate attendanceDate) {
         int studentUserId = getUserIdByStudentId(studentId);
         if (studentUserId == -1) {
@@ -58,7 +67,42 @@ public class StudentNotificationDAO {
             System.err.println("Error sending excuse accepted notification: " + e.getMessage());
         }
     }
+	
+	public static String getUserProfilePath(int userId) {
+	    String profilePath = null;
+	    String sql = "SELECT profile_path FROM Users WHERE user_id = ?";
 
+	    DatabaseConnection dbConn = new DatabaseConnection();
+
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	            pstmt.setInt(1, userId);
+	            ResultSet rs = pstmt.executeQuery();
+	            if (rs.next()) {
+	                profilePath = rs.getString("profile_path");
+	            }
+	            rs.close();
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("Error loading profile path for user " + userId + ": " + e.getMessage());
+	    }
+
+	    return profilePath;
+	}
+
+	
+
+    /**
+     * Sends an attendance notification to a student about their attendance status for a specific date and course.
+     *
+     * @param studentId      The student ID to notify.
+     * @param attendanceStatus The attendance status (e.g., Absent, Present, Excused).
+     * @param enrollmentId   The enrollment ID related to the attendance record.
+     * @param attendanceDate The date of the attendance.
+     * @param course         The course name.
+     */
 	public static void sendAttendanceNotification(int studentId, String attendanceStatus, int enrollmentId, LocalDate attendanceDate, String course) {
 	    int studentUserId = getUserIdByStudentId(studentId);
 	    if (studentUserId == -1) {
@@ -111,8 +155,13 @@ public class StudentNotificationDAO {
 	    }
 	}
 
-
-	
+    /**
+     * Checks if an attendance record for a given enrollment and date is already marked as excused.
+     *
+     * @param enrollmentId   The enrollment ID to check.
+     * @param attendanceDate The date of the attendance record.
+     * @return True if the attendance status is "Excused"; false otherwise.
+     */
 	private static boolean isAlreadyExcused(int enrollmentId, LocalDate attendanceDate) {
 	    String sql = "SELECT status FROM Attendance WHERE enrollment_id = ? AND date = ?";
 	    DatabaseConnection dbConn = new DatabaseConnection();
@@ -138,9 +187,13 @@ public class StudentNotificationDAO {
 
 	    return false;
 	}
-
-
-    // Helper method to resolve user_id from student_id
+	
+    /**
+     * Retrieves the user_id associated with a given student_id.
+     *
+     * @param studentId The student ID to resolve.
+     * @return The corresponding user_id, or -1 if not found.
+     */
     public static int getUserIdByStudentId(int studentId) {
         String sql = "SELECT user_id FROM Students WHERE student_id = ?";
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -166,6 +219,13 @@ public class StudentNotificationDAO {
         return -1;
     }
     
+    /**
+     * Retrieves the sender's full name and role as a formatted string.
+     *
+     * @param userId The user ID of the sender.
+     * @param role   The role of the sender (e.g., "teacher", "admin", "student").
+     * @return A string in the format "Role FullName" or "Role Username".
+     */
     private static String getSenderFullNameAndRole(int userId, String role) {
         DatabaseConnection dbConn = new DatabaseConnection();
         String fullName = "";
@@ -222,27 +282,32 @@ public class StudentNotificationDAO {
         return role + " " + fullName; // e.g. "Teacher John Smith"
     }
 
-    public static List<Notification> getNotificationsForUser(int userId) {
+    /**
+     * Retrieves all notifications for a specific user, ordered by the date sent in descending order.
+     *
+     * @param userId The user ID for whom notifications are retrieved.
+     * @return A list of Notification objects for the user.
+     */
+    public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "
-                   + "ORDER BY date_sent DESC";
+                   + "ORDER BY date_sent DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        System.out.println("DEBUG: Starting getNotificationsForUser for userId = " + userId);
         DatabaseConnection dbConn = new DatabaseConnection();
 
         try {
             dbConn.connectToSQLServer();
-            System.out.println("DEBUG: Connected to SQL Server successfully.");
 
             try (Connection conn = dbConn.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
 
                 stmt.setInt(1, userId);
-                System.out.println("DEBUG: Executing SQL query with userId = " + userId);
+                stmt.setInt(2, offset);
+                stmt.setInt(3, limit);
 
                 try (ResultSet rs = stmt.executeQuery()) {
-                    int count = 0;
                     while (rs.next()) {
                         String message = rs.getString("message");
                         String status = rs.getString("notification_type");
@@ -250,15 +315,7 @@ public class StudentNotificationDAO {
                         int senderUserId = rs.getInt("sender_user_id");
 
                         notifications.add(new Notification(message, dateSent, status, senderUserId));
-                        count++;
-
-                        System.out.println("DEBUG: Retrieved Notification #" + count
-                                         + " • Message: " + message
-                                         + ", Status: " + status
-                                         + ", Date: " + dateSent
-                                         + ", SenderUserId: " + senderUserId);
                     }
-                    System.out.println("DEBUG: Total notifications retrieved: " + count);
                 }
             }
         } catch (SQLException e) {
@@ -270,6 +327,8 @@ public class StudentNotificationDAO {
 
         return notifications;
     }
+
+
 
 
 }

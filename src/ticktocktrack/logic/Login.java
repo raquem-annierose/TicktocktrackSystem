@@ -11,6 +11,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Handles user login authentication by verifying username and password.
+ * Supports hardcoded users for testing and database verification for real users.
+ */
 public class Login {
 
     private DatabaseConnection dbConnection;
@@ -163,6 +167,12 @@ public class Login {
 
 
 
+    /**
+     * Displays an alert message on the JavaFX UI thread.
+     * @param alertType The type of alert (e.g., ERROR, INFORMATION).
+     * @param title The title of the alert window.
+     * @param message The content message displayed in the alert.
+     */
     private static void showAlert(AlertType alertType, String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(alertType);

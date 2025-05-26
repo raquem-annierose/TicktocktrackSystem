@@ -15,9 +15,19 @@ import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 import ticktocktrack.logic.ViewClassList;
 
+/**
+ * DatabaseViewClassList handles database operations related to fetching class and course information
+ * for teachers. It provides methods to retrieve the classes taught by a specific teacher as well as
+ * the courses associated with the currently logged-in teacher, including program details.
+ */
 public class DatabaseViewClassList {
 
-    // Fetch classes taught by a specific teacher
+    /**
+     * Retrieves a list of classes taught by a specific teacher.
+     *
+     * @param teacherId the ID of the teacher whose classes are to be fetched
+     * @return a List of CourseInfo objects containing course name, section, and program
+     */
     public static List<CourseInfo> getClassesByTeacher(int teacherId) {
         List<CourseInfo> classList = new ArrayList<>();
         String query = "SELECT course_name, section, program FROM Classes WHERE teacher_id = ?";
@@ -43,7 +53,16 @@ public class DatabaseViewClassList {
         return classList;
     }
 
-    // Fetch courses for currently logged-in teacher with program abbreviation
+    /**
+     * Retrieves a list of courses taught by the currently logged-in teacher.
+     * Each course entry includes course name, section, program, and program abbreviation.
+     *
+     * @return a List of String arrays where each array contains:
+     *         [0] - course name,
+     *         [1] - section,
+     *         [2] - program,
+     *         [3] - program abbreviation
+     */
     public static List<String[]> getCoursesByTeacherId() {
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null) {
@@ -86,7 +105,12 @@ public class DatabaseViewClassList {
         return courses;
     }
 
-    // Fetch all available courses with sections
+    /**
+     * Fetches a list of all available courses along with their sections.
+     * The format of each entry is "course_name - section".
+     *
+     * @return A list of strings representing courses and their sections.
+     */
     public static List<String> fetchAvailableCourses() {
         List<String> courseList = new ArrayList<>();
         String sql = "SELECT course_name, section FROM Courses";
@@ -109,7 +133,14 @@ public class DatabaseViewClassList {
         return courseList;
     }
 
-    // Delete a class/course and associated data for the logged-in teacher
+    /**
+     * Deletes a class/course and all associated attendance and enrollment records
+     * for the currently logged-in teacher.
+     * Performs deletion in a transaction to ensure data integrity.
+     *
+     * @param courseName The name of the course to delete.
+     * @param section The section of the course to delete.
+     */
     public static void deleteCourse(String courseName, String section) {
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null || currentUser.getTeacherId() == null) {
@@ -169,7 +200,14 @@ public class DatabaseViewClassList {
         }
     }
 
-    // Update course details
+    /**
+     * Updates the course name and section for a class identified by the old course name and section.
+     *
+     * @param oldCourseName The current course name to find.
+     * @param oldSection The current section to find.
+     * @param newCourseName The new course name to update.
+     * @param newSection The new section to update.
+     */
     public static void updateCourse(String oldCourseName, String oldSection, String newCourseName, String newSection) {
         String getClassIdSql = "SELECT class_id FROM Classes WHERE course_name = ? AND section = ?";
         String updateClassSql = "UPDATE Classes SET course_name = ?, section = ? WHERE class_id = ?";
@@ -207,7 +245,15 @@ public class DatabaseViewClassList {
         }
     }
 
-    // Get students enrolled in a specific class taught by a teacher
+    /**
+     * Retrieves a list of students enrolled in a specific class taught by a given teacher.
+     *
+     * @param courseName The name of the course.
+     * @param section The section of the course.
+     * @param program The program associated with the class.
+     * @param teacherId The ID of the teacher.
+     * @return A list of Student objects enrolled in the specified class.
+     */
     public static List<Student> getStudentsEnrolledForTeacher(String courseName, String section, String program, int teacherId) {
         List<Student> students = new ArrayList<>();
         String query = "SELECT s.student_id, u.username, s.first_name, s.middle_name, s.last_name, u.email, s.year_level " +
@@ -247,7 +293,16 @@ public class DatabaseViewClassList {
         return students;
     }
 
-    // Delete selected students from a class for the teacher
+    /**
+     * Unenrolls a list of students from a specified class taught by a given teacher.
+     * Executes the unenrollment in a single transaction using batch deletion.
+     *
+     * @param students   The list of Student objects to be unenrolled from the class.
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program of the course.
+     * @param teacherId  The ID of the teacher who teaches the class.
+     */
     public static void unenrollStudentsFromClass(List<Student> students, String courseName, String section, String program, int teacherId) {
         String getClassIdSQL = "SELECT class_id FROM Classes WHERE course_name = ? AND section = ? AND program = ? AND teacher_id = ?";
         String deleteEnrollmentSQL = "DELETE FROM Enrollments WHERE student_id = ? AND class_id = ?";
@@ -298,7 +353,12 @@ public class DatabaseViewClassList {
         }
     }
     
-    
+    /**
+     * Retrieves a list of students who are not enrolled in the class identified by the given classId.
+     *
+     * @param classId The ID of the class.
+     * @return A List of Student objects representing students who are not currently enrolled in the class.
+     */
     public static List<Student> getUnenrolledStudentsWithEnrollmentId(int classId) {
         List<Student> students = new ArrayList<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -344,6 +404,15 @@ public class DatabaseViewClassList {
         return students;
     }
    
+    /**
+     * Retrieves the class ID for a given course name, section, program, and teacher ID.
+     *
+     * @param courseName The name of the course.
+     * @param section    The section of the course.
+     * @param program    The program associated with the class.
+     * @param teacherId  The ID of the teacher who teaches the class.
+     * @return The class ID if found; otherwise, returns -1.
+     */   
     public static int getClassId(String courseName, String section, String program, int teacherId) {
         DatabaseConnection dbConn = new DatabaseConnection();
         int classId = -1; // default invalid
@@ -375,7 +444,12 @@ public class DatabaseViewClassList {
         return classId;
     }
    
- // Example of a method to check if a username exists, assuming DatabaseConnection manages connection pooling or returns a Connection
+    /**
+     * Checks if a username already exists in the Users table.
+     *
+     * @param username The username to check.
+     * @return true if the username exists, false otherwise.
+     */
     public static boolean checkUsernameExists(String username) {
         DatabaseConnection dbConn = new DatabaseConnection();
         String sql = "SELECT COUNT(*) FROM Users WHERE username = ?";
@@ -404,11 +478,13 @@ public class DatabaseViewClassList {
 
         return exists;
     }
-
-
-
-
    
+    /**
+     * Retrieves the set of student IDs enrolled in a specific class.
+     *
+     * @param classId The ID of the class.
+     * @return A Set of student IDs enrolled in the class. Returns an empty set if no students are found or on error.
+     */
     public static Set<Integer> getEnrolledStudentIds(int classId) {
         Set<Integer> enrolledStudentIds = new HashSet<>();
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -438,6 +514,13 @@ public class DatabaseViewClassList {
         return enrolledStudentIds;
     }
    
+    /**
+     * Enrolls a list of students into a class.
+     *
+     * @param classId  The ID of the class.
+     * @param students The list of Student objects to enroll.
+     * @return true if all students were enrolled successfully; false otherwise or if the input list is null/empty.
+     */
     public static boolean enrollStudents(int classId, List<Student> students) {
         if (students == null || students.isEmpty()) {
             return false; // Nothing to enroll

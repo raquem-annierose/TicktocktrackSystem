@@ -7,13 +7,29 @@ import java.sql.*;
 
 import ticktocktrack.logic.Session;
 
+/**
+ * Manages user registration for different roles (Admin, Teacher, Student).
+ * Handles database connections, password hashing, and insertion into related tables.
+ */
 public class DatabaseRegistrationManager {
     private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=AttendanceDB;encrypt=false;trustServerCertificate=true;integratedSecurity=true;";
 
+    /**
+     * Gets a database connection using the configured DB_URL.
+     * 
+     * @return a Connection to the database
+     * @throws SQLException if a database access error occurs
+     */
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL);
     }
 
+    /**
+     * Hashes a plain-text password using SHA-256.
+     * 
+     * @param password the plain-text password to hash
+     * @return the hexadecimal string representation of the hashed password
+     */
     public static String hashPassword(String password) {
         try {
             password = password.trim();  // optional but recommended
@@ -31,6 +47,12 @@ public class DatabaseRegistrationManager {
         }
     }
 
+    /**
+     * Checks if a username already exists in the Users table.
+     * 
+     * @param username the username to check for existence
+     * @return true if username exists, false otherwise
+     */
     private static boolean checkUsernameExists(String username) {
         try (Connection connection = getConnection()) {
             String checkUsernameSQL = "SELECT COUNT(*) FROM Users WHERE username = ?";
@@ -46,6 +68,13 @@ public class DatabaseRegistrationManager {
         }
     }
     
+    /**
+     * Retrieves the admin ID associated with the current user from the database.
+     * 
+     * @param connection the database connection to use
+     * @return the admin_id of the current user
+     * @throws SQLException if the current user is not an admin or database error occurs
+     */
     public static int getCurrentAdminId(Connection connection) throws SQLException {
         int userId = Session.getSenderUserId();
 
@@ -61,11 +90,20 @@ public class DatabaseRegistrationManager {
             }
         }
     }
-
-
-
-
-
+    
+    /**
+     * Registers a faculty user (Admin or Teacher).
+     * Inserts user data into Users table and the corresponding role table.
+     * 
+     * @param username the username of the faculty member
+     * @param role either "Admin" or "Teacher"
+     * @param email the email address of the faculty member
+     * @param passwordHash the hashed password
+     * @param firstName first name of the faculty member
+     * @param lastName last name of the faculty member
+     * @param createdByAdminId the ID of the admin who created this user; if -1, uses head admin
+     * @return true if registration successful, false otherwise
+     */
     public static boolean registerFaculty(String username, String role, String email, String passwordHash,
             String firstName, String lastName, int createdByAdminId) {
 
@@ -136,12 +174,15 @@ public class DatabaseRegistrationManager {
             return false;
         }
     }
-
-
-/**
- * Retrieves the real Head Admin's user_id from the database.
- * Assumes that the Head Admin has role 'HeadAdmin' or similar.
- */
+    
+    /**
+     * Retrieves the user_id of the real Head Admin from the database.
+     * Assumes the Head Admin role is labeled as 'HeadAdmin'.
+     * 
+     * @param connection the database connection
+     * @return user_id of the Head Admin, or -1 if not found
+     * @throws SQLException if a database error occurs
+     */
     private static int getRealHeadAdminId(Connection connection) throws SQLException {
         String sql = "SELECT TOP 1 user_id FROM Users WHERE role = 'HeadAdmin'";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -153,9 +194,22 @@ public class DatabaseRegistrationManager {
             }
         }
     }
-
-
-
+    
+    /**
+     * Registers a student user.
+     * Inserts data into Users and Students tables with relevant details.
+     * 
+     * @param username the username of the student
+     * @param email the email address of the student
+     * @param passwordHash the hashed password
+     * @param firstName first name of the student
+     * @param middleName middle name of the student
+     * @param lastName last name of the student
+     * @param yearLevel student's year level
+     * @param program student's program or course
+     * @param section student's section
+     * @return true if registration successful, false otherwise
+     */
     public static boolean registerStudent(String username, String email, String passwordHash,
             String firstName, String middleName, String lastName,
             String yearLevel, String program, String section) {
@@ -211,6 +265,23 @@ public class DatabaseRegistrationManager {
             return false;
         }
     }
+    
+    /**
+     * Registers a user based on role.
+     * Delegates registration to either registerStudent or registerFaculty accordingly.
+     * 
+     * @param username the username of the user
+     * @param role the role of the user ("Student", "Admin", or "Teacher")
+     * @param email the user's email address
+     * @param passwordHash the hashed password
+     * @param firstName first name of the user
+     * @param middleName middle name (for students)
+     * @param lastName last name of the user
+     * @param yearLevel applicable for students
+     * @param section applicable for students
+     * @param program applicable for students
+     * @return true if registration successful, false otherwise
+     */
     public static boolean registerUser(String username, String role, String email, String passwordHash,
                                        String firstName, String middleName, String lastName,
                                        String yearLevel, String section, String program) {

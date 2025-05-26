@@ -6,8 +6,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+/**
+ * Provides methods for teachers to approve or reject student excuses,
+ * retrieve enrollment and user information related to attendance.
+ */
 public class TeacherApproval {
 	
+    /**
+     * Retrieves the enrollment ID for a student in a specific course.
+     *
+     * @param studentId The ID of the student.
+     * @param courseName The name of the course.
+     * @return The enrollment ID if found, otherwise -1.
+     */
 	public static int getEnrollmentId(int studentId, String courseName) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    int enrollmentId = -1;
@@ -41,6 +52,18 @@ public class TeacherApproval {
 	    return enrollmentId;
 	}
 
+    /**
+     * Approves a student's excuse for an absence on a specific date and course,
+     * updating or inserting the attendance record accordingly,
+     * and sends a notification to the student.
+     *
+     * @param studentId The ID of the student.
+     * @param courseName The name of the course.
+     * @param dateString The date of the absence in ISO format (yyyy-MM-dd).
+     * @param reason The reason for the excuse.
+     * @param teacherId The ID of the approving teacher.
+     * @return true if the operation was successful; false otherwise.
+     */
 	public static boolean approveExcuse(int studentId, String courseName, String dateString, String reason, int teacherId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    try {
@@ -146,6 +169,17 @@ public class TeacherApproval {
 	    }
 	}
 	
+    /**
+     * Rejects a student's excuse for an absence on a specific date and course,
+     * updating or inserting the attendance record accordingly,
+     * and sends a notification to the student.
+     *
+     * @param studentId The ID of the student.
+     * @param courseName The name of the course.
+     * @param dateString The date of the absence in ISO format (yyyy-MM-dd).
+     * @param teacherId The ID of the teacher rejecting the excuse.
+     * @return true if the operation was successful; false otherwise.
+     */
 	public static boolean rejectExcuse(int studentId, String courseName, String dateString, int teacherId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    boolean success = false;
@@ -260,7 +294,12 @@ public class TeacherApproval {
 	    }
 	}
 
-	
+    /**
+     * Checks if a user is a student based on their user ID.
+     *
+     * @param userId The ID of the user.
+     * @return true if the user has a student role, false otherwise.
+     */
 	public static boolean isUserStudent(int userId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    boolean isStudent = false;
@@ -286,7 +325,12 @@ public class TeacherApproval {
 	    return isStudent;
 	}
 
-	
+    /**
+     * Retrieves the student ID associated with a given user ID.
+     *
+     * @param userId The user ID.
+     * @return The student ID if found; -1 otherwise.
+     */
 	public static int getStudentIdByUserId(int userId) {
 	    int studentId = -1;
 	    DatabaseConnection db = new DatabaseConnection();
@@ -313,6 +357,12 @@ public class TeacherApproval {
 	    return studentId;
 	}
 	
+    /**
+     * Retrieves the teacher ID associated with a given user ID.
+     * 
+     * @param userId the user ID
+     * @return the teacher ID, or -1 if not found
+     */
 	public static int getTeacherIdByUserId(int userId) {
 	    int teacherId = -1;
 	    DatabaseConnection db = new DatabaseConnection();
@@ -337,7 +387,5 @@ public class TeacherApproval {
 	    }
 	    return teacherId;
 	}
-
-
 
 }

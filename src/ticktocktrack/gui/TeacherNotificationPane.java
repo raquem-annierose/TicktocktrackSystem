@@ -12,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Popup;
 import ticktocktrack.database.StudentNotificationDAO;
@@ -36,6 +37,10 @@ public class TeacherNotificationPane {
     private VBox notificationHolder;
     private int senderUserId;
     private String message;
+    
+    private static final int PAGE_SIZE = 3;
+    private int notificationsOffset = 0;
+    private boolean allNotificationsLoaded = false;
 
     public int getSenderUserId() { return senderUserId; }
     public String getMessage() { return message; }
@@ -57,14 +62,22 @@ public class TeacherNotificationPane {
         notificationHolder.setPrefWidth(260);
 
         ScrollPane scrollPane = new ScrollPane(notificationHolder);
-        scrollPane.setPrefWidth(280);
-        scrollPane.setPrefHeight(300);
+        scrollPane.setPrefWidth(300);
+        scrollPane.setPrefHeight(400);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle(
             "-fx-background-color: transparent; " +
             "-fx-border-color: #20B2AA; " +
             "-fx-border-width: 2px;"
         );
+        
+        scrollPane.vvalueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() >= 0.9) {  // near bottom
+            	loadNotificationsFromDatabase();
+
+            }
+        });
+
 
         notificationPopup.getContent().add(scrollPane);
 
@@ -95,12 +108,26 @@ public class TeacherNotificationPane {
     }
 
     private void loadNotificationsFromDatabase() {
-        List<Notification> dbNotes = TeacherNotificationDAO.getNotificationsForUser(userId);
-        if (dbNotes != null) {
+        if (allNotificationsLoaded) {
+            return; // no more notifications to load
+        }
+
+        List<Notification> dbNotes = TeacherNotificationDAO.getNotificationsForUser(userId, notificationsOffset, PAGE_SIZE);
+
+        if (dbNotes == null || dbNotes.isEmpty()) {
+            allNotificationsLoaded = true; // no more data
+        } else {
             notifications.addAll(dbNotes);
+            notificationsOffset += dbNotes.size();
+
+            // Add newly loaded notifications to UI:
+            for (Notification n : dbNotes) {
+                addNotificationToHolder(n);
+            }
         }
     }
 
+    
     public void addNotification(String message, LocalDateTime dateSent, String status) {
         addNotification(message, dateSent, status, 0); // default senderUserId
     }
@@ -111,32 +138,68 @@ public class TeacherNotificationPane {
         addNotificationToHolder(note);
     }
 
-
-
-
     private void addNotificationToHolder(Notification note) {
+        int senderUserId = note.getSenderUserId(); // use 'note' not 'notification'
+
+        // Try to get the sender's profile path from the database
+        String profilePath = StudentNotificationDAO.getUserProfilePath(senderUserId);
+
+        ImageView iconView;
+        if (profilePath != null && !profilePath.isEmpty()) {
+            try {
+                // If profilePath is a URL or file path, load it
+                Image img = new Image(profilePath, 50, 50, true, true);
+                iconView = new ImageView(img);
+            } catch (Exception e) {
+                // If loading fails, fallback to default icon
+                System.err.println("Failed to load profile image: " + e.getMessage());
+                iconView = getDefaultIcon();
+            }
+        } else {
+            // If no profilePath, use default icon
+            iconView = getDefaultIcon();
+        }
+
+        // Make the icon circular
+        Circle clip = new Circle(25, 25, 25);
+        iconView.setFitWidth(50);
+        iconView.setFitHeight(50);
+        iconView.setPreserveRatio(true);
+        iconView.setClip(clip);
+
+
+        // Notification message
         Label msgLabel = new Label("\u2022 " + note.getMessage());
         msgLabel.setFont(javafx.scene.text.Font.font("Poppins", 13));
         msgLabel.setWrapText(true);
-        msgLabel.setMaxWidth(240);
+        msgLabel.setMaxWidth(200); // Adjusted to fit beside larger icon
         msgLabel.setTextAlignment(TextAlignment.LEFT);
 
+        // Notification date + status
         Label dateLabel = new Label(note.getTimeAgo() + " | " + note.getStatus());
         dateLabel.setFont(javafx.scene.text.Font.font("Poppins", 10));
         dateLabel.setStyle("-fx-text-fill: gray;");
 
         VBox content = new VBox(2, msgLabel, dateLabel);
-        HBox box = new HBox(content);
+
+        HBox box = new HBox(10, iconView, content);  // Icon left, content right
         box.setPadding(new Insets(5));
         box.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);");
+                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);");
 
         addHoverEffect(box);
 
+        // Optional: click action for detailed popup
         box.setOnMouseClicked(e -> showDetailedNotificationPopup(note));
 
         notificationHolder.getChildren().add(box);
     }
+    
+    private ImageView getDefaultIcon() {
+        String iconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
+        return new ImageView(new Image(iconPath, 50, 50, true, true));
+    }
+
 
     private void addHoverEffect(HBox box) {
         box.setOnMouseEntered(e -> box.setStyle(
@@ -225,21 +288,23 @@ public class TeacherNotificationPane {
                 int dateEnd = fullMessage.indexOf(" in course", dateStart);
                 dateString = fullMessage.substring(dateStart, dateEnd).trim();
 
-                // Validate date format
                 LocalDate.parse(dateString);
 
                 int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
                 int courseEnd = fullMessage.indexOf(":", courseStart);
                 courseName = fullMessage.substring(courseStart, courseEnd).trim();
 
-                int reasonKeywordIndex = fullMessage.indexOf("| Reason:");
-                int reasonStart = reasonKeywordIndex + "| Reason:".length();
-                reason = fullMessage.substring(reasonStart).trim();
+                // Just take everything after the last colon (:) as reason text
+                int lastColonIndex = fullMessage.lastIndexOf(":");
+                reason = fullMessage.substring(lastColonIndex + 1).trim();
+
             } catch (Exception ex) {
                 System.out.println("Failed to parse date/course/reason: " + ex.getMessage());
                 new Alert(Alert.AlertType.ERROR, "Failed to parse excuse details from notification message.").showAndWait();
                 return;
             }
+
+
 
             System.out.println("Parsed details -> Date: " + dateString + ", Course: " + courseName + ", Reason: " + reason);
 

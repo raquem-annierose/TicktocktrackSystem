@@ -4,12 +4,20 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Provides a utility for managing database connections to a SQL Server.
+ * This class includes methods to connect, close, and retrieve the active connection.
+ */
 public class DatabaseConnection {
 
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=AttendanceDB;encrypt=false;trustServerCertificate=true;integratedSecurity=true;";
     private Connection conn;
 
-    // Connect to SQL Server
+    /**
+     * Establishes a connection to the SQL Server database.
+     * 
+     * @throws SQLException if the connection attempt fails.
+     */
     public void connectToSQLServer() throws SQLException {
         if (conn == null || conn.isClosed()) {
             try {
@@ -22,7 +30,10 @@ public class DatabaseConnection {
         }
     }
 
-    // Close the connection to SQL Server
+    /**
+     * Closes the active connection to the SQL Server database if it exists.
+     * Prints a message indicating success or failure.
+     */
     public void closeConnection() {
         if (conn != null) {
             try {
@@ -36,7 +47,11 @@ public class DatabaseConnection {
         }
     }
 
-    // Getter for the connection
+    /**
+     * Retrieves the active database connection.
+     * 
+     * @return the active {@link Connection} object, or {@code null} if no connection is established.
+     */
     public Connection getConnection() {
         return conn;
     }

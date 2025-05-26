@@ -49,7 +49,7 @@ public class StudentSubmitExcuseCenterPanel {
         shadowView.setLayoutX(0);
         shadowView.setLayoutY(-115);
 
-        Rectangle container = new Rectangle(30, 50, 950, 550);
+        Rectangle container = new Rectangle(30, 40, 950, 590);
         container.setFill(Color.web("#FFFFFF"));
         container.setStroke(Color.web("#CBCBCB"));
         container.setStrokeWidth(2);

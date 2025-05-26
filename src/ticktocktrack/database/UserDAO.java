@@ -7,10 +7,19 @@ import java.util.List;
 import javafx.scene.control.TableView;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Data Access Object (DAO) class for managing user data from the database.
+ * Provides methods to retrieve lists of admins and teachers with their details.
+ */
 public class UserDAO {
 
     private static DatabaseConnection dbConnection = new DatabaseConnection();
 
+    /**
+     * Retrieves a list of all admins along with their user details.
+     * 
+     * @return List of UsersModel objects representing admins.
+     */
     public static List<UsersModel> getAdmins() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -45,6 +54,11 @@ public class UserDAO {
         return list;
     }
 
+    /**
+     * Retrieves a list of all teachers along with their user details.
+     * 
+     * @return List of UsersModel objects representing teachers.
+     */
     public static List<UsersModel> getTeachers() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -79,6 +93,11 @@ public class UserDAO {
         return list;
     }
 
+    /**
+     * Retrieves a list of all students along with their user and academic details.
+     * 
+     * @return List of UsersModel objects representing students.
+     */
     public static List<UsersModel> getStudents() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -118,6 +137,12 @@ public class UserDAO {
         return list;
     }
     
+    /**
+     * Retrieves a list of admins excluding the headadmin, including who created their accounts.
+     * Useful for admin management views.
+     * 
+     * @return List of UsersModel objects representing manageable admins.
+     */
     public static List<UsersModel> manageAdmins() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -172,8 +197,12 @@ public class UserDAO {
         return list;
     }
 
-
-
+    /**
+     * Retrieves a list of teachers along with their user info and the admin who created their accounts.
+     * Useful for managing teacher accounts.
+     *
+     * @return List of UsersModel objects representing manageable teachers.
+     */
     public static List<UsersModel> manageTeachers() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -226,7 +255,13 @@ public class UserDAO {
         return list;
     }
 
-
+    /**
+     * Retrieves a list of students along with their user info, academic details, 
+     * and the admin who created their accounts.
+     * Useful for managing student accounts.
+     *
+     * @return List of UsersModel objects representing manageable students.
+     */
     public static List<UsersModel> manageStudents() {
         List<UsersModel> list = new ArrayList<>();
         String query = 
@@ -284,6 +319,21 @@ public class UserDAO {
         return list;
     }
 
+    /**
+     * Deletes a user by their user ID, including cleaning up all related data such as:
+     * - Nullifying created_by_admin_id references to this user
+     * - Deleting enrollments related to this user's classes or student record
+     * - Deleting classes taught by this user (if teacher)
+     * - Deleting notifications sent by this user
+     * - Removing entries from role-specific tables (Admins, Teachers, Students)
+     * - Finally deleting the user record itself
+     * 
+     * This operation is performed within a database transaction to ensure atomicity,
+     * rolling back all changes if any step fails.
+     * 
+     * @param userId The user ID of the user to delete.
+     * @return true if the user was successfully deleted, false otherwise.
+     */
     public static boolean deleteUserById(int userId) {
         String updateCreatedByAdmin = "UPDATE Users SET created_by_admin_id = NULL WHERE created_by_admin_id = ?";
 
@@ -370,6 +420,14 @@ public class UserDAO {
         }
     }
     
+    /**
+     * Updates a user's general and role-specific details in the database.
+     * The method updates the Users table and the corresponding role table (Students, Teachers, Admins).
+     * The update is performed within a transaction to ensure data integrity.
+     * 
+     * @param user The UsersModel object containing updated user details.
+     * @return true if the update succeeded, false otherwise.
+     */
     public static boolean updateUser(UsersModel user) {
         String updateUserSQL = "UPDATE Users SET username = ?, email = ? WHERE user_id = ?";
 
@@ -434,6 +492,14 @@ public class UserDAO {
         }
     }
 
+    /**
+     * Retrieves a list of users filtered by their role.
+     * Supports "Admin", "Teacher", and "Student" roles.
+     * Returns an empty list if the role is null, empty, or unrecognized.
+     * 
+     * @param role The role of users to retrieve (case-insensitive).
+     * @return A list of UsersModel objects matching the given role.
+     */
     public static List<UsersModel> getUsersByRole(String role) {
         List<UsersModel> users = new ArrayList<>();
 
@@ -511,6 +577,9 @@ public class UserDAO {
 
         return users;
     }
+    
+    
+
 
     
    

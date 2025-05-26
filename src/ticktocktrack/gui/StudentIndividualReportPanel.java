@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.DropShadow;
@@ -58,8 +59,8 @@ public class StudentIndividualReportPanel {
         ScrollPane scrollPane = new ScrollPane(cardContainer);
         scrollPane.setLayoutX(50);
         scrollPane.setLayoutY(120);
-        scrollPane.setPrefWidth(1200);
-        scrollPane.setPrefHeight(580);
+        scrollPane.setPrefWidth(945);
+        scrollPane.setPrefHeight(480);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setFitToWidth(true);
@@ -197,26 +198,18 @@ public class StudentIndividualReportPanel {
 
     // Show a dialog or overlay with attendance summary for the selected class
     private static void showAttendanceSummaryDialog(int studentId, String courseName) {
-        // Get attendance history for the course using DatabaseStudentViewMyAttendance
         List<AttendanceStatusPanel.AttendanceRecord> history =
             DatabaseStudentViewMyAttendance.getAttendanceHistoryForCourse(courseName);
 
-        // Get current month and year
         LocalDate now = LocalDate.now();
         int currentMonth = now.getMonthValue();
         int currentYear = now.getYear();
 
         int present = 0, absent = 0, excused = 0, late = 0;
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         for (AttendanceStatusPanel.AttendanceRecord record : history) {
             String status = record.getStatus();
-            LocalDate date;
-            try {
-                date = LocalDate.parse(record.getDate().toString(), dtf);
-            } catch (Exception e) {
-                continue; // skip if date is invalid
-            }
+            LocalDate date = record.getDate();
             if (date.getMonthValue() != currentMonth || date.getYear() != currentYear) continue;
             if (status == null) continue;
             switch (status.trim().toLowerCase()) {
@@ -227,17 +220,57 @@ public class StudentIndividualReportPanel {
             }
         }
 
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Attendance Summary");
-        alert.setHeaderText("Attendance Summary for " + courseName + " (" + now.getMonth() + " " + currentYear + ")");
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Attendance Summary");
+        dialog.setHeaderText(null);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Present: ").append(present).append("\n");
-        sb.append("Absent: ").append(absent).append("\n");
-        sb.append("Excused: ").append(excused).append("\n");
-        sb.append("Late: ").append(late).append("\n");
-        alert.setContentText(sb.toString());
+        VBox content = new VBox(18);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(30, 40, 30, 40));
 
-        alert.showAndWait();
+        Text header = new Text("Attendance Summary for\n" + courseName + " (" + now.getMonth() + " " + currentYear + ")");
+        header.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        header.setFill(Color.web("#02383E"));
+        header.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        HBox stats = new HBox(30);
+        stats.setAlignment(Pos.CENTER);
+
+        stats.getChildren().addAll(
+            buildStatBox("/resources/Student_Dashboard/Present_student.png", "Present", present, "#188038"),
+            buildStatBox("/resources/Student_Dashboard/Absent_student.png", "Absent", absent, "#d93025"),
+            buildStatBox("/resources/Student_Dashboard/Excused_student.png", "Excused", excused, "#fbbc04"),
+            buildStatBox("/resources/Student_Dashboard/Late_student.png", "Late", late, "#a142f4")
+        );
+
+        content.getChildren().addAll(header, stats);
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.CLOSE);
+        dialog.showAndWait();
+    }
+
+    private static VBox buildStatBox(String iconPath, String label, int count, String colorHex) {
+        ImageView icon;
+        try {
+            icon = new ImageView(new Image(StudentIndividualReportPanel.class.getResource(iconPath).toExternalForm()));
+        } catch (Exception e) {
+            icon = new ImageView();
+        }
+        icon.setFitWidth(38);
+        icon.setFitHeight(38);
+
+        Label countLabel = new Label(String.valueOf(count));
+        countLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 22));
+        countLabel.setTextFill(Color.web(colorHex));
+
+        Label textLabel = new Label(label);
+        textLabel.setFont(Font.font("Poppins", 13));
+        textLabel.setTextFill(Color.web("#555"));
+
+        VBox box = new VBox(6, icon, countLabel, textLabel);
+        box.setAlignment(Pos.CENTER);
+        box.setStyle("-fx-background-color: #f5f5fa; -fx-background-radius: 10; -fx-padding: 10 18 10 18;");
+        return box;
     }
 }
