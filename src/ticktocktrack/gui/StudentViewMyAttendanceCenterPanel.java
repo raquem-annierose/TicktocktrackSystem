@@ -29,15 +29,14 @@ public class StudentViewMyAttendanceCenterPanel {
 
     // Color palette for top bar cycling
     private static final Color[] TOP_BAR_COLORS = new Color[]{
-            Color.web("#1a73e8"), // Blue
-            Color.web("#d93025"), // Red
-            Color.web("#fbbc04"), // Yellow
+            Color.web("#3e7d7d"), // Teal
+            Color.web("#f8e67c"), // light yellow
             Color.web("#188038"), // Green
-            Color.web("#5f6368"), // Gray
-            Color.web("#a142f4"), // Purple
+            Color.web("2DCFDF"), // Blue
+            Color.web("#6b3fa0"), // Purple
             Color.web("#f4511e"), // Orange
-            Color.web("#00897b"), // Teal
-            Color.web("#6d4c41")  // Brown
+            Color.web("f5eaff"), // lavender
+            Color.web("#6d4c41") // Brown
     };
 
     public static Pane createPanel() {
