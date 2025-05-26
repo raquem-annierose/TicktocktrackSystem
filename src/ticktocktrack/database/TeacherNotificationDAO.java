@@ -222,7 +222,7 @@ public class TeacherNotificationDAO {
      */
     public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT message, notification_type, date_sent, sender_user_id "
+        String sql = "SELECT notification_id, message, notification_type, date_sent, sender_user_id "
                    + "FROM Notifications WHERE recipient_user_id = ? "
                    + "ORDER BY date_sent DESC "
                    + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -241,23 +241,54 @@ public class TeacherNotificationDAO {
 
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
+                        int id = rs.getInt("notification_id");
                         String message = rs.getString("message");
                         String status = rs.getString("notification_type");
                         LocalDateTime dateSent = rs.getTimestamp("date_sent").toLocalDateTime();
                         int senderUserId = rs.getInt("sender_user_id");
 
-                        notifications.add(new Notification(message, dateSent, status, senderUserId));
+                        // Create the Notification object
+                        Notification notification = new Notification(message, dateSent, status, senderUserId);
+
+                        // Set the notification ID
+                        notification.setNotificationId(id);
+
+                        // Add the notification to the list
+                        notifications.add(notification);
                     }
                 }
             }
         } catch (SQLException e) {
             System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
-                              + " â€¢ " + e.getMessage());
+                              + " • " + e.getMessage());
         } finally {
             dbConn.closeConnection();
         }
 
         return notifications;
     }
+
+    
+    public static boolean deleteNotificationById(int notificationId) {
+        String sql = "DELETE FROM Notifications WHERE notification_id = ?";
+        DatabaseConnection dbConn = new DatabaseConnection();
+        
+        try {
+            dbConn.connectToSQLServer();
+            try (Connection conn = dbConn.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                
+                ps.setInt(1, notificationId);
+                int affectedRows = ps.executeUpdate();
+                return affectedRows > 0;
+                
+            }
+        } catch (SQLException e) {
+            System.err.println("Error deleting notification with ID " + notificationId + ": " + e.getMessage());
+        }
+
+        return false;
+    }
+
 
 }

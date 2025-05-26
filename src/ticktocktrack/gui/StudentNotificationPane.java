@@ -24,10 +24,16 @@
 	import java.time.LocalDateTime;
 	import javafx.scene.control.ScrollPane;
 	
-	import java.time.Duration;
+	import javafx.util.Duration;
 	import java.time.format.DateTimeFormatter;
 	import java.util.List;
 	import java.util.function.Consumer;
+	import javafx.scene.control.ContextMenu;
+	import javafx.scene.control.MenuItem;
+	import javafx.geometry.Side;
+	import javafx.animation.PauseTransition;
+	import javafx.scene.layout.Priority;
+	import javafx.scene.control.Button;
 	
 	public class StudentNotificationPane {
 		private final int PAGE_SIZE = 3;  // Number of notifications to load each time
@@ -210,7 +216,7 @@
 	            "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);"
 	        );
 	
-	        addHoverEffect(notificationBox);
+	        addHoverEffect(notificationBox, notification.getNotificationId());
 	        notificationHolder.getChildren().add(notificationBox);
 	
 	        // Optional: handle click for specific types
@@ -229,16 +235,62 @@
 	    }
 	
 	
-	    private void addHoverEffect(HBox notificationBox) {
-	        notificationBox.setOnMouseEntered(e -> 
-	            notificationBox.setStyle("-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
-	                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0.5, 0, 0);")
-	        );
-	        notificationBox.setOnMouseExited(e -> 
-	            notificationBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
-	                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 5, 0.5, 0, 0);")
-	        );
+	    private void addHoverEffect(HBox notificationBox, int notificationId) {
+	        // Create the button with the image
+	    	String btnImagePath = getClass().getResource("/resources/others_button.png").toExternalForm();
+	        ImageView btnIcon = new ImageView(new Image(btnImagePath, 30, 30, true, true));
+	        Button hoverButton = new Button();
+	        hoverButton.setGraphic(btnIcon);
+	        hoverButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+	        hoverButton.setFocusTraversable(false);
+
+	        // Create context menu
+	        ContextMenu contextMenu = new ContextMenu();
+	        MenuItem deleteItem = new MenuItem("Delete Notification");
+	        deleteItem.setOnAction(ev -> {
+	            boolean success = StudentNotificationDAO.deleteNotificationById(notificationId);
+	            if (success) {
+	                ((VBox) notificationBox.getParent()).getChildren().remove(notificationBox);
+	                contextMenu.hide();
+	            } else {
+	                System.out.println("Failed to delete notification from database.");
+	            }
+	        });
+	        contextMenu.getItems().add(deleteItem);
+
+	        // Show context menu when button is clicked
+	        hoverButton.setOnAction(e -> {
+	            contextMenu.show(hoverButton, Side.BOTTOM, 0, 0);
+	        });
+
+	        // Hover styling and button display
+	        notificationBox.setOnMouseEntered(e -> {
+	            notificationBox.setStyle(
+	                "-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+	                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),5,0.5,0,0);"
+	            );
+	            if (!notificationBox.getChildren().contains(hoverButton)) {
+	                notificationBox.getChildren().add(hoverButton);
+	                HBox.setHgrow(hoverButton, Priority.NEVER);
+	            }
+	        });
+
+	        // Delayed removal of button on exit (unless context menu is open)
+	        PauseTransition exitDelay = new PauseTransition(Duration.millis(200));
+	        notificationBox.setOnMouseExited(e -> {
+	            exitDelay.setOnFinished(event -> {
+	                if (!contextMenu.isShowing()) {
+	                    notificationBox.setStyle(
+	                        "-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+	                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);"
+	                    );
+	                    notificationBox.getChildren().remove(hoverButton);
+	                }
+	            });
+	            exitDelay.play();
+	        });
 	    }
+
 	
 	    public StackPane getNotificationIconWrapper() {
 	        return notificationIconWrapper;

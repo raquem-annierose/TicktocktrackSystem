@@ -21,6 +21,11 @@ import ticktocktrack.database.TeacherNotificationDAO;
 import ticktocktrack.logic.Notification;
 import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.geometry.Side;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -187,7 +192,7 @@ public class TeacherNotificationPane {
         box.setStyle("-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
                      "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);");
 
-        addHoverEffect(box);
+        addHoverEffect(box, note.getNotificationId());
 
         // Optional: click action for detailed popup
         box.setOnMouseClicked(e -> showDetailedNotificationPopup(note));
@@ -201,15 +206,61 @@ public class TeacherNotificationPane {
     }
 
 
-    private void addHoverEffect(HBox box) {
-        box.setOnMouseEntered(e -> box.setStyle(
-            "-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),5,0.5,0,0);"
-        ));
-        box.setOnMouseExited(e -> box.setStyle(
-            "-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);"
-        ));
+    private void addHoverEffect(HBox box, int notificationId) {
+        // Create the button with the image, but don't add it yet
+    	String btnImagePath = getClass().getResource("/resources/others_button.png").toExternalForm();
+        ImageView btnIcon = new ImageView(new Image(btnImagePath, 30, 30, true, true));
+        Button hoverButton = new Button();
+        hoverButton.setGraphic(btnIcon);
+        hoverButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        hoverButton.setFocusTraversable(false);
+
+        // Create ContextMenu with "Delete Notification"
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("Delete Notification");
+        deleteItem.setOnAction(ev -> {
+            boolean success = TeacherNotificationDAO.deleteNotificationById(notificationId);
+            if (success) {
+                ((VBox) box.getParent()).getChildren().remove(box);
+                contextMenu.hide();
+            } else {
+                System.out.println("Failed to delete notification from database.");
+            }
+        });
+
+
+        contextMenu.getItems().add(deleteItem);
+
+        // Show the menu on button click
+        hoverButton.setOnAction(e -> {
+            contextMenu.show(hoverButton, Side.BOTTOM, 0, 0);
+        });
+
+        // Hover effect handlers
+        box.setOnMouseEntered(e -> {
+            box.setStyle(
+                "-fx-background-color: #e0e0e0; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2),5,0.5,0,0);"
+            );
+            if (!box.getChildren().contains(hoverButton)) {
+                box.getChildren().add(hoverButton);
+                HBox.setHgrow(hoverButton, Priority.NEVER);
+            }
+        });
+
+        PauseTransition exitDelay = new PauseTransition(Duration.millis(200));
+        box.setOnMouseExited(e -> {
+            exitDelay.setOnFinished(event -> {
+                if (!contextMenu.isShowing()) {
+                    box.setStyle(
+                        "-fx-background-color: #f9f9f9; -fx-border-radius: 5px; -fx-background-radius: 5px; " +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15),5,0.5,0,0);"
+                    );
+                    box.getChildren().remove(hoverButton);
+                }
+            });
+            exitDelay.play();
+        });
     }
 
     private void showDetailedNotificationPopup(Notification note) {
