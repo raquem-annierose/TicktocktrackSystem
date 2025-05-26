@@ -92,12 +92,15 @@
 	            }
 	        });
 	
-	        // Load notifications from database
+	        notificationPopup.getContent().add(scrollPane);
+
 	        loadNotificationsFromDatabase();
-	
+	    	
 	        // Add loaded notifications to the GUI holder
+	        for (Notification notification : notifications) {
+	            addNotificationToHolder(notification);
+	        }
 	        notificationPopup.getContent().add(notificationHolder);
-	
 	        // Setup icon
 	        String notificationIconPath = getClass().getResource("/resources/Student_Dashboard/Student_notification_icon.png").toExternalForm();
 	        notificationIcon = new ImageView(new Image(notificationIconPath));
