@@ -91,18 +91,11 @@
 	                loadNotificationsFromDatabase();
 	            }
 	        });
-
-	
-	        notificationPopup.getContent().add(scrollPane);
-	
 	
 	        // Load notifications from database
 	        loadNotificationsFromDatabase();
 	
 	        // Add loaded notifications to the GUI holder
-	        for (Notification notification : notifications) {
-	            addNotificationToHolder(notification);
-	        }
 	        notificationPopup.getContent().add(notificationHolder);
 	
 	        // Setup icon
