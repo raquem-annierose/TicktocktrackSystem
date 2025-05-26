@@ -142,10 +142,10 @@ public class StudentAttendanceStatusCenterPanel {
 
         Text status = new Text();
         status.setFont(Font.font("Poppins", FontWeight.BOLD, 15));
-        if (stats.absent == 0) {
+        if (stats.absent <= 2) {
             status.setText("Attendance Status: Good");
             status.setFill(Color.web("#2C6E49")); // dark green
-        } else if (stats.absent <= 2) {
+        } else if (stats.absent == 3) {
             status.setText("Attendance Status: Warning");
             status.setFill(Color.web("#D9780E")); // amber
         } else {

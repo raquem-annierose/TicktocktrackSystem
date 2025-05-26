@@ -174,13 +174,14 @@ public class TeacherAttendanceSummaryCenterPanel {
             int late = DatabaseAttendanceSummary.countLate(s.getStudentId(), courseName, section, program, teacherId);
 
             String status;
-            if (absent == 0) {
+            if (absent <= 2) { 
                 status = "Good";
-            } else if (absent <= 2) {
+            } else if (absent == 3) {
                 status = "Warning";
             } else {
                 status = "Critical";
             }
+
 
             table.getItems().add(new AttendanceRecord(fullName, status, present, absent, excused, late));
         }
