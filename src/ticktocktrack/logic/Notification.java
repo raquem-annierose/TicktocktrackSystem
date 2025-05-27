@@ -5,14 +5,25 @@
 	import java.time.format.DateTimeFormatter;
 
 	/**
-	 * Represents a notification with message, timestamp, status, and sender information.
+	 * Represents a notification with a message, timestamp, status, sender information,
+	 * and the sender's profile path.
 	 */
 	public class Notification {
+	    
+	    /** The message content of the notification. */
 	    private String message;
+	    
+	    /** The timestamp indicating when the notification was sent. */
 	    private LocalDateTime dateSent;
+	    
+	    /** The status or type of the notification (e.g., info, warning, alert). */
 	    private String status;
-	    private int senderUserId;  
-	    private String senderProfilePath;// Add this field
+	    
+	    /** The user ID of the sender of the notification. */
+	    private int senderUserId;
+	    
+	    /** The profile path or URL of the sender's profile picture. */
+	    private String senderProfilePath; // Added this field
 
 	    /**
 	     * Constructs a Notification with given message, date sent, status, and sender's user ID.
@@ -92,11 +103,20 @@
 	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
 	        return dateSent.format(formatter);
 	    }
-	    
+	    /**
+	     * Retrieves the profile path of the sender.
+	     *
+	     * @return The sender's profile path as a String.
+	     */
 	    public String getSenderProfilePath() {
 	        return senderProfilePath;
 	    }
 
+	    /**
+	     * Sets the profile path for the sender.
+	     *
+	     * @param senderProfilePath The sender's profile path to set.
+	     */
 	    public void setSenderProfilePath(String senderProfilePath) {
 	        this.senderProfilePath = senderProfilePath;
 	    }

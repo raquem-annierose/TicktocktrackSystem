@@ -215,11 +215,14 @@ public class TeacherNotificationDAO {
     }
 
     /**
-     * Retrieves all notifications sent to a given user.
-     * 
-     * @param userId the recipient user's ID
-     * @return a list of Notification objects representing the user's notifications
+     * Retrieves a paginated list of notifications for a specific user, ordered by the date sent in descending order.
+     *
+     * @param userId The user ID for whom notifications are retrieved.
+     * @param offset The number of rows to skip before starting to fetch the notifications.
+     * @param limit The maximum number of notifications to retrieve.
+     * @return A list of Notification objects for the user.
      */
+
     public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT message, notification_type, date_sent, sender_user_id "

@@ -68,6 +68,17 @@ public class StudentNotificationDAO {
         }
     }
 	
+	/**
+	 * Retrieves the profile path of a user from the database based on the user ID.
+	 *
+	 * <p>This method queries the `Users` table to fetch the `profile_path` column
+	 * for the specified user ID. If the user exists and has a profile path stored,
+	 * the path is returned. Otherwise, it returns {@code null}.
+	 * </p>
+	 *
+	 * @param userId the ID of the user whose profile path is to be retrieved
+	 * @return the profile path of the user, or {@code null} if not found or an error occurs
+	 */
 	public static String getUserProfilePath(int userId) {
 	    String profilePath = null;
 	    String sql = "SELECT profile_path FROM Users WHERE user_id = ?";
@@ -91,8 +102,6 @@ public class StudentNotificationDAO {
 
 	    return profilePath;
 	}
-
-	
 
     /**
      * Sends an attendance notification to a student about their attendance status for a specific date and course.
@@ -283,9 +292,11 @@ public class StudentNotificationDAO {
     }
 
     /**
-     * Retrieves all notifications for a specific user, ordered by the date sent in descending order.
+     * Retrieves a paginated list of notifications for a specific user, ordered by the date sent in descending order.
      *
      * @param userId The user ID for whom notifications are retrieved.
+     * @param offset The number of rows to skip before starting to fetch the notifications.
+     * @param limit The maximum number of notifications to retrieve.
      * @return A list of Notification objects for the user.
      */
     public static List<Notification> getNotificationsForUser(int userId, int offset, int limit) {
