@@ -327,6 +327,7 @@ public class TeacherMarkAttendanceCenterPanel {
         return mainPane;
     }
     
+    
     /**
      * Creates a table column with the specified title and property mapping.
      * This method is a utility for generating generic, read-only table columns.
@@ -353,76 +354,21 @@ public class TeacherMarkAttendanceCenterPanel {
 
         ObservableList<String> statusOptions = FXCollections.observableArrayList(
             "Present", "Excused", "Late", "Absent", "Pending"
-        );
-
-        statusCol.setCellFactory(col -> new TableCell<Student, String>() {
-            private final ComboBox<String> comboBox = new ComboBox<>(statusOptions);
-
-            {
-                // Add inline style to ComboBox to make it look modern
-                comboBox.setStyle(
-                    "-fx-background-color: white;" +       // White background
-                    "-fx-border-color: #3498db;" +         // Blue border
-                    "-fx-border-radius: 6;" +              // Rounded corners
-                    "-fx-background-radius: 6;" +
-                    "-fx-padding: 3 10 3 10;" +            // Padding inside ComboBox
-                    "-fx-font-size: 14px;"                 // Font size
-                );
-
-                // Commit edit on selection
-                comboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-                    if (isEditing() && newVal != null) {
-                        commitEdit(newVal);
-                    }
-                });
-            }
-
-            @Override
-            public void startEdit() {
-                super.startEdit();
-                comboBox.setValue(getItem());
-                setGraphic(comboBox);
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                comboBox.show();
-            }
-
-            @Override
-            public void cancelEdit() {
-                super.cancelEdit();
-                setText(getItem());
-                setContentDisplay(ContentDisplay.TEXT_ONLY);
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    if (isEditing()) {
-                        comboBox.setValue(item);
-                        setGraphic(comboBox);
-                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                    } else {
-                        setText(item);
-                        setContentDisplay(ContentDisplay.TEXT_ONLY);
-                    }
-                }
-            }
-        });
-
+        	);
+        // Use ComboBoxTableCell to allow selection from predefined statuses
+        statusCol.setCellFactory(ComboBoxTableCell.forTableColumn(statusOptions));
         statusCol.setEditable(true);
 
-        // Update Student status when edit commits
+        // When edit is committed, update the Student object's status property
         statusCol.setOnEditCommit(event -> {
             Student student = event.getRowValue();
-            student.setStatus(event.getNewValue());
+            String newStatus = event.getNewValue();
+            student.setStatus(newStatus);
+            // Optionally, refresh the table or persist the change immediately if you want
         });
 
         return statusCol;
     }
-
     
     /**
      * Loads the list of students based on the selected course and section.
@@ -560,7 +506,16 @@ public class TeacherMarkAttendanceCenterPanel {
                     studentSection
                 );
 
-                
+                DatabaseAttendance.saveAttendance(
+                    studentId,
+                    student.getDate(),
+                    student.getStatus(),
+                    student.getReason(),
+                    studentProgram,
+                    course,
+                    studentSection
+                    
+                );
                 DatabaseAttendance.updateStudentAttendance(
                 	    student.getStudentId(),
                 	    student.getDate(),
