@@ -218,7 +218,7 @@ public class CardIndividualReport {
         ScrollPane scrollPane = new ScrollPane(modalContent);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(false); // Important: don't force vertical fit
-        scrollPane.setMaxHeight(500);
+        scrollPane.setMaxHeight(605);
         scrollPane.setStyle("-fx-background-color:transparent; -fx-padding: 0;");
 
         scrollPane.setVvalue(0); // scroll to top initially
@@ -230,7 +230,7 @@ public class CardIndividualReport {
         modalContainer.setPadding(Insets.EMPTY);
         StackPane.setAlignment(modalContainer, Pos.TOP_LEFT);
         StackPane.setMargin(modalContainer, new Insets(0, 0, 0, 140));
-        modalContainer.setTranslateY(-50); // zero vertical translation for top alignment
+        modalContainer.setTranslateY(-57); // zero vertical translation for top alignment
 
         overlay.getChildren().add(modalContainer);
 
