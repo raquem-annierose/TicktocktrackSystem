@@ -73,34 +73,40 @@ public class TeacherDashboardCenterPanel {
         int teacherId = (currentUser != null && currentUser.getTeacherId() != null) ? currentUser.getTeacherId() : -1;
         int totalClasses = DatabaseDashboard.getTotalClassesByTeacher(teacherId);
         int totalStudents = DatabaseDashboard.getTotalUniqueStudentsByTeacher(teacherId);
-
+        
+        Text attendanceTitle = new Text("QUICK PEEK");
+        attendanceTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 17));
+        attendanceTitle.setFill(Color.web("#055F82"));
+        attendanceTitle.setLayoutX(39);
+        attendanceTitle.setLayoutY(295);
+        
         Text classLabel = new Text("Total Classes");
         classLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
         classLabel.setFill(Color.web("#02383E"));
-        classLabel.setLayoutX(80);
-        classLabel.setLayoutY(300);
+        classLabel.setLayoutX(150);
+        classLabel.setLayoutY(390);
 
         Text classValue = new Text(String.valueOf(totalClasses));
-        classValue.setFont(Font.font("Poppins", FontWeight.BOLD, 40));
+        classValue.setFont(Font.font("Poppins", FontWeight.BOLD, 45));
         classValue.setFill(Color.web("#FF9800"));
-        classValue.setLayoutX(110);
-        classValue.setLayoutY(365);
+        classValue.setLayoutX(165);
+        classValue.setLayoutY(480);
 
         Text studentLabel = new Text("Number of Students");
         studentLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 16));
         studentLabel.setFill(Color.web("#02383E"));
         studentLabel.setLayoutX(325);
-        studentLabel.setLayoutY(300);
+        studentLabel.setLayoutY(390);
 
         Text studentValue = new Text(String.valueOf(totalStudents));
-        studentValue.setFont(Font.font("Poppins", FontWeight.BOLD, 40));
+        studentValue.setFont(Font.font("Poppins", FontWeight.BOLD, 45));
         studentValue.setFill(Color.web("#FF9800"));
         studentValue.setLayoutX(365);
-        studentValue.setLayoutY(365);
+        studentValue.setLayoutY(480);
 
         // Vertical Divider (unused in layout due to negative X)
-        Line verticalLine = new Line(-390, 25, -390, 115);
-        verticalLine.setStroke(Color.LIGHTGRAY);
+        Line verticalLine = new Line(285, 360, 285, 500);
+        verticalLine.setStroke(Color.web("#34BCCE"));
         verticalLine.setStrokeWidth(2);
 
      // Holidays Panel
@@ -119,14 +125,28 @@ public class TeacherDashboardCenterPanel {
         holidaysTitle.setLayoutY(30);
 
         String[][] holidays = {
-            {"2025-01-01", "New Year's Day"}, {"2025-01-29", "Chinese New Year"}, {"2025-02-25", "EDSA Anniversary"},
-            {"2025-04-01", "Eid’l Fitr"}, {"2025-04-09", "Araw ng Kagitingan"}, {"2025-04-17", "Maundy Thursday"},
-            {"2025-04-18", "Good Friday"}, {"2025-04-19", "Black Saturday"}, {"2025-05-01", "Labor Day"},
-            {"2025-05-12", "National Elections"}, {"2025-06-06", "Eid’l Adha"}, {"2025-06-12", "Independence Day"},
-            {"2025-07-27", "INC Anniversary"}, {"2025-08-21", "Ninoy Aquino Day"}, {"2025-08-25", "National Heroes Day"},
-            {"2025-10-31", "Special Day"}, {"2025-11-01", "All Saints’ Day"}, {"2025-11-30", "Bonifacio Day"},
-            {"2025-12-08", "Feast of the Immaculate Conception"}, {"2025-12-24", "Christmas Eve"},
-            {"2025-12-25", "Christmas Day"}, {"2025-12-30", "Rizal Day"}
+        	     {"2025-01-01", "New Year's Day"},
+                 {"2025-01-29", "Chinese New Year"},
+                 {"2025-02-25", "EDSA Anniversary"},
+                 {"2025-04-01", "Eid’l Fitr"},
+                 {"2025-04-09", "Araw ng Kagitingan"},
+                 {"2025-04-17", "Maundy Thursday"},
+                 {"2025-04-18", "Good Friday"},
+                 {"2025-04-19", "Black Saturday"},
+                 {"2025-05-01", "Labor Day"},
+                 {"2025-05-12", "National Elections"},
+                 {"2025-06-06", "Eid’l Adha"},
+                 {"2025-06-12", "Independence Day"},
+                 {"2025-07-27", "INC Anniversary"},
+                 {"2025-08-21", "Ninoy Aquino Day"},
+                 {"2025-08-25", "National Heroes Day"},
+                 {"2025-10-31", "Special Day"},
+                 {"2025-11-01", "All Saints’ Day"},
+                 {"2025-11-30", "Bonifacio Day"},
+                 {"2025-12-08", "Feast of the Immaculate Conception"},
+                 {"2025-12-24", "Christmas Eve"},
+                 {"2025-12-25", "Christmas Day"},
+                 {"2025-12-30", "Rizal Day"}
         };
 
         VBox rightPanelVBox = new VBox(10);
@@ -183,7 +203,9 @@ public class TeacherDashboardCenterPanel {
             shadowView,
             teacherBgView,
             teacherEffectsView,
+            verticalLine,
             dashboardTitle,
+            attendanceTitle,
             dateText,
             classLabel, classValue,
             studentLabel, studentValue,
