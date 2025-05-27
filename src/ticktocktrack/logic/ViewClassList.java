@@ -109,20 +109,6 @@ public class ViewClassList {
     }
 
     /**
-     * Advances the class list UI to the next page.
-     */
-    public static void goToNextPage() {
-        TeacherViewClassListCenterPanel.incrementPage();
-    }
-
-    /**
-     * Moves the class list UI to the previous page.
-     */
-    public static void goToPreviousPage() {
-        TeacherViewClassListCenterPanel.decrementPage();
-    }
-
-    /**
      * Maps a full program name to its short code equivalent.
      * If the program name contains a dash "–", it uses the substring before the dash.
      * Returns a default abbreviation or truncates the name if no mapping is found.
