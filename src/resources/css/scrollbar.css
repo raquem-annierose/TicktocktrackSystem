@@ -1,0 +1,32 @@
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Scrollbar track */
+.scroll-bar:vertical .track {
+    -fx-background-color: white;
+}
+
+/* Scrollbar thumb */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: white;
+    -fx-background-insets: 2;
+    -fx-background-radius: 5;
+}
+
+/* Scrollbar hover effect */
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #dddddd;
+}
+
+/* Hide horizontal scrollbar */
+.scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}

@@ -37,9 +37,25 @@ public class TeacherAttendanceSummaryCenterPanel {
         root.setTop(buildHeader());
 
         StackPane content = new StackPane();
-        content.setPadding(new Insets(20, 20, 20, 50));
-        content.getChildren().add(buildSubjectGrid(content, teacherId));
-        root.setCenter(content);
+	     // REDUCE top padding to pull everything up
+	    content.setPadding(new Insets(0, 20, 20, 50)); // was (20, 20, 20, 50) — now top is 0
+	    content.setPrefHeight(750); // use full height
+	
+	    ScrollPane scrollPane = new ScrollPane();
+	    scrollPane.setContent(buildSubjectGrid(content, teacherId));
+	    scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent; -fx-border-color: transparent;");
+	    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+	    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+	    scrollPane.getStylesheets().add(TeacherAttendanceSummaryCenterPanel.class
+	             .getResource("/resources/css/scrollbar.css").toExternalForm());
+	
+	     // Optional: slightly increase scroll pane height
+	     scrollPane.setPrefHeight(680); // Previously maybe 615 (750 - 135)
+	
+	     content.getChildren().add(scrollPane);
+	     root.setCenter(content);
+
         return root;
     }
 
@@ -53,26 +69,28 @@ public class TeacherAttendanceSummaryCenterPanel {
         shadow.setFitHeight(250);
         shadow.setLayoutY(-115);
 
-        headerPane.getChildren().addAll(shadow);
-        return headerPane;
-    }
-
-    private static Pane buildSubjectGrid(StackPane content, int teacherId) {
-        Pane layout = new Pane();
-
         Text summaryTitle = new Text("Attendance Summary");
         summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
         summaryTitle.setFill(Color.web("#02383E"));
-        summaryTitle.setLayoutX(325);
-        summaryTitle.setLayoutY(-75);
-        layout.getChildren().add(summaryTitle);
+        summaryTitle.setLayoutX(50); // adjust as needed for position
+        summaryTitle.setLayoutY(75); // adjust for vertical centering
+
+        headerPane.getChildren().addAll(shadow, summaryTitle);
+        return headerPane;
+    }
+
+
+    private static Pane buildSubjectGrid(StackPane content, int teacherId) {
+        Pane layout = new Pane();
+        layout.setPadding(new Insets(0, 20, 0, 0));
+        layout.prefWidthProperty().bind(content.widthProperty().subtract(20));
 
         double startX = 40;
-        double startY = -50;
+        double startY = 0; // Positive startY so cards start below the title
         double cardWidth = 200;
-        double cardHeight = 200;
+        double cardHeight = 250;
         double gapX = 20;
-        double gapY = 70;
+        double gapY = 30;
         int cardsPerRow = 4;
 
         CourseInfo[] courses = DatabaseAttendance.getCoursesForTeacher(teacherId);
@@ -88,8 +106,14 @@ public class TeacherAttendanceSummaryCenterPanel {
             layout.getChildren().add(card);
         }
 
+        // Adjust height so ScrollPane knows exactly how tall the content is
+        int rows = (courses.length + cardsPerRow - 1) / cardsPerRow;  // Ceiling division for rows
+        double totalHeight = rows * (cardHeight + gapY) + startY + 70; // Add some bottom padding
+        layout.setPrefHeight(totalHeight);
+
         return layout;
     }
+
 
     private static VBox createSubjectCard(String name, int idx, StackPane content, int teacherId) {
         ImageView icon = new ImageView(new Image(SUBJECT_ICON));
@@ -101,13 +125,19 @@ public class TeacherAttendanceSummaryCenterPanel {
         label.setFill(Color.web("#02383E"));
         label.setWrappingWidth(160);
         label.setTextAlignment(TextAlignment.CENTER);
-        label.setLineSpacing(1);
         label.setStyle("-fx-text-overrun: ellipsis;");
+        Tooltip.install(label, new Tooltip(name));  // Show full name on hover
 
         Button view = new Button("View");
         view.setFont(Font.font("Poppins", FontWeight.MEDIUM, 14));
         view.setPrefWidth(100);
-        view.setStyle("-fx-background-radius: 5; -fx-background-color: #FFFFFF; -fx-border-color: #8B43BC; -fx-border-width: 1.5; -fx-text-fill: #8B43BC;");
+        view.setStyle(
+            "-fx-background-radius: 5; " +
+            "-fx-background-color: #FFFFFF; " +
+            "-fx-border-color: #8B43BC; " +
+            "-fx-border-width: 1.5; " +
+            "-fx-text-fill: #8B43BC;"
+        );
         DropShadow glow = new DropShadow(5, VIEW_GLOW_COLOR);
         glow.setSpread(0.2);
         view.setOnMouseEntered(e -> view.setEffect(glow));
@@ -115,12 +145,27 @@ public class TeacherAttendanceSummaryCenterPanel {
         view.setOnAction(e -> showDetailView(name, content, teacherId));
 
         VBox card = new VBox(10, icon, label, view);
-        card.setPrefSize(180, 250);
-        card.setPadding(new Insets(20));
         card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-background-color: white; -fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; -fx-border-width: 1.5; -fx-background-radius: 5; -fx-border-radius: 5;");
+        card.setPadding(new Insets(20));
+        card.setStyle(
+            "-fx-background-color: white; " +
+            "-fx-border-color: " + SUBJECT_COLORS[idx % 4] + "; " +
+            "-fx-border-width: 1.5; " +
+            "-fx-background-radius: 5; " +
+            "-fx-border-radius: 5;"
+        );
+
+        // Fixed size
+        double fixedWidth = 180;
+        double fixedHeight = 250;
+        card.setPrefSize(fixedWidth, fixedHeight);
+        card.setMinSize(fixedWidth, fixedHeight);
+        card.setMaxSize(fixedWidth, fixedHeight);
+
         return card;
     }
+
+
 
     private static void showDetailView(String subjectName, StackPane content, int teacherId) {
         BorderPane detail = new BorderPane();
