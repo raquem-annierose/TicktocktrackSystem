@@ -22,23 +22,43 @@ import ticktocktrack.database.DatabaseStudentViewMyAttendance;
 import java.util.List;
 
 
+/**
+ * Panel for displaying a student's attendance overview with pagination and
+ * visually distinct subject cards.
+ * <p>
+ * Supports cycling through colors for the top bar of each subject card.
+ * Displays a limited number of cards per page with navigation controls.
+ * </p>
+ */
 public class StudentViewMyAttendanceCenterPanel {
 
+    /** Number of attendance cards to display per page. */
     private static final int CARDS_PER_PAGE = 9;
+
+    /** The current page index for pagination (zero-based). */
     private static int currentPage = 0;
 
-    // Color palette for top bar cycling
+    /**
+     * Array of colors used for the top bars of subject cards,
+     * cycling through for visual variety.
+     */
     private static final Color[] TOP_BAR_COLORS = new Color[]{
-            Color.web("#3e7d7d"), // Teal
-            Color.web("#f8e67c"), // light yellow
-            Color.web("#188038"), // Green
-            Color.web("2DCFDF"), // Blue
-            Color.web("#6b3fa0"), // Purple
-            Color.web("#f4511e"), // Orange
-            Color.web("f5eaff"), // lavender
-            Color.web("#6d4c41") // Brown
+        Color.web("#3e7d7d"), // Teal
+        Color.web("#f8e67c"), // Light yellow
+        Color.web("#188038"), // Green
+        Color.web("#2DCFDF"), // Blue
+        Color.web("#6b3fa0"), // Purple
+        Color.web("#f4511e"), // Orange
+        Color.web("#f5eaff"), // Lavender
+        Color.web("#6d4c41")  // Brown
     };
 
+    /**
+     * Creates and returns the main panel containing the student's attendance cards.
+     * Initializes the first page of attendance records retrieved from the database.
+     *
+     * @return A Pane containing the attendance overview UI.
+     */
     public static Pane createPanel() {
         List<String> classes = DatabaseStudentViewMyAttendance.getStudentClassesWithTeachers();
 
@@ -132,7 +152,18 @@ public class StudentViewMyAttendanceCenterPanel {
         return root;
     }
 
-
+    /**
+     * Creates a visual card representing a class and its teacher's information.
+     * <p>
+     * The card includes attendance details for the class and is styled with
+     * a color based on its position on the current page to visually differentiate it.
+     * </p>
+     *
+     * @param classInfoWithTeacher the combined class name and teacher information to display
+     * @param indexOnPage the zero-based index of the card on the current page,
+     *                    used for selecting the card's color styling
+     * @return a Region node representing the styled class attendance card
+     */
     private static Region createClassCard(String classInfoWithTeacher, int indexOnPage) {
         String[] parts = classInfoWithTeacher.split("\\|");
         String courseName = parts[0].trim();
@@ -225,7 +256,12 @@ public class StudentViewMyAttendanceCenterPanel {
         return card;
     }
 
-
+    /**
+     * Converts a JavaFX Color object to its hexadecimal string representation.
+     *
+     * @param color the Color object to convert
+     * @return the hex string representation of the color in the format "#RRGGBB"
+     */
     private static String toHexString(Color color) {
         return String.format("#%02X%02X%02X",
                 (int)(color.getRed() * 255),

@@ -29,11 +29,29 @@ import ticktocktrack.database.DatabaseViewClassList;
 import ticktocktrack.logic.Student;
 
 
+/**
+ * Provides a dialog interface for teachers to select and add students
+ * to a specific class within a given course, section, and program.
+ * <p>
+ * This class handles displaying the student selection dialog, filtering
+ * available students, and associating selected students with the class.
+ * </p>
+ */
 public class TeacherAddStudent {
-   
 
+    /**
+     * Displays a dialog for the teacher to select and add students to a class.
+     *
+     * @param allStudents the list of all students available for selection
+     * @param courseName the name of the course to which students will be added
+     * @param section the section of the course
+     * @param program the program the course belongs to
+     * @param classId the unique identifier of the class
+     * @param teacherId the unique identifier of the teacher performing the action
+     * @return true if students were successfully added, false otherwise or if the dialog was cancelled
+     */
     public static boolean showAddStudentSelectionDialog(List<Student> allStudents, String courseName, String section, String program, int classId, int teacherId) {
-         final int finalTeacherId = teacherId;
+        final int finalTeacherId = teacherId;
         
          
         Stage dialog = new Stage();
@@ -90,7 +108,14 @@ public class TeacherAddStudent {
                 content.setAlignment(Pos.CENTER_LEFT);
             }
 
-
+            /**
+             * Updates the content of the ListCell to display the student's full name and username.
+             * If the cell is empty or the student is null, clears the graphic.
+             * Otherwise, sets the graphic to show the student's information along with controls.
+             * 
+             * @param student the Student object to display in this cell
+             * @param empty true if the cell is empty, false otherwise
+             */
             @Override
             protected void updateItem(Student student, boolean empty) {
                 super.updateItem(student, empty);
@@ -187,6 +212,17 @@ public class TeacherAddStudent {
 
 
 
+    /**
+     * Filters the list of students based on section, program, year level, 
+     * and excludes those whose IDs are already in the enrolledIds set.
+     *
+     * @param students the list of students to filter
+     * @param section the section filter; "All" means no filtering by section
+     * @param program the program filter; "All" means no filtering by program
+     * @param yearLevel the year level filter; "All" means no filtering by year level
+     * @param enrolledIds the set of student IDs that are already enrolled and should be excluded
+     * @return a filtered list of students matching the criteria and not enrolled
+     */
     private static List<Student> filterStudents(List<Student> students, String section, String program, String yearLevel, Set<Integer> enrolledIds) {
         return students.stream()
             .filter(s -> !enrolledIds.contains(s.getStudentId()))
@@ -196,7 +232,14 @@ public class TeacherAddStudent {
             .collect(Collectors.toList());
     }
 
-
+    /**
+     * Populates the given VBox container with rows representing each student in the list,
+     * and connects the ListView showing selected students to support interaction.
+     *
+     * @param students the list of students to display as rows
+     * @param container the VBox container where student rows will be added
+     * @param selectedListView the ListView of selected students to update on interactions
+     */
     private static void populateStudentRows(List<Student> students, VBox container, ListView<Student> selectedListView) {
         container.getChildren().clear();
         for (Student student : students) {
@@ -229,7 +272,12 @@ public class TeacherAddStudent {
         }
     }
 
-
+    /**
+     * Updates the visual label and style of a toggle button based on its selection state.
+     *
+     * @param btn the Button to update
+     * @param isSelected true if the button is selected; false otherwise
+     */
     private static void updateToggleButtonLabel(Button btn, boolean isSelected) {
         btn.setText(isSelected ? "-" : "+");
     }

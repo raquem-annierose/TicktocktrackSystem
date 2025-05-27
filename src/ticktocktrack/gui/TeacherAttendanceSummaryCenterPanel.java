@@ -20,16 +20,42 @@ import ticktocktrack.logic.CourseInfo;
 
 import java.util.List;
 
+/**
+ * This class provides the user interface panel for displaying a teacher's attendance summary.
+ * It includes styled components such as subject icons, background images, and color-coded
+ * attendance cards. This panel allows teachers to view summarized attendance data related
+ * to their assigned subjects.
+ */
 public class TeacherAttendanceSummaryCenterPanel {
 
+    /**
+     * The file path for the subject icon image used in the UI.
+     */
     private static final String SUBJECT_ICON = TeacherAttendanceSummaryCenterPanel.class
             .getResource("/resources/Subject_icon.png").toExternalForm();
+
+    /**
+     * The file path for the dashboard background image used in the teacher attendance summary panel.
+     */
     private static final String DASHBOARD_BG = TeacherAttendanceSummaryCenterPanel.class
             .getResource("/resources/Teacher_Dashboard/Teacher_Attendance_summary.png").toExternalForm();
 
+    /**
+     * Array of hex color strings used to color-code subjects in the attendance summary.
+     */
     private static final String[] SUBJECT_COLORS = {"#8B43BC", "#BA8200", "#147F8A", "#55DC93"};
+
+    /**
+     * The color used to create a glowing effect on viewed components within the panel.
+     */
     private static final Color VIEW_GLOW_COLOR = Color.web("#8B43BC");
 
+    /**
+     * Creates and returns the attendance summary panel for the specified teacher.
+     *
+     * @param teacherId the unique identifier of the teacher whose attendance summary is to be displayed
+     * @return a Pane containing the teacher's attendance summary UI components
+     */
     public static Pane createPanel(int teacherId) {
         BorderPane root = new BorderPane();
         root.setPrefSize(1300, 750);
@@ -59,27 +85,42 @@ public class TeacherAttendanceSummaryCenterPanel {
         return root;
     }
 
+    /**
+     * Builds and returns the header pane for the attendance summary panel.
+     * The header includes a shadow image and a title text styled appropriately.
+     *
+     * @return a Pane representing the header section with shadow and title
+     */
     private static Pane buildHeader() {
         Pane headerPane = new Pane();
         headerPane.setPrefHeight(135);
 
+        // Shadow image under the header for visual depth effect
         ImageView shadow = new ImageView(new Image(TeacherAttendanceSummaryCenterPanel.class
                 .getResource("/resources/SHADOW.png").toExternalForm()));
         shadow.setFitWidth(1300);
         shadow.setFitHeight(250);
         shadow.setLayoutY(-115);
 
+        // Title text displaying "Attendance Summary" with font and color styling
         Text summaryTitle = new Text("Attendance Summary");
         summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
         summaryTitle.setFill(Color.web("#02383E"));
-        summaryTitle.setLayoutX(50); // adjust as needed for position
-        summaryTitle.setLayoutY(75); // adjust for vertical centering
+        summaryTitle.setLayoutX(50); // X-position of the title
+        summaryTitle.setLayoutY(75); // Y-position for vertical centering
 
         headerPane.getChildren().addAll(shadow, summaryTitle);
         return headerPane;
     }
 
-
+    /**
+     * Builds the grid layout pane that displays the subjects and related attendance
+     * information for the given teacher.
+     *
+     * @param content the StackPane container in which the subject grid will be placed
+     * @param teacherId the ID of the teacher whose subjects' attendance data will be shown
+     * @return a Pane representing the grid of subjects with attendance summary cards
+     */
     private static Pane buildSubjectGrid(StackPane content, int teacherId) {
         Pane layout = new Pane();
         layout.setPadding(new Insets(0, 20, 0, 0));
@@ -114,7 +155,17 @@ public class TeacherAttendanceSummaryCenterPanel {
         return layout;
     }
 
-
+    /**
+     * Creates a visual card representing a subject with attendance summary details.
+     * Each card displays the subject name, uses a color from a predefined palette,
+     * and integrates with the main content pane for interaction.
+     *
+     * @param name the name of the subject to display on the card
+     * @param idx the index of the subject used to select the card's color from a palette
+     * @param content the StackPane where the card can add interactive elements or overlays
+     * @param teacherId the ID of the teacher to retrieve related attendance data
+     * @return a VBox representing the styled subject card UI component
+     */
     private static VBox createSubjectCard(String name, int idx, StackPane content, int teacherId) {
         ImageView icon = new ImageView(new Image(SUBJECT_ICON));
         icon.setFitWidth(80);
@@ -165,8 +216,15 @@ public class TeacherAttendanceSummaryCenterPanel {
         return card;
     }
 
-
-
+    /**
+     * Displays a detailed attendance view for the specified subject within the provided content pane.
+     * This method fetches attendance data related to the subject and teacher, then populates
+     * the content pane with detailed information and visuals.
+     *
+     * @param subjectName the name of the subject to display detailed attendance for
+     * @param content the StackPane where the detailed view will be shown
+     * @param teacherId the ID of the teacher whose attendance data is being viewed
+     */
     private static void showDetailView(String subjectName, StackPane content, int teacherId) {
         BorderPane detail = new BorderPane();
 
@@ -248,6 +306,13 @@ public class TeacherAttendanceSummaryCenterPanel {
         content.getChildren().setAll(detail);
     }
 
+    /**
+     * Creates and configures a TableView for displaying attendance records.
+     * The table includes columns such as date, status, and any other relevant
+     * attendance information.
+     *
+     * @return a TableView configured to display AttendanceRecord objects
+     */
     private static TableView<AttendanceRecord> createAttendanceTable() {
         TableView<AttendanceRecord> table = new TableView<>();
         table.setEditable(false);
@@ -280,14 +345,40 @@ public class TeacherAttendanceSummaryCenterPanel {
         return table;
     }
 
+    /**
+     * Represents an attendance record summary for a student.
+     * Contains details about the student's attendance status and totals.
+     */
     public static class AttendanceRecord {
+
+        /** The student's full name or identifier. */
         private final String student;
+
+        /** The current attendance status (e.g., Present, Absent). */
         private final String status;
+
+        /** Total number of times the student was present. */
         private final int totalPresent;
+
+        /** Total number of times the student was absent. */
         private final int totalAbsent;
+
+        /** Total number of times the student was excused. */
         private final int totalExcused;
+
+        /** Total number of times the student was late. */
         private final int totalLate;
 
+        /**
+         * Constructs an AttendanceRecord instance with detailed attendance data.
+         *
+         * @param student      the name or identifier of the student
+         * @param status       the current attendance status (e.g., Present, Absent)
+         * @param totalPresent total number of times the student was present
+         * @param totalAbsent  total number of times the student was absent
+         * @param totalExcused total number of times the student was excused
+         * @param totalLate    total number of times the student was late
+         */
         public AttendanceRecord(String student, String status, int totalPresent, int totalAbsent, int totalExcused, int totalLate) {
             this.student = student;
             this.status = status;
@@ -297,28 +388,58 @@ public class TeacherAttendanceSummaryCenterPanel {
             this.totalLate = totalLate;
         }
 
+        /**
+         * Returns the student's name or identifier.
+         *
+         * @return the student name
+         */
         public String getStudent() {
             return student;
         }
 
+        /**
+         * Returns the current attendance status.
+         *
+         * @return the attendance status
+         */
         public String getStatus() {
             return status;
         }
 
+        /**
+         * Returns the total number of times the student was present.
+         *
+         * @return total times present
+         */
         public int getTotalPresent() {
             return totalPresent;
         }
 
+        /**
+         * Returns the total number of times the student was absent.
+         *
+         * @return total times absent
+         */
         public int getTotalAbsent() {
             return totalAbsent;
         }
 
+        /**
+         * Returns the total number of times the student was excused.
+         *
+         * @return total times excused
+         */
         public int getTotalExcused() {
             return totalExcused;
         }
-        
+
+        /**
+         * Returns the total number of times the student was late.
+         *
+         * @return total times late
+         */
         public int getTotalLate() {
-        	return totalLate;
+            return totalLate;
         }
     }
 }

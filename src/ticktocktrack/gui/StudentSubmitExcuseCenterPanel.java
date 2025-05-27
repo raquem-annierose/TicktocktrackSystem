@@ -23,21 +23,36 @@ import ticktocktrack.database.DatabaseIndividualReport;
 import ticktocktrack.database.TeacherNotificationDAO;
 import ticktocktrack.logic.Session;
 
+/**
+ * Panel for students to submit excuses for their absences.
+ */
 public class StudentSubmitExcuseCenterPanel {
 
+    /**
+     * Currently selected excuse reason.
+     */
     private static String selectedReason = null;
 
+    /**
+     * Creates the excuse submission panel without specifying a student ID.
+     * 
+     * @return A Pane containing the excuse submission UI.
+     */
     public static Pane createPanel() {
         return createPanel(null);
     }
 
+    /**
+     * Creates the excuse submission panel for a specific student.
+     * 
+     * @param studentId The ID of the student submitting the excuse.
+     * @return A Pane containing the excuse submission UI.
+     */
     public static Pane createPanel(Integer studentId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: #F2F2F2;");
-        
-        
-
+               
         List<Button> excuseButtons = new ArrayList<>();
 
         // Shadow background
@@ -361,6 +376,11 @@ public class StudentSubmitExcuseCenterPanel {
         return centerPanel;
     }
 
+    /**
+     * Returns the default CSS style for buttons in the excuse submission panel.
+     *
+     * @return A string representing the default button style.
+     */
     private static String defaultButtonStyle() {
         return "-fx-background-color: #FFFFFF; " +
                "-fx-background-radius: 5; " +
@@ -369,6 +389,11 @@ public class StudentSubmitExcuseCenterPanel {
                "-fx-border-width: 1;";
     }
 
+    /**
+     * Returns the CSS style for buttons when they are selected in the excuse submission panel.
+     *
+     * @return A string representing the selected button style.
+     */
     private static String selectedButtonStyle() {
         return "-fx-background-color: #D6B4FC; " +
                "-fx-background-radius: 5; " +
