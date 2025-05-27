@@ -73,9 +73,6 @@ public class TeacherMarkAttendanceCenterPanel {
             System.out.println("No courses found for teacher ID: " + teacherId);
         }
 
-
-
-
         ObservableList<Student> students = FXCollections.observableArrayList();
         FilteredList<Student> filteredStudents = new FilteredList<>(students, p -> true);
 
@@ -162,11 +159,15 @@ public class TeacherMarkAttendanceCenterPanel {
            
             if (newVal != null) {
                 Set<String> combinedSections = courseSectionsMap.get(newVal);
-                if (combinedSections != null) {
-                	sectionComboBox.getItems().clear(); //to prevent duplications
-                    sectionComboBox.getItems().addAll(combinedSections);
-                    sectionComboBox.getSelectionModel().selectFirst();
+                sectionComboBox.getItems().setAll(combinedSections);
+                if (!combinedSections.isEmpty()) {
+                    String firstSection = combinedSections.iterator().next();
+                    sectionComboBox.getSelectionModel().select(firstSection);
+                    sectionComboBox.setValue(firstSection);  // <-- explicitly set value here
+                } else {
+                    sectionComboBox.setValue(null);
                 }
+
             }
             loadStudentsBasedOnSelection(courseComboBox, sectionComboBox, students);
         });
@@ -291,9 +292,6 @@ public class TeacherMarkAttendanceCenterPanel {
         ObservableList<String> statusOptions = FXCollections.observableArrayList(
         	    "Present", "Excused", "Late", "Absent", "Pending"
         	);
-
-
-
         // Use ComboBoxTableCell to allow selection from predefined statuses
         statusCol.setCellFactory(ComboBoxTableCell.forTableColumn(statusOptions));
         statusCol.setEditable(true);
@@ -314,59 +312,73 @@ public class TeacherMarkAttendanceCenterPanel {
             ComboBox<String> sectionComboBox,
             ObservableList<Student> students) {
 
-    String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
-    String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
+String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
+String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
 
-    if (selectedCombined != null && selectedCourse != null) {
-        String[] parts = selectedCombined.split(" - ");
-        if (parts.length == 2) {
-            String section = parts[0];
-            String program = parts[1];
+System.out.println("loadStudentsBasedOnSelection called with: ");
+System.out.println("Selected course: " + selectedCourse);
+System.out.println("Selected combined: " + selectedCombined);
 
-            if (!program.equals(selectedCourse)) {
-                // Optional mismatch check
-            }
+if (selectedCombined != null && selectedCourse != null) {
+// Split only on the first " - "
+String[] parts = selectedCombined.split(" - ", 2);
+if (parts.length == 2) {
+String section = parts[0].trim();
+String program = parts[1].trim();
 
-            lastSelectedCourse = selectedCourse;
-            lastSelectedProgram = program;
-            lastSelectedSection = section;
-
-            // ✅ Use method that includes course name
-            loadStudents(selectedCourse, program, section, students);
-            return;
-        }
-    }
-    students.clear();
+if (!program.equals(selectedCourse)) {
+System.out.println("Warning: program '" + program + "' does not match selected course '" + selectedCourse + "'");
+// Optional: handle mismatch if needed
 }
 
+lastSelectedCourse = selectedCourse;
+lastSelectedProgram = program;
+lastSelectedSection = section;
 
-    
+loadStudents(selectedCourse, program, section, students);
+return;
+} else {
+System.err.println("Invalid combined format after split: " + selectedCombined);
+}
+}
+students.clear();
+}
+
     private static void loadStudents(String course, String program, String section, ObservableList<Student> students) {
         students.clear();
         List<Student> loadedStudents = DatabaseAttendance.getStudentsEnrolled(course, program, section);
+        String today = java.time.LocalDate.now().toString();
+
         for (Student s : loadedStudents) {
-            s.setDate(java.time.LocalDate.now().toString());
+            s.setDate(today);
+
+            // Get attendance status for today
+            String attendanceStatus = DatabaseAttendance.getAttendanceStatus(
+                s.getStudentId(), course, program, section, today
+            );
+
+            s.setStatus(attendanceStatus); // Set actual or "Pending"
             students.add(s);
         }
     }
 
-    
-   
-    
     private static void saveAttendance(ObservableList<Student> students, String course, String combinedSection) {
         if (combinedSection == null || course == null) return;
 
         // Split combinedSection into section and program
         String[] parts;
-        if (combinedSection.contains(" - ")) { // normal hyphen-minus surrounded by spaces
+        if (combinedSection.contains(" - ")) {
             parts = combinedSection.split(" - ", 2);
-        } else if (combinedSection.contains(" – ")) { // en dash with spaces
+        } else if (combinedSection.contains(" – ")) {
             parts = combinedSection.split(" – ", 2);
+        } else if (combinedSection.contains(" — ")) {
+            parts = combinedSection.split(" — ", 2);
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid section format: " + combinedSection);
             alert.showAndWait();
             return;
         }
+
 
         if (parts.length != 2) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid section format: " + combinedSection);

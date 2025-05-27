@@ -18,6 +18,47 @@ import ticktocktrack.logic.UsersModel;
  */
 public class DatabaseAttendance {
     
+	
+	public static String getAttendanceStatus(int studentId, String course, String program, String section, String date) {
+	    DatabaseConnection dbConn = new DatabaseConnection();
+	    String status = "Pending"; // Default if no record is found
+
+	    String sql = "SELECT a.status " +
+	                 "FROM Attendance a " +
+	                 "JOIN Enrollments e ON a.enrollment_id = e.enrollment_id " +
+	                 "JOIN Classes c ON e.class_id = c.class_id " +
+	                 "WHERE e.student_id = ? " +
+	                 "AND c.course_name = ? " +
+	                 "AND c.program = ? " +
+	                 "AND c.section = ? " +
+	                 "AND a.date = ?";
+
+	    try {
+	        dbConn.connectToSQLServer();
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+	            pstmt.setInt(1, studentId);
+	            pstmt.setString(2, course);
+	            pstmt.setString(3, program);
+	            pstmt.setString(4, section);
+	            pstmt.setString(5, date);
+
+	            try (ResultSet rs = pstmt.executeQuery()) {
+	                if (rs.next()) {
+	                    status = rs.getString("status");
+	                }
+	            }
+	        }
+	    } catch (SQLException ex) {
+	        ex.printStackTrace();
+	    } finally {
+	        dbConn.closeConnection();
+	    }
+
+	    return status;
+	}
+
     /**
      * Retrieves an array of CourseInfo objects representing courses taught by a teacher.
      * 
@@ -191,8 +232,8 @@ public class DatabaseAttendance {
      */
     public static int saveAttendance(int studentId, String date, String status, String reason,
             String program, String courseName, String section) throws SQLException {
-DatabaseConnection dbConn = new DatabaseConnection();
-int attendanceId = -1;
+    		DatabaseConnection dbConn = new DatabaseConnection();
+    		int attendanceId = -1;
         try {
             dbConn.connectToSQLServer();
             Connection conn = dbConn.getConnection();
