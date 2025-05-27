@@ -230,7 +230,7 @@ public class CardIndividualReport {
         modalContainer.setPadding(Insets.EMPTY);
         StackPane.setAlignment(modalContainer, Pos.TOP_LEFT);
         StackPane.setMargin(modalContainer, new Insets(0, 0, 0, 140));
-        modalContainer.setTranslateY(-20); // zero vertical translation for top alignment
+        modalContainer.setTranslateY(-50); // zero vertical translation for top alignment
 
         overlay.getChildren().add(modalContainer);
 
