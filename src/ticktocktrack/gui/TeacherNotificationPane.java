@@ -29,7 +29,12 @@ import javafx.util.Duration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -384,36 +389,50 @@ public class TeacherNotificationPane {
         acceptButton.setCursor(Cursor.HAND);
         acceptButton.setOnAction(e -> {
             int senderUserId = note.getSenderUserId();
+
             int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
-
-            String fullMessage = note.getMessage();
-            String dateString;
-            String reason;
-            String courseName;
-
-            int dateKeywordIndex = fullMessage.indexOf("for ");
-            int dateStart = dateKeywordIndex + 4;
-            int dateEnd = fullMessage.indexOf(" in course", dateStart);
-            dateString = fullMessage.substring(dateStart, dateEnd).trim();
-
-            int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
-            int courseEnd = fullMessage.indexOf(":", courseStart);
-            courseName = fullMessage.substring(courseStart, courseEnd).trim();
-
-            int lastColonIndex = fullMessage.lastIndexOf(":");
-            reason = fullMessage.substring(lastColonIndex + 1).trim();
-
-            int teacherId = TeacherApproval.getTeacherIdByUserId(Session.getCurrentUser().getUserId());
-
-            boolean success = TeacherApproval.approveExcuse(studentId, courseName, dateString, reason, teacherId);
-
-            if (success) {
-                new Alert(Alert.AlertType.INFORMATION, "Excuse approved and attendance updated.").showAndWait();
-                StudentNotificationDAO.sendExcuseAcceptedNotification(studentId, courseName, LocalDate.parse(dateString));
+            if (studentId == -1) {
+                new Alert(Alert.AlertType.ERROR, "Invalid student information.").showAndWait();
+                return;
             }
 
-            closePopup(dimOverlay);
+            String fullMessage = note.getMessage();
+
+            try {
+                // Extract date string using regex for better reliability
+                Pattern pattern = Pattern.compile("for\\s+(\\d{4}-\\d{2}-\\d{2})\\s+in course\\s+(.*?)\\s+\\| Reason: (.+)");
+                Matcher matcher = pattern.matcher(fullMessage);
+
+                if (!matcher.find() || matcher.groupCount() < 3) {
+                    throw new IllegalArgumentException("Message format is invalid.");
+                }
+
+                String dateString = matcher.group(1).trim();       // e.g., 2025-05-27
+                String courseName = matcher.group(2).trim();       // e.g., Programming 1
+                String reason = matcher.group(3).trim();           // e.g., Feeling unwell
+
+                int teacherId = TeacherApproval.getTeacherIdByUserId(Session.getCurrentUser().getUserId());
+                if (teacherId == -1) {
+                    new Alert(Alert.AlertType.ERROR, "Teacher not recognized.").showAndWait();
+                    return;
+                }
+
+                boolean success = TeacherApproval.approveExcuse(studentId, courseName, dateString, reason, teacherId);
+
+                if (success) {
+                    new Alert(Alert.AlertType.INFORMATION, "Excuse approved and attendance updated.").showAndWait();
+                    StudentNotificationDAO.sendExcuseAcceptedNotification(studentId, courseName, LocalDate.parse(dateString));
+                } else {
+                    new Alert(Alert.AlertType.ERROR, "Failed to approve the excuse.").showAndWait();
+                }
+
+                closePopup(dimOverlay);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                new Alert(Alert.AlertType.ERROR, "Failed to parse message or approve excuse.").showAndWait();
+            }
         });
+
 
 
         // Reject button
@@ -435,17 +454,29 @@ public class TeacherNotificationPane {
             int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
 
             String fullMessage = note.getMessage();
-            String dateString;
-            String courseName;
 
-            int dateKeywordIndex = fullMessage.indexOf("for ");
-            int dateStart = dateKeywordIndex + 4;
-            int dateEnd = fullMessage.indexOf(" in course", dateStart);
-            dateString = fullMessage.substring(dateStart, dateEnd).trim();
+            String dateString = null;
+            String courseName = null;
 
-            int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
-            int courseEnd = fullMessage.indexOf(":", courseStart);
-            courseName = fullMessage.substring(courseStart, courseEnd).trim();
+            Pattern pattern = Pattern.compile("submitted an excuse for (\\d{4}-\\d{2}-\\d{2}) in course ([^|]+) \\| Reason:");
+            Matcher matcher = pattern.matcher(fullMessage);
+
+            if (matcher.find()) {
+                dateString = matcher.group(1);
+                courseName = matcher.group(2).trim();  // This will now be just "Math"
+            } else {
+                new Alert(Alert.AlertType.ERROR, "Failed to parse date and course from the message.").showAndWait();
+                return;
+            }
+
+
+            LocalDate parsedDate;
+            try {
+                parsedDate = LocalDate.parse(dateString);
+            } catch (DateTimeParseException ex) {
+                new Alert(Alert.AlertType.ERROR, "Invalid date format: " + dateString).showAndWait();
+                return;
+            }
 
             int teacherId = TeacherApproval.getTeacherIdByUserId(Session.getCurrentUser().getUserId());
 
@@ -453,11 +484,15 @@ public class TeacherNotificationPane {
 
             if (success) {
                 new Alert(Alert.AlertType.INFORMATION, "Excuse rejected and attendance marked as absent.").showAndWait();
-                StudentNotificationDAO.sendExcuseRejectedNotification(studentId, courseName, LocalDate.parse(dateString));
+                StudentNotificationDAO.sendExcuseRejectedNotification(studentId, courseName, parsedDate);
+            } else {
+                new Alert(Alert.AlertType.ERROR, "Failed to reject excuse. Please try again.").showAndWait();
             }
 
             closePopup(dimOverlay);
         });
+
+
 
 
 
