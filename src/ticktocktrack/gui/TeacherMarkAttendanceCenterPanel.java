@@ -363,37 +363,37 @@ public class TeacherMarkAttendanceCenterPanel {
             ComboBox<String> sectionComboBox,
             ObservableList<Student> students) {
 
-String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
-String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
+    		String selectedCourse = courseComboBox.getSelectionModel().getSelectedItem();
+    		String selectedCombined = sectionComboBox.getSelectionModel().getSelectedItem();
 
-System.out.println("loadStudentsBasedOnSelection called with: ");
-System.out.println("Selected course: " + selectedCourse);
-System.out.println("Selected combined: " + selectedCombined);
+    		System.out.println("loadStudentsBasedOnSelection called with: ");
+    		System.out.println("Selected course: " + selectedCourse);
+    		System.out.println("Selected combined: " + selectedCombined);
 
-if (selectedCombined != null && selectedCourse != null) {
-// Split only on the first " - "
-String[] parts = selectedCombined.split(" - ", 2);
-if (parts.length == 2) {
-String section = parts[0].trim();
-String program = parts[1].trim();
+    		if (selectedCombined != null && selectedCourse != null) {
+    			// Split only on the first " - "
+    			String[] parts = selectedCombined.split(" - ", 2);
+    			if (parts.length == 2) {
+    				String section = parts[0].trim();
+    				String program = parts[1].trim();
 
-if (!program.equals(selectedCourse)) {
-System.out.println("Warning: program '" + program + "' does not match selected course '" + selectedCourse + "'");
-// Optional: handle mismatch if needed
-}
+    				if (!program.equals(selectedCourse)) {
+    					System.out.println("Warning: program '" + program + "' does not match selected course '" + selectedCourse + "'");
+    					// Optional: handle mismatch if needed
+    				}
 
-lastSelectedCourse = selectedCourse;
-lastSelectedProgram = program;
-lastSelectedSection = section;
+    				lastSelectedCourse = selectedCourse;
+    				lastSelectedProgram = program;
+    				lastSelectedSection = section;
 
-loadStudents(selectedCourse, program, section, students);
-return;
-} else {
-System.err.println("Invalid combined format after split: " + selectedCombined);
-}
-}
-students.clear();
-}
+    				loadStudents(selectedCourse, program, section, students);
+    				return;
+    			} else {
+    				System.err.println("Invalid combined format after split: " + selectedCombined);
+    			}
+    		}
+    		students.clear();
+    }
 
     /**
      * Loads students enrolled in a specific course, program, and section into the provided list.
