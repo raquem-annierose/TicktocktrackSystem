@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.DropShadow;
@@ -83,7 +84,7 @@ public class TeacherIndividualReportsCenterPanel {
         studentScrollPane.setLayoutY(100);
         studentScrollPane.setPrefWidth(700);
         studentScrollPane.setPrefHeight(520);  // <-- set desired scrollable height
-
+        
         // Only vertical scroll
         studentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         studentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
@@ -312,6 +313,7 @@ public class TeacherIndividualReportsCenterPanel {
                         "-fx-background-radius: 4;" +
                         "-fx-border-radius: 4;"
                     );
+                    studentCard.setCursor(Cursor.HAND);
 
                     String profilePath = s.getProfilePath();
                     ImageView userIcon;
@@ -337,7 +339,6 @@ public class TeacherIndividualReportsCenterPanel {
             	    userIcon.setClip(clip);
 
 
-
                     // Create labels
                     Label nameLabel = new Label(s.getLastName() + ", " + s.getFirstName() + " " + s.getMiddleName());
                     nameLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 13));
@@ -353,6 +354,7 @@ public class TeacherIndividualReportsCenterPanel {
                     // Create an HBox to hold icon and labels side-by-side
                     HBox contentHBox = new HBox(10, userIcon, labelsVBox);
                     contentHBox.setAlignment(Pos.CENTER_LEFT);
+                    
 
                     // Add the HBox to the student card VBox
                     studentCard.getChildren().add(contentHBox);
