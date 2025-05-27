@@ -31,8 +31,19 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * This class provides the UI panel for displaying
+ * an individual student's report in the student dashboard.
+ */
 public class StudentIndividualReportPanel {
 
+    /**
+     * Creates and returns a Pane containing the individual report
+     * for the student with the specified studentId.
+     *
+     * @param studentId the ID of the student whose report is to be displayed
+     * @return a Pane containing the individual student report UI components
+     */
     public static Pane createPanel(int studentId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
@@ -196,7 +207,13 @@ public class StudentIndividualReportPanel {
         return centerPanel;
     }
 
-    // Show a dialog or overlay with attendance summary for the selected class
+    /**
+     * Displays a dialog or overlay showing the attendance summary
+     * for the specified student in the given course.
+     *
+     * @param studentId the ID of the student whose attendance summary is to be shown
+     * @param courseName the name of the course for which to display attendance history
+     */
     private static void showAttendanceSummaryDialog(int studentId, String courseName) {
         List<AttendanceStatusPanel.AttendanceRecord> history =
             DatabaseStudentViewMyAttendance.getAttendanceHistoryForCourse(courseName);
@@ -250,6 +267,16 @@ public class StudentIndividualReportPanel {
         dialog.showAndWait();
     }
 
+    /**
+     * Creates a styled VBox containing an icon, a label, and a count,
+     * with a specified color theme.
+     *
+     * @param iconPath  the path to the icon image resource
+     * @param label     the descriptive text label
+     * @param count     the numeric value to display
+     * @param colorHex  the hex color code used for styling text and icon
+     * @return a VBox containing the formatted icon, label, and count
+     */
     private static VBox buildStatBox(String iconPath, String label, int count, String colorHex) {
         ImageView icon;
         try {

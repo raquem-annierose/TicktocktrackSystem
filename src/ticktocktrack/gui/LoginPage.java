@@ -314,7 +314,12 @@ public class LoginPage extends Application {
         }
     }
 
-
+    /**
+     * The main entry point of the application.
+     * Launches the JavaFX application.
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }

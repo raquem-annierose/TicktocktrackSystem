@@ -22,22 +22,77 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Represents the UI panel for viewing a list of students in a specific class.
+ * This class provides features such as displaying student information,
+ * selecting students, and filtering the list based on various criteria.
+ */
 public class TeacherViewClassStudents {
 
+    /**
+     * The main container pane for the center panel of the class students view.
+     */
     private final Pane centerPanel;
+
+    /**
+     * A button used for performing deletion or removal actions.
+     */
     private static Button trashButton;
-    private static TableView<Student> studentTableView;  // Make it a field for refresh
 
+    /**
+     * The table view for displaying the list of students in a tabular format.
+     * This field is used to refresh the table when data is updated.
+     */
+    private static TableView<Student> studentTableView;
+
+    /**
+     * A map that tracks the selection state of each student.
+     * Each student is associated with a {@link SimpleBooleanProperty} that indicates whether they are selected.
+     */
     private final static Map<Student, SimpleBooleanProperty> selectedMap = new HashMap<>();
-    private ObservableList<Student> studentData;
-    private List<Student> fullStudentList;  // Store full list for filtering
 
+    /**
+     * The observable list of student data displayed in the table.
+     */
+    private ObservableList<Student> studentData;
+
+    /**
+     * The full list of students, used for applying filters without losing the original data.
+     */
+    private List<Student> fullStudentList;
+
+    /**
+     * The name of the course associated with this student list.
+     */
     private String courseName;
+
+    /**
+     * The section associated with this student list.
+     */
     private String section;
+
+    /**
+     * The program associated with this student list.
+     */
     private String program;
+
+    /**
+     * The ID of the teacher viewing this list.
+     */
     private int teacherId;
 
+
+    /**
+     * Constructs a new TeacherViewClassStudents panel for displaying students
+     * enrolled in a specific course, section, and program, for the given teacher.
+     *
+     * @param courseName the name of the course
+     * @param section the section of the course
+     * @param program the academic program or curriculum
+     * @param teacherId the unique identifier of the teacher
+     */
     public TeacherViewClassStudents(String courseName, String section, String program, int teacherId) {
+
         this.courseName = courseName;
         this.section = section;
         this.program = program;
@@ -58,11 +113,25 @@ public class TeacherViewClassStudents {
         addStudentTable(courseName, section, program, teacherId);
     }
 
+    /**
+     * Returns the main view pane of this student list panel.
+     *
+     * @return the center panel containing the UI components
+     */
     public Pane getView() {
         return centerPanel;
     }
 
+    /**
+     * Adds the title header to the panel showing course, section, program, and teacher info.
+     *
+     * @param courseName the name of the course
+     * @param section the section of the course
+     * @param program the academic program
+     * @param teacherId the unique identifier of the teacher
+     */
     private void addTitle(String courseName, String section, String program, int teacherId) {
+
         String programShort = (program != null) ? ViewClassList.mapProgramToShortName(program) : "";
 
         String fullTitle = "Students for " + courseName + "\n";
@@ -157,7 +226,18 @@ public class TeacherViewClassStudents {
         centerPanel.getChildren().addAll(title, searchField, addStudentBtn, trashButton);
     }
 
+    /**
+     * Creates and adds the student table to the panel displaying
+     * students enrolled in the specified course, section, and program,
+     * managed by the given teacher.
+     *
+     * @param courseName the name of the course
+     * @param section the section of the course
+     * @param program the academic program
+     * @param teacherId the unique identifier of the teacher
+     */
     private void addStudentTable(String courseName, String section, String program, int teacherId) {
+
         VBox studentTable = new VBox(10);
         studentTable.setLayoutX(30);
         studentTable.setLayoutY(100);
@@ -232,7 +312,15 @@ public class TeacherViewClassStudents {
         centerPanel.getChildren().add(studentTable);
     }
 
+    /**
+     * Filters the student list based on the provided filter string.
+     * The filter matches against student names and usernames,
+     * updating the displayed student table accordingly.
+     *
+     * @param filter the text input used to filter the student list
+     */
     private void filterStudentList(String filter) {
+
         if (filter == null || filter.isEmpty()) {
             studentData.setAll(fullStudentList);
         } else {
@@ -250,6 +338,16 @@ public class TeacherViewClassStudents {
         }
     }
 
+    /**
+     * Refreshes the student table by reloading the student data
+     * for the specified course, section, program, and teacher.
+     * This updates the table view to reflect any changes in the data.
+     *
+     * @param courseName the name of the course
+     * @param section the section identifier
+     * @param program the program name
+     * @param teacherId the ID of the teacher
+     */
     public static void refreshStudentTable(String courseName, String section, String program, int teacherId) {
         List<Student> students = DatabaseViewClassList.getStudentsEnrolledForTeacher(courseName, section, program, teacherId);
         ObservableList<Student> updatedStudentData = FXCollections.observableArrayList(students);

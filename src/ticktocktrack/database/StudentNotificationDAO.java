@@ -20,6 +20,55 @@ import ticktocktrack.logic.Session;
  */
 public class StudentNotificationDAO {
 	
+	/**
+	 * Sends a notification to a student indicating that their excuse for a specific attendance record 
+	 * has been rejected. The notification is associated with a particular course and attendance date.
+	 *
+	 * @param studentId     The unique identifier of the student whose excuse was rejected.
+	 * @param courseName    The name of the course related to the rejected excuse.
+	 * @param attendanceDate The date of the attendance record for which the excuse was rejected.
+	 */
+	public static void sendExcuseRejectedNotification(int studentId, String courseName, LocalDate attendanceDate) {
+	    int studentUserId = getUserIdByStudentId(studentId);
+	    if (studentUserId == -1) {
+	        System.err.println("Error: No user_id found for student_id " + studentId);
+	        return;
+	    }
+
+	    int senderUserId = Session.getCurrentUser().getUserId();
+	    String senderRole = Session.getCurrentUser().getRole();
+	    String senderDisplayName = getSenderFullNameAndRole(senderUserId, senderRole);
+
+	    String message = senderDisplayName + " rejected your excuse letter for the course " + courseName + " on " + attendanceDate + ". Your attendance is now marked as Absent.";
+
+	    String type = "Attendance";
+
+	    String sql = "INSERT INTO Notifications (recipient_user_id, sender_user_id, message, notification_type, date_sent, is_read) " +
+	                 "VALUES (?, ?, ?, ?, ?, ?)";
+
+	    DatabaseConnection dbConn = new DatabaseConnection();
+
+	    try {
+	        dbConn.connectToSQLServer();
+
+	        try (Connection conn = dbConn.getConnection();
+	             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+	            pstmt.setInt(1, studentUserId);
+	            pstmt.setInt(2, senderUserId);
+	            pstmt.setString(3, message);
+	            pstmt.setString(4, type);
+	            pstmt.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+	            pstmt.setBoolean(6, false);
+
+	            pstmt.executeUpdate();
+	        }
+
+	    } catch (SQLException e) {
+	        System.err.println("Error sending excuse rejected notification: " + e.getMessage());
+	    }
+	}
+
     /**
      * Sends a notification to a student when their excuse letter for an absence is accepted.
      *
@@ -67,6 +116,8 @@ public class StudentNotificationDAO {
             System.err.println("Error sending excuse accepted notification: " + e.getMessage());
         }
     }
+	
+	
 	
 	/**
 	 * Retrieves the profile path of a user from the database based on the user ID.

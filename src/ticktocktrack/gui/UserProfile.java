@@ -18,25 +18,62 @@ import ticktocktrack.database.DatabaseUserProfile;
 
 import java.io.File;
 
+/**
+ * UserProfile is a JavaFX Application class responsible for displaying
+ * and managing a user's profile interface, including profile image selection
+ * and update notification.
+ */
 public class UserProfile extends Application {
 
-    private ImageView imageView;
-    private File selectedFile;
+	/**
+	 * The ImageView component used to display the user's selected profile image.
+	 */
+	private ImageView imageView;
 
-    private Runnable onProfileUpdated;
+	/**
+	 * The currently selected image file for the user's profile.
+	 */
+	private File selectedFile;
 
+	/**
+	 * A callback Runnable that is executed when the profile has been updated.
+	 * This can be used to notify other parts of the application about changes.
+	 */
+	private Runnable onProfileUpdated;
+
+    /**
+     * Default constructor for UserProfile.
+     */
     public UserProfile() {}
 
+    /**
+     * Constructs a UserProfile with a callback that is triggered
+     * when the profile is updated.
+     *
+     * @param onProfileUpdated a Runnable callback to execute on profile update
+     */
     public UserProfile(Runnable onProfileUpdated) {
         this.onProfileUpdated = onProfileUpdated;
     }
 
+    /**
+     * Sets the callback to be executed when the profile is updated.
+     *
+     * @param callback a Runnable callback to execute on profile update
+     */
     public void setOnProfileUpdated(Runnable callback) {
         this.onProfileUpdated = callback;
     }
 
+    /**
+     * The main entry point for all JavaFX applications.
+     * Initializes and shows the primary stage for the user profile UI.
+     *
+     * @param primaryStage the primary stage for this application
+     */
     @Override
     public void start(Stage primaryStage) {
+
         UsersModel user = Session.getCurrentUser();
 
         Label titleLabel = new Label("User Profile");
@@ -162,6 +199,12 @@ public class UserProfile extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Opens a file chooser dialog to allow the user to select a profile image.
+     * The dialog filters for PNG, JPG, and JPEG image files.
+     * Upon selection, the imageView is updated to display the selected image,
+     * and the selectedFile reference is updated.
+     */
     private void chooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Profile Image");
@@ -176,6 +219,11 @@ public class UserProfile extends Application {
         }
     }
 
+    /**
+     * Displays an informational alert dialog with the provided message.
+     *
+     * @param message the text message to display in the alert
+     */
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText(null);
@@ -183,6 +231,13 @@ public class UserProfile extends Application {
         alert.showAndWait();
     }
 
+    /**
+     * Applies a hover effect on the specified button by changing its style when the mouse
+     * enters and reverts it when the mouse exits.
+     *
+     * @param button the Button to apply the hover effect on
+     * @param baseStyle the base CSS style string to revert to when the mouse exits
+     */
     private void applyHoverEffect(Button button, String baseStyle) {
         button.setOnMouseEntered(e ->
             button.setStyle(baseStyle + "-fx-background-color: #BA8200; -fx-text-fill: white;")
@@ -192,6 +247,11 @@ public class UserProfile extends Application {
         );
     }
 
+    /**
+     * The main entry point that launches the JavaFX application.
+     *
+     * @param args the command line arguments (not used)
+     */
     public static void main(String[] args) {
         launch(args);
     }

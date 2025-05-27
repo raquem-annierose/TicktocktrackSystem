@@ -15,8 +15,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Handles the process of enrolling students into specific classes by providing
+ * a user interface for selecting and managing student enrollments.
+ */
 public class TeacherEnrollmentStudent {
 
+	/**
+	 * Displays a dialog to allow the teacher to select students for enrollment in a specified class.
+	 *
+	 * @param allStudents A list of all available students to select from.
+	 * @param courseName  The name of the course for which students are being enrolled.
+	 * @param section     The section associated with the course.
+	 * @param classId     The unique identifier for the class in which students will be enrolled.
+	 * @param program     The program or curriculum to which the class belongs.
+	 */
     public static void showStudentSelectionDialog(List<Student> allStudents, String courseName, String section, int classId, String program) {
         Stage dialog = new Stage();
         dialog.setTitle("Enroll Students in: " + courseName);
@@ -83,6 +96,17 @@ public class TeacherEnrollmentStudent {
         dialog.show();
     }
 
+    /**
+     * Filters a list of students based on specified criteria such as section, program,
+     * year level, and exclusion of already enrolled student IDs.
+     *
+     * @param students     The list of all students to filter.
+     * @param section      The section to filter by. Use "All" to include all sections.
+     * @param program      The program to filter by. Use "All" to include all programs.
+     * @param yearLevel    The year level to filter by. Use "All" to include all year levels.
+     * @param enrolledIds  A set of student IDs that are already enrolled and should be excluded.
+     * @return A filtered list of students matching the specified criteria.
+     */
     private static List<Student> filterStudents(List<Student> students, String section, String program, String yearLevel, Set<Integer> enrolledIds) {
         return students.stream()
                 .filter(s -> !enrolledIds.contains(s.getStudentId()))
@@ -92,6 +116,13 @@ public class TeacherEnrollmentStudent {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Populates a container with rows representing students and allows selection for enrollment.
+     *
+     * @param students           The list of students to display in rows.
+     * @param container          The container to populate with student rows.
+     * @param selectedListView   The list view that holds selected students.
+     */
     private static void populateStudentRows(List<Student> students, VBox container, ListView<Student> selectedListView) {
         for (Student student : students) {
             HBox row = new HBox(10);

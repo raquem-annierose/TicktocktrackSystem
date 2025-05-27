@@ -29,16 +29,47 @@ import ticktocktrack.database.StudentNotificationDAO;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * The {@code TeacherMarkAttendanceCenterPanel} class is responsible for creating
+ * and managing the center panel used by teachers to mark attendance. It provides
+ * a user interface for selecting courses, sections, and programs, and marking attendance
+ * for students within those categories.
+ */
 public class TeacherMarkAttendanceCenterPanel {
 
+    /**
+     * Tracks the last refresh date for the attendance panel to optimize performance
+     * and avoid unnecessary reloading.
+     */
     private static String lastRefreshDate = "";
+
+    /**
+     * Tracks the last selected course to persist user preferences between interactions.
+     */
     private static String lastSelectedCourse = null;
+
+    /**
+     * Tracks the last selected section to persist user preferences between interactions.
+     */
     private static String lastSelectedSection = null;
+
+    /**
+     * Tracks the last selected program to persist user preferences between interactions.
+     */
     private static String lastSelectedProgram = null;
 
-
-    @SuppressWarnings({ "unchecked", "unchecked" })
-	public static BorderPane createPanel(String defaultCourse, String defaultSection, int teacherId) {
+    /**
+     * Creates and returns a {@code BorderPane} that serves as the main user interface
+     * for marking attendance. The panel includes sections for course, section, and
+     * program selection, as well as a list of students and controls for marking attendance.
+     *
+     * @param defaultCourse   The default course to select when the panel is loaded.
+     * @param defaultSection  The default section to select when the panel is loaded.
+     * @param teacherId       The ID of the teacher using this panel.
+     * @return A {@code BorderPane} containing the attendance marking UI components.
+     */
+    @SuppressWarnings("unchecked")
+    public static BorderPane createPanel(String defaultCourse, String defaultSection, int teacherId) {
         BorderPane mainPane = new BorderPane();
         mainPane.setPrefSize(1300, 750);
         mainPane.setStyle("-fx-background-color: white;");
@@ -278,19 +309,32 @@ public class TeacherMarkAttendanceCenterPanel {
         return mainPane;
     }
     
+    /**
+     * Creates a table column with the specified title and property mapping.
+     * This method is a utility for generating generic, read-only table columns.
+     *
+     * @param title    The title of the column, displayed in the table header.
+     * @param property The property of the {@code Student} object that this column maps to.
+     * @return A {@code TableColumn} configured to display the specified property.
+     */
     private static TableColumn<Student, String> createColumn(String title, String property) {
         TableColumn<Student, String> col = new TableColumn<>(title);
         col.setCellValueFactory(new PropertyValueFactory<>(property));
         return col;
     }
-    
-    
+
+    /**
+     * Creates a table column for editing attendance status. The column allows
+     * selecting predefined attendance statuses from a dropdown menu.
+     *
+     * @return A {@code TableColumn} configured for editable attendance status values.
+     */
     private static TableColumn<Student, String> createEditableStatusColumn() {
         TableColumn<Student, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-       
+
         ObservableList<String> statusOptions = FXCollections.observableArrayList(
-        	    "Present", "Excused", "Late", "Absent", "Pending"
+            "Present", "Excused", "Late", "Absent", "Pending"
         	);
         // Use ComboBoxTableCell to allow selection from predefined statuses
         statusCol.setCellFactory(ComboBoxTableCell.forTableColumn(statusOptions));
@@ -307,7 +351,14 @@ public class TeacherMarkAttendanceCenterPanel {
         return statusCol;
     }
     
-
+    /**
+     * Loads the list of students based on the selected course and section.
+     * Updates the provided list of students to reflect the changes.
+     *
+     * @param courseComboBox   The {@code ComboBox} containing the list of available courses.
+     * @param sectionComboBox  The {@code ComboBox} containing the list of available sections.
+     * @param students         The {@code ObservableList} of students to be updated with filtered data.
+     */
     private static void loadStudentsBasedOnSelection(ComboBox<String> courseComboBox,
             ComboBox<String> sectionComboBox,
             ObservableList<Student> students) {
@@ -344,6 +395,15 @@ System.err.println("Invalid combined format after split: " + selectedCombined);
 students.clear();
 }
 
+    /**
+     * Loads students enrolled in a specific course, program, and section into the provided list.
+     * Updates each student's attendance status for the current day.
+     *
+     * @param course    The name of the course for which to load students.
+     * @param program   The program name used for filtering students.
+     * @param section   The section name used for filtering students.
+     * @param students  The {@code ObservableList} to populate with the loaded student data.
+     */
     private static void loadStudents(String course, String program, String section, ObservableList<Student> students) {
         students.clear();
         List<Student> loadedStudents = DatabaseAttendance.getStudentsEnrolled(course, program, section);
@@ -362,6 +422,14 @@ students.clear();
         }
     }
 
+    /**
+     * Saves the attendance records for the provided list of students.
+     * The attendance is associated with a specific course and section.
+     *
+     * @param students        The {@code ObservableList} of students whose attendance will be saved.
+     * @param course          The name of the course for which attendance is being saved.
+     * @param combinedSection The combined section information used to identify the group of students.
+     */
     private static void saveAttendance(ObservableList<Student> students, String course, String combinedSection) {
         if (combinedSection == null || course == null) return;
 

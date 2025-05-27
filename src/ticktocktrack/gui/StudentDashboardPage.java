@@ -23,16 +23,39 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UserIconUpdate;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Represents the main dashboard page for a student user.
+ * It manages the primary stage, loads the student notifications,
+ * displays user profile icon, handles sidebar navigation,
+ * and manages different dashboard views.
+ */
 public class StudentDashboardPage extends Application {
 
+    /** The primary stage for the student dashboard window. */
     private Stage studentDashboardStage;
+
+    /** The central pane where dashboard content panels are loaded. */
     private Pane centerContentPane;
+
+    /** Pane responsible for displaying student notifications. */
     private StudentNotificationPane notificationPane;
+
+    /** Tracks the currently selected sidebar Text element for UI highlighting. */
     private Text selectedText;
+
+    /** ImageView displaying the user's profile icon. */
     private ImageView userIcon;
+
+    /** Text element related to submitting attendance excuses or requests. */
     private Text submitExcuseText;
 
-
+    /**
+     * Entry point for the JavaFX application.
+     * Initializes the primary stage, applies the application icon,
+     * and sets up the student dashboard UI.
+     * 
+     * @param primaryStage the primary stage provided by the JavaFX runtime
+     */
     @Override
     public void start(Stage primaryStage) {
         this.studentDashboardStage = primaryStage;
@@ -388,6 +411,10 @@ public class StudentDashboardPage extends Application {
         
     }
 
+    /**
+     * Loads and sets the current user's profile icon into the userIcon ImageView.
+     * If no custom profile image is found, sets a default admin user icon instead.
+     */
     public void loadUserIcon() {
         Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
         if (profileImage != null) {
@@ -398,10 +425,14 @@ public class StudentDashboardPage extends Application {
         }
     }
 
- // Profile Functions
+    /**
+     * Handles the event when the profile icon is clicked.
+     * Opens the UserProfile window and reloads the user icon upon closing.
+     *
+     * @param event the mouse event triggered by clicking the profile icon
+     */
     private void onProfileClicked(MouseEvent event) {
         System.out.println("Profile clicked");
-
         try {
             // Open the UserProfile window and pass a callback to reload the icon after profile updates
             UserProfile userProfileWindow = new UserProfile(() -> {
@@ -417,10 +448,21 @@ public class StudentDashboardPage extends Application {
 
   
 
+    /**
+     * Handles the logout action triggered by clicking the logout button or text.
+     * Logs out the current user session and navigates back to the home screen.
+     *
+     * @param event the mouse event triggered by clicking logout
+     */
     private void onLogoutClicked(MouseEvent event) {
         Session.logoutAndGoHome(studentDashboardStage);
     }
 
+    /**
+     * Highlights the newly selected sidebar Text element and resets the previous selection's color.
+     *
+     * @param newSelectedText the Text node to be highlighted as selected
+     */
     private void selectSidebarText(Text newSelectedText) {
         if (selectedText != null && selectedText != newSelectedText) {
             selectedText.setFill(Color.web("#02383E")); // Reset old
@@ -431,7 +473,9 @@ public class StudentDashboardPage extends Application {
         }
     }
 
-
+    /**
+     * Clears any highlights on the sidebar Text elements by resetting the selected text's color.
+     */
     @SuppressWarnings("unused")
     private void clearSidebarHighlights() {
         if (selectedText != null) {
@@ -440,6 +484,14 @@ public class StudentDashboardPage extends Application {
         }
     }
 
+
+    /**
+     * Handles the event when the Dashboard sidebar item is clicked.
+     * Highlights the clicked item, clears the center content pane,
+     * and loads the student dashboard panel.
+     *
+     * @param event the mouse event triggered by clicking the dashboard
+     */
     private void onDashboardClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource());
@@ -448,6 +500,13 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
 
+    /**
+     * Handles the event when the "View My Attendance" sidebar item is clicked.
+     * Highlights the clicked item, clears the center content pane,
+     * and loads the attendance viewing panel for the student.
+     *
+     * @param event the mouse event triggered by clicking the "View My Attendance" option
+     */
     private void onViewMyAttendanceClicked(MouseEvent event) {
         System.out.println("View My Attendance clicked!");
         selectSidebarText((Text) event.getSource());
@@ -458,7 +517,11 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(attendancePanel);
     }
 
-
+    /**
+     * Handles the event when the "Attendance Status" sidebar item is clicked.
+     *
+     * @param event the mouse event triggered by clicking the attendance status option
+     */
     private void onAttendanceStatusClicked(MouseEvent event) {
         System.out.println("Attendance Status clicked!");
         selectSidebarText((Text) event.getSource());
@@ -477,10 +540,16 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(statusPanel);
     }
 
+    /**
+     * Handles the event when the "Submit Excuse" sidebar item is clicked.
+     * Clears the center content pane, verifies that a student is logged in,
+     * and loads the submit excuse panel for the current student.
+     *
+     * @param event the mouse event triggered by clicking the "Submit Excuse" option
+     */
     private void onSubmitExcuseClicked(MouseEvent event) {
         System.out.println("Submit Excuse clicked!");
 
-        
         centerContentPane.getChildren().clear();
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null) {
@@ -495,10 +564,13 @@ public class StudentDashboardPage extends Application {
         Pane excusePanel = StudentSubmitExcuseCenterPanel.createPanel(studentId);
         centerContentPane.getChildren().add(excusePanel);
     }
-    
+
+    /**
+     * Opens the submit excuse panel, typically called when navigating
+     * from a notification related to excuses.
+     */
     public void openSubmitExcuseFromNotification() {
         System.out.println("Opening Submit Excuse from notification...");
-
         selectSidebarText(submitExcuseText);
 
 
@@ -521,6 +593,13 @@ public class StudentDashboardPage extends Application {
 
 
     
+    /**
+     * Handles the click event for the "Individual Report" sidebar text.
+     * Clears the center content pane and loads the individual report panel
+     * for the currently logged-in student.
+     *
+     * @param event the mouse event triggered by clicking the "Individual Report" text
+     */
     private void onstudentIndividualReportTextClicked(MouseEvent event) {
         System.out.println("Individual Report clicked!");
         selectSidebarText((Text) event.getSource());
@@ -539,6 +618,11 @@ public class StudentDashboardPage extends Application {
         centerContentPane.getChildren().add(excusePanel);
     }
 
+    /**
+     * Launches the JavaFX application.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
