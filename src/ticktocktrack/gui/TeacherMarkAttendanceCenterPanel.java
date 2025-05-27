@@ -110,29 +110,47 @@ public class TeacherMarkAttendanceCenterPanel {
         VBox centerVBox = new VBox(10);
         centerVBox.setPadding(new Insets(20, 50, 20, 50));
         
-      
         HBox searchCourseBox = new HBox(20);
         searchCourseBox.setPadding(new Insets(1, 0, 10, 4));
         searchCourseBox.setAlignment(Pos.CENTER_LEFT);
 
         TextField searchField = new TextField();
         searchField.setPromptText("Search Student");
-        searchField.setPrefWidth(350);
+        searchField.setPrefWidth(300);
         searchField.setStyle("-fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 20px;");
 
         ComboBox<String> courseComboBox = new ComboBox<>();
-        courseComboBox.setPrefWidth(200);
-        courseComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
+        courseComboBox.setPrefWidth(210);
+        courseComboBox.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8;" +
+            "-fx-background-color: white;" +   // Light blue background
+            "-fx-border-color: #00796b;" +      // Teal border
+            "-fx-text-fill: #004d40;" +      // Dark teal text
+            "-fx-background-radius: 10;" +      // Rounded background corners
+            "-fx-border-radius: 10;"
+        );
         courseComboBox.getItems().addAll(courseSectionsMap.keySet());
-
+        
+        
         ComboBox<String> sectionComboBox = new ComboBox<>();
-        sectionComboBox.setPrefWidth(120);
-        sectionComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
+        sectionComboBox.setPrefWidth(255);
+        sectionComboBox.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-padding: 8;" +
+                "-fx-background-color: white;" +   // Light blue background
+                "-fx-border-color: #00796b;" +      // Teal border
+                "-fx-text-fill: #004d40;" +      // Dark teal text
+                "-fx-background-radius: 10;" +      // Rounded background corners
+                "-fx-border-radius: 10;"
+       );
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Button saveAttendanceButton = new Button("Save Attendance");
+        Button saveAttendanceButton = new Button("Save");
+        saveAttendanceButton.setPrefWidth(75);
+       
         saveAttendanceButton.setStyle(
             "-fx-font-size: 14px; " +
             "-fx-padding: 8 20; " +
@@ -335,21 +353,76 @@ public class TeacherMarkAttendanceCenterPanel {
 
         ObservableList<String> statusOptions = FXCollections.observableArrayList(
             "Present", "Excused", "Late", "Absent", "Pending"
-        	);
-        // Use ComboBoxTableCell to allow selection from predefined statuses
-        statusCol.setCellFactory(ComboBoxTableCell.forTableColumn(statusOptions));
+        );
+
+        statusCol.setCellFactory(col -> new TableCell<Student, String>() {
+            private final ComboBox<String> comboBox = new ComboBox<>(statusOptions);
+
+            {
+                // Add inline style to ComboBox to make it look modern
+                comboBox.setStyle(
+                    "-fx-background-color: white;" +       // White background
+                    "-fx-border-color: #3498db;" +         // Blue border
+                    "-fx-border-radius: 6;" +              // Rounded corners
+                    "-fx-background-radius: 6;" +
+                    "-fx-padding: 3 10 3 10;" +            // Padding inside ComboBox
+                    "-fx-font-size: 14px;"                 // Font size
+                );
+
+                // Commit edit on selection
+                comboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+                    if (isEditing() && newVal != null) {
+                        commitEdit(newVal);
+                    }
+                });
+            }
+
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                comboBox.setValue(getItem());
+                setGraphic(comboBox);
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                comboBox.show();
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (isEditing()) {
+                        comboBox.setValue(item);
+                        setGraphic(comboBox);
+                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                    } else {
+                        setText(item);
+                        setContentDisplay(ContentDisplay.TEXT_ONLY);
+                    }
+                }
+            }
+        });
+
         statusCol.setEditable(true);
 
-        // When edit is committed, update the Student object's status property
+        // Update Student status when edit commits
         statusCol.setOnEditCommit(event -> {
             Student student = event.getRowValue();
-            String newStatus = event.getNewValue();
-            student.setStatus(newStatus);
-            // Optionally, refresh the table or persist the change immediately if you want
+            student.setStatus(event.getNewValue());
         });
 
         return statusCol;
     }
+
     
     /**
      * Loads the list of students based on the selected course and section.
