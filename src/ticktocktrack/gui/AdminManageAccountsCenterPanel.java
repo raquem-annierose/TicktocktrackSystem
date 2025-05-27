@@ -85,8 +85,9 @@ public class AdminManageAccountsCenterPanel {
         
 
         // Role title label
-        Label roleTitleLabel = new Label("Manage Accounts");
-        roleTitleLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
+        Label roleTitleLabel = new Label("MANAGE ACCOUNTS");
+        roleTitleLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        roleTitleLabel.setStyle("-fx-text-fill: #BA8200;");
         roleTitleLabel.setLayoutX(10);
         roleTitleLabel.setLayoutY(35);
 
@@ -346,18 +347,34 @@ public class AdminManageAccountsCenterPanel {
 
                 deleteButton.setOnAction(e -> {
                     UsersModel selectedUser = getTableView().getItems().get(getIndex());
+
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                     alert.setTitle("Confirm Deletion");
                     alert.setHeaderText("Delete User");
                     alert.setContentText("Are you sure you want to delete user: " + selectedUser.getUsername() + "?");
 
+                    DialogPane dialogPane = alert.getDialogPane();
+                    dialogPane.getStylesheets().add(getClass().getResource("/resources/css/alert-dialog.css").toExternalForm());
+                    dialogPane.getStyleClass().add("dialog-pane");
+
                     Optional<ButtonType> result = alert.showAndWait();
                     if (result.isPresent() && result.get() == ButtonType.OK) {
                         boolean deleted = UserDAO.deleteUserById(selectedUser.getUserId());
+
                         if (deleted) {
                             getTableView().getItems().remove(selectedUser);
+
+                            Alert success = new Alert(Alert.AlertType.INFORMATION);
+                            success.setTitle("Deleted");
+                            success.setHeaderText(null);
+                            success.setContentText("User '" + selectedUser.getUsername() + "' has been successfully deleted.");
+                            success.showAndWait();
                         } else {
-                            new Alert(Alert.AlertType.ERROR, "Failed to delete user.").showAndWait();
+                            Alert failure = new Alert(Alert.AlertType.ERROR);
+                            failure.setTitle("Error");
+                            failure.setHeaderText("Deletion Failed");
+                            failure.setContentText("Could not delete the user. Please try again.");
+                            failure.showAndWait();
                         }
                     }
                 });

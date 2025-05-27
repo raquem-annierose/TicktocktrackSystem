@@ -43,10 +43,10 @@ public class AdminCreateUsersCenterPanel {
         shadowView.setLayoutY(-115);
 
         // Title
-        Text createUsersTitle = new Text("Create Users");
-        createUsersTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        createUsersTitle.setFill(Color.web("#02383E"));
-        createUsersTitle.setLayoutX(50);
+        Text createUsersTitle = new Text("WHO ARE YOU CREATING TODAY?");
+        createUsersTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        createUsersTitle.setFill(Color.web("#BA8200"));
+        createUsersTitle.setLayoutX(350);
         createUsersTitle.setLayoutY(70);
 
         // Faculty Pane

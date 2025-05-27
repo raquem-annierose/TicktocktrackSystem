@@ -103,8 +103,9 @@ public class AdminViewAllUsersCenterPanel {
 
 
      // Title label for current role
-        Label roleTitleLabel = new Label("View Users Table");
-        roleTitleLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 30));
+        Label roleTitleLabel = new Label("LIST OF USERS");
+        roleTitleLabel.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        roleTitleLabel.setStyle("-fx-text-fill: #BA8200;");
         roleTitleLabel.setLayoutX(10);
         roleTitleLabel.setLayoutY(35);
         
