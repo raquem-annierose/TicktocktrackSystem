@@ -163,6 +163,7 @@ public class TeacherMarkAttendanceCenterPanel {
             if (newVal != null) {
                 Set<String> combinedSections = courseSectionsMap.get(newVal);
                 if (combinedSections != null) {
+                	sectionComboBox.getItems().clear(); //to prevent duplications
                     sectionComboBox.getItems().addAll(combinedSections);
                     sectionComboBox.getSelectionModel().selectFirst();
                 }
