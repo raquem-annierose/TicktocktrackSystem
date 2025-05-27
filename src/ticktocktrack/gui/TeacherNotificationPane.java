@@ -131,10 +131,7 @@ public class TeacherNotificationPane {
         }
     }
 
-    
-    public void addNotification(String message, LocalDateTime dateSent, String status) {
-        addNotification(message, dateSent, status, 0); // default senderUserId
-    }
+   
 
     public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
         Notification note = new Notification(message, dateSent, status, senderUserId);
@@ -303,95 +300,37 @@ public class TeacherNotificationPane {
         acceptButton.setCursor(Cursor.HAND);
         acceptButton.setOnAction(e -> {
             int senderUserId = note.getSenderUserId();
-            System.out.println("Sender UserId: " + senderUserId);
-
-            if (senderUserId <= 0) {
-                System.out.println("Invalid sender userId from notification.");
-                new Alert(Alert.AlertType.ERROR, "Invalid sender user ID in the notification.").showAndWait();
-                return;
-            }
-
-            // Verify senderUserId corresponds to a student
-            if (!TeacherApproval.isUserStudent(senderUserId)) {
-                System.out.println("UserId " + senderUserId + " is not a student.");
-                new Alert(Alert.AlertType.ERROR, "Notification sender is not a student.").showAndWait();
-                return;
-            }
-
             int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
-            if (studentId == -1) {
-                System.out.println("Could not resolve student from sender userId: " + senderUserId);
-                new Alert(Alert.AlertType.ERROR, "Cannot find student linked to this notification sender.").showAndWait();
-                return;
-            }
-            System.out.println("Resolved studentId: " + studentId);
 
-            // Parse message fields
             String fullMessage = note.getMessage();
             String dateString;
             String reason;
             String courseName;
 
-            try {
-                int dateKeywordIndex = fullMessage.indexOf("for ");
-                int dateStart = dateKeywordIndex + 4;
-                int dateEnd = fullMessage.indexOf(" in course", dateStart);
-                dateString = fullMessage.substring(dateStart, dateEnd).trim();
+            int dateKeywordIndex = fullMessage.indexOf("for ");
+            int dateStart = dateKeywordIndex + 4;
+            int dateEnd = fullMessage.indexOf(" in course", dateStart);
+            dateString = fullMessage.substring(dateStart, dateEnd).trim();
 
-                LocalDate.parse(dateString);
+            int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
+            int courseEnd = fullMessage.indexOf(":", courseStart);
+            courseName = fullMessage.substring(courseStart, courseEnd).trim();
 
-                int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
-                int courseEnd = fullMessage.indexOf(":", courseStart);
-                courseName = fullMessage.substring(courseStart, courseEnd).trim();
+            int lastColonIndex = fullMessage.lastIndexOf(":");
+            reason = fullMessage.substring(lastColonIndex + 1).trim();
 
-                // Just take everything after the last colon (:) as reason text
-                int lastColonIndex = fullMessage.lastIndexOf(":");
-                reason = fullMessage.substring(lastColonIndex + 1).trim();
+            int teacherId = TeacherApproval.getTeacherIdByUserId(Session.getCurrentUser().getUserId());
 
-            } catch (Exception ex) {
-                System.out.println("Failed to parse date/course/reason: " + ex.getMessage());
-                new Alert(Alert.AlertType.ERROR, "Failed to parse excuse details from notification message.").showAndWait();
-                return;
-            }
-
-
-
-            System.out.println("Parsed details -> Date: " + dateString + ", Course: " + courseName + ", Reason: " + reason);
-
-            // Get enrollment ID
-            int enrollmentId = TeacherApproval.getEnrollmentId(studentId, courseName);
-            if (enrollmentId == -1) {
-                System.out.println("Enrollment not found for student " + studentId + " and course " + courseName);
-                new Alert(Alert.AlertType.ERROR, "Enrollment not found for this student and course.").showAndWait();
-                return;
-            }
-
-            // Get current teacher ID from logged-in user ID (recipient_id)
-            int currentUserId = Session.getCurrentUser().getUserId();
-            int teacherId = TeacherApproval.getTeacherIdByUserId(currentUserId);
-
-            if (teacherId == -1) {
-                System.out.println("Current user is not a teacher or teacher ID not found.");
-                new Alert(Alert.AlertType.ERROR, "You must be logged in as a teacher to approve excuses.").showAndWait();
-                return;
-            }
-
-            // Approve excuse and update attendance table
             boolean success = TeacherApproval.approveExcuse(studentId, courseName, dateString, reason, teacherId);
 
             if (success) {
-                System.out.println("Attendance updated to Excused.");
                 new Alert(Alert.AlertType.INFORMATION, "Excuse approved and attendance updated.").showAndWait();
-
-                // Send notification to student that excuse is accepted
                 StudentNotificationDAO.sendExcuseAcceptedNotification(studentId, courseName, LocalDate.parse(dateString));
-            } else {
-                // ...
             }
-
 
             closePopup(dimOverlay);
         });
+
 
         // Reject button
         Button rejectButton = new Button("Reject");
@@ -409,84 +348,28 @@ public class TeacherNotificationPane {
         rejectButton.setCursor(Cursor.HAND);
         rejectButton.setOnAction(e -> {
             int senderUserId = note.getSenderUserId();
-            System.out.println("Sender UserId: " + senderUserId);
-
-            if (senderUserId <= 0) {
-                System.out.println("Invalid sender userId from notification.");
-                new Alert(Alert.AlertType.ERROR, "Invalid sender user ID in the notification.").showAndWait();
-                return;
-            }
-
-            // Verify senderUserId corresponds to a student
-            if (!TeacherApproval.isUserStudent(senderUserId)) {
-                System.out.println("UserId " + senderUserId + " is not a student.");
-                new Alert(Alert.AlertType.ERROR, "Notification sender is not a student.").showAndWait();
-                return;
-            }
-
             int studentId = TeacherApproval.getStudentIdByUserId(senderUserId);
-            if (studentId == -1) {
-                System.out.println("Could not resolve student from sender userId: " + senderUserId);
-                new Alert(Alert.AlertType.ERROR, "Cannot find student linked to this notification sender.").showAndWait();
-                return;
-            }
-            System.out.println("Resolved studentId: " + studentId);
 
-            // Parse message fields
             String fullMessage = note.getMessage();
             String dateString;
             String courseName;
 
-            try {
-                int dateKeywordIndex = fullMessage.indexOf("for ");
-                int dateStart = dateKeywordIndex + 4;
-                int dateEnd = fullMessage.indexOf(" in course", dateStart);
-                dateString = fullMessage.substring(dateStart, dateEnd).trim();
+            int dateKeywordIndex = fullMessage.indexOf("for ");
+            int dateStart = dateKeywordIndex + 4;
+            int dateEnd = fullMessage.indexOf(" in course", dateStart);
+            dateString = fullMessage.substring(dateStart, dateEnd).trim();
 
-                // Validate date format
-                LocalDate.parse(dateString);
+            int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
+            int courseEnd = fullMessage.indexOf(":", courseStart);
+            courseName = fullMessage.substring(courseStart, courseEnd).trim();
 
-                int courseStart = fullMessage.indexOf(" in course", dateEnd) + " in course".length();
-                int courseEnd = fullMessage.indexOf(":", courseStart);
-                courseName = fullMessage.substring(courseStart, courseEnd).trim();
+            int teacherId = TeacherApproval.getTeacherIdByUserId(Session.getCurrentUser().getUserId());
 
-            } catch (Exception ex) {
-                System.out.println("Failed to parse date/course: " + ex.getMessage());
-                new Alert(Alert.AlertType.ERROR, "Failed to parse excuse details from notification message.").showAndWait();
-                return;
-            }
-
-            System.out.println("Parsed details -> Date: " + dateString + ", Course: " + courseName);
-
-            // Get enrollment ID
-            int enrollmentId = TeacherApproval.getEnrollmentId(studentId, courseName);
-            if (enrollmentId == -1) {
-                System.out.println("Enrollment not found for student " + studentId + " and course " + courseName);
-                new Alert(Alert.AlertType.ERROR, "Enrollment not found for this student and course.").showAndWait();
-                return;
-            }
-
-            // Get current teacher ID from logged-in user ID (recipient_id)
-            int currentUserId = Session.getCurrentUser().getUserId();
-            int teacherId = TeacherApproval.getTeacherIdByUserId(currentUserId);
-
-            if (teacherId == -1) {
-                System.out.println("Current user is not a teacher or teacher ID not found.");
-                new Alert(Alert.AlertType.ERROR, "You must be logged in as a teacher to reject excuses.").showAndWait();
-                return;
-            }
-
-            // Reject excuse (mark absent)
             boolean success = TeacherApproval.rejectExcuse(studentId, courseName, dateString, teacherId);
 
             if (success) {
-                System.out.println("Excuse rejected and marked as Absent.");
                 new Alert(Alert.AlertType.INFORMATION, "Excuse rejected and attendance marked as absent.").showAndWait();
                 StudentNotificationDAO.sendExcuseRejectedNotification(studentId, courseName, LocalDate.parse(dateString));
-
-            } else {
-                System.out.println("Failed to reject excuse.");
-                new Alert(Alert.AlertType.ERROR, "Failed to update attendance record.").showAndWait();
             }
 
             closePopup(dimOverlay);

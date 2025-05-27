@@ -148,11 +148,6 @@
 	    }
 
 	
-	 // Original method with no senderUserId; calls overloaded method with default senderUserId = 0
-	    public void addNotification(String message, LocalDateTime dateSent, String status) {
-	        addNotification(message, dateSent, status, 0); // default senderUserId
-	    }
-	
 	    // New overloaded method with senderUserId parameter
 	    public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
 	        Notification note = new Notification(message, dateSent, status, senderUserId);
