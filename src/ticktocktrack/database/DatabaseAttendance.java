@@ -17,48 +17,6 @@ import ticktocktrack.logic.UsersModel;
  * attendance tracking functionality for teachers and students.
  */
 public class DatabaseAttendance {
-
-    /**
-     * Retrieves a list of courses, sections, and programs taught by a specific teacher.
-     * 
-     * @param teacherId the ID of the teacher
-     * @return List of String arrays, each containing course name, section, and program
-     */
-    public static List<String[]> getTeacherCoursesSections(int teacherId) {
-        List<String[]> courses = new ArrayList<>();
-        DatabaseConnection dbConn = new DatabaseConnection();
-
-        try {
-            dbConn.connectToSQLServer();
-            Connection conn = dbConn.getConnection();
-
-            String sql = "SELECT DISTINCT course_name, section, program " +
-                         "FROM Classes " +
-                         "WHERE teacher_id = ? " +
-                         "ORDER BY course_name, section";
-
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, teacherId);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            while (rs.next()) {
-                String courseName = rs.getString("course_name");
-                String section = rs.getString("section");
-                String program = rs.getString("program");
-                if (program == null) program = "N/A";
-
-                courses.add(new String[] { courseName, section, program });
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error fetching teacher courses and sections: " + e.getMessage());
-        } finally {
-            dbConn.closeConnection();
-        }
-
-        return courses;
-    }
     
     /**
      * Retrieves an array of CourseInfo objects representing courses taught by a teacher.
@@ -100,49 +58,6 @@ public class DatabaseAttendance {
         }
 
         return courseInfoList.toArray(new CourseInfo[0]);
-    }
-
-    /**
-     * Gets a list of students enrolled in a given program and section.
-     * 
-     * @param program the program name
-     * @param section the section name
-     * @return list of Student objects
-     */
-    public static List<Student> getStudentsByProgramSection(String program, String section) {
-        List<Student> students = new ArrayList<>();
-        DatabaseConnection dbConn = new DatabaseConnection();
-
-        String sql = "SELECT student_id, last_name, first_name, middle_name FROM Students " +
-                     "WHERE program = ? AND section = ? ORDER BY last_name, first_name";
-
-        try {
-            dbConn.connectToSQLServer();
-            try (Connection conn = dbConn.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-                pstmt.setString(1, program);
-                pstmt.setString(2, section);
-
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    while (rs.next()) {
-                        int studentId = rs.getInt("student_id");
-                        String lastName = rs.getString("last_name");
-                        String firstName = rs.getString("first_name");
-                        String middleName = rs.getString("middle_name");
-
-                        Student student = new Student(studentId, lastName, firstName, middleName, "", "Pending", "");
-                        students.add(student);
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            dbConn.closeConnection();
-        }
-
-        return students;
     }
 
     /**

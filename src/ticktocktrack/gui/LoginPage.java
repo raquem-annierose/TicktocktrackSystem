@@ -25,6 +25,7 @@ public class LoginPage extends Application {
     public void start(Stage primaryStage) {
         // Initialize the Login object
         loginLogic = new Login();  // Create an instance of Login
+        IconHelper.applyIcon(primaryStage);
 
         // Path to your image
         String LoginPagePath = getClass().getResource("/resources/LOGIN.png").toExternalForm();

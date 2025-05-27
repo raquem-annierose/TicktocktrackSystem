@@ -104,6 +104,10 @@ public class HomePage extends Application {
         // Optional: set starting window position
         primaryStage.setX(130);
         primaryStage.setY(25);
+        
+
+        // APPLY ICON HERE
+        IconHelper.applyIcon(primaryStage);
 
         primaryStage.show();
     }

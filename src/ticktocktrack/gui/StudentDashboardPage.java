@@ -36,6 +36,7 @@ public class StudentDashboardPage extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.studentDashboardStage = primaryStage;
+        IconHelper.applyIcon(primaryStage);
 
         // Retrieve current user
         UsersModel currentUser = Session.getCurrentUser();

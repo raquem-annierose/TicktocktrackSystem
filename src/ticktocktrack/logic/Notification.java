@@ -9,6 +9,7 @@
 	 * and the sender's profile path.
 	 */
 	public class Notification {
+	    private int notificationId; 
 	    
 	    /** The message content of the notification. */
 	    private String message;
@@ -34,7 +35,8 @@
 	     * @param senderUserId The user ID of the sender.
 	     */
 	    public Notification(String message, LocalDateTime dateSent, String status, int senderUserId) {
-	        this.message = message;
+	    	this.notificationId = notificationId;
+	    	this.message = message;
 	        this.dateSent = dateSent;
 	        this.status = status;
 	        this.senderUserId = senderUserId;
@@ -119,6 +121,14 @@
 	     */
 	    public void setSenderProfilePath(String senderProfilePath) {
 	        this.senderProfilePath = senderProfilePath;
+	    }
+	    
+	    public int getNotificationId() {
+	        return notificationId;
+	    }
+	    
+	    public void setNotificationId(int notificationId) {
+	        this.notificationId = notificationId;
 	    }
 
 	}
