@@ -5,11 +5,13 @@
 	import java.time.format.DateTimeFormatter;
 
 	/**
-	 * Represents a notification with a message, timestamp, status, sender information,
+	 * Represents a notification with a unique identifier, message, timestamp, status, sender information,
 	 * and the sender's profile path.
 	 */
 	public class Notification {
-	    private int notificationId; 
+	    
+	    /** The unique identifier for the notification. */
+	    private int notificationId;
 	    
 	    /** The message content of the notification. */
 	    private String message;
@@ -123,10 +125,20 @@
 	        this.senderProfilePath = senderProfilePath;
 	    }
 	    
+	    /**
+	     * Retrieves the unique identifier of the notification.
+	     *
+	     * @return The notification's unique identifier.
+	     */
 	    public int getNotificationId() {
 	        return notificationId;
 	    }
-	    
+
+	    /**
+	     * Sets the unique identifier for the notification.
+	     *
+	     * @param notificationId The unique identifier to set for the notification.
+	     */
 	    public void setNotificationId(int notificationId) {
 	        this.notificationId = notificationId;
 	    }
