@@ -17,18 +17,39 @@ import ticktocktrack.logic.ViewClassList;
 
 import java.util.List;
 
+/**
+ * A panel that displays the list of classes associated with a teacher. 
+ * Provides pagination and layout for class cards.
+ */
 public class TeacherViewClassListCenterPanel {
 
-	private static Pane centerPanel;
+    /** The central pane that contains the class list panel. */
+    private static Pane centerPanel;
+
+    /** The VBox container that holds rows of class cards. */
     private static VBox classListPanel;
+
+    /** Tracks the current page being displayed in the paginated list. */
     private static int currentPage = 0;
+
+    /** The maximum number of rows displayed per page. */
     private static final int ROWS_PER_PAGE = 3;
+
+    /** The maximum number of columns per row of class cards. */
     private static final int COLUMNS_PER_ROW = 3;
+
+    /** The ID of the teacher whose classes are displayed. */
     private static int teacherId;
 
- // Call this method to create the entire panel
+    /**
+     * Creates the entire panel for viewing a teacher's class list.
+     *
+     * @param teacherId the ID of the teacher whose classes will be displayed.
+     * @return a {@link Pane} containing the class list interface.
+     */
     public static Pane createPanel(int teacherId) {
-    	TeacherViewClassListCenterPanel.teacherId = teacherId; // assign here
+        // Assign the provided teacher ID to the static field
+        TeacherViewClassListCenterPanel.teacherId = teacherId;
     	centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
         centerPanel.setStyle("-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1px;");
@@ -40,6 +61,10 @@ public class TeacherViewClassListCenterPanel {
         return centerPanel;
     }
     
+    /**
+     * Adds a shadow image to the center panel.
+     * This enhances the visual design of the panel with a shadow effect.
+     */
     private static void addShadowImage() {
         String shadowPath = TeacherViewClassListCenterPanel.class.getResource("/resources/SHADOW.png").toExternalForm();
         ImageView shadowView = new ImageView(new Image(shadowPath));
@@ -50,6 +75,10 @@ public class TeacherViewClassListCenterPanel {
         centerPanel.getChildren().add(shadowView);
     }
 
+    /**
+     * Adds a title to the center panel.
+     * The title is styled and positioned to align with the panel's design.
+     */
     private static void addTitle() {
         Text title = new Text("View Class List");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
@@ -60,19 +89,28 @@ public class TeacherViewClassListCenterPanel {
         centerPanel.getChildren().add(title);
     }
 
+    /**
+     * Adds the class list panel to the center panel.
+     * Initializes the {@link VBox} container for displaying the class list and
+     * updates its content based on the teacher's ID.
+     */
     private static void addClassListPanel() {
-        classListPanel = new VBox(20);
+        classListPanel = new VBox(20); // 20px spacing between class rows
         classListPanel.setLayoutX(50);
         classListPanel.setLayoutY(130);
 
+        // Populate the class list panel with data for the specified teacher
         updateClassListPanel(teacherId);
-
-        
     }
-    
- 
-    // Call this to refresh the class list display with pagination
 
+
+    /**
+     * Updates the class list panel with the classes associated with the specified teacher.
+     * This method fetches and displays the teacher's classes, formatted into rows
+     * and columns for better readability and navigation.
+     *
+     * @param teacherId the ID of the teacher whose class list is to be displayed
+     */
     public static void updateClassListPanel(int teacherId) {
         classListPanel.getChildren().clear();
 
@@ -112,6 +150,15 @@ public class TeacherViewClassListCenterPanel {
 
 
 
+    /**
+     * Creates a visual representation of a course in the form of a VBox.
+     * The box contains details about the course such as its name, section, and program.
+     * 
+     * @param courseName the name of the course
+     * @param section the section associated with the course
+     * @param program the program to which the course belongs
+     * @return a VBox containing the course's details, styled for display
+     */
     private static VBox createCourseBox(String courseName, String section, String program) {
         VBox courseBox = new VBox(10);
         courseBox.setStyle( "-fx-padding: 15px;" +
@@ -141,6 +188,17 @@ public class TeacherViewClassListCenterPanel {
         return courseBox;
     }
 
+    /**
+     * Creates a button that allows the teacher to view the list of students
+     * enrolled in a specific course. The button triggers the display of
+     * detailed student information for the given course, section, and program.
+     * 
+     * @param courseName the name of the course
+     * @param section the section associated with the course
+     * @param program the program to which the course belongs
+     * @param teacherId the ID of the teacher viewing the student list
+     * @return a Button configured to display the list of students when clicked
+     */
     private static Button createViewStudentsButton(String courseName, String section, String program, int teacherId) {
         Button viewStudentsButton = new Button("View Students");
         viewStudentsButton.setStyle("-fx-background-color: #FFFFFF;" +  
@@ -155,6 +213,16 @@ public class TeacherViewClassListCenterPanel {
         return viewStudentsButton;
     }
 
+    /**
+     * Opens a panel displaying the list of students for a specific course and section.
+     * Initializes a new `TeacherViewClassStudents` panel and updates the center panel
+     * to show the student list.
+     *
+     * @param courseName the name of the course
+     * @param section the section associated with the course
+     * @param program the program to which the course belongs
+     * @param teacherId the ID of the teacher accessing the student list
+     */
     private static void openStudentList(String courseName, String section, String program, int teacherId) {
         int classId = 0;
         TeacherViewClassStudents panel =new TeacherViewClassStudents(courseName, section, program, teacherId);
@@ -163,16 +231,24 @@ public class TeacherViewClassListCenterPanel {
         TeacherViewClassListCenterPanel.updateCenterPanel(panel.getView());
     }
 
-
-
-
-
-    
+    /**
+     * Updates the main center panel with a new pane, replacing any existing content.
+     *
+     * @param newPanel the new pane to display in the center panel
+     */
     public static void updateCenterPanel(Pane newPanel) {
         centerPanel.getChildren().clear();
         centerPanel.getChildren().add(newPanel);
     }
 
+    /**
+     * Creates a button to allow editing of the course and section details.
+     * The button triggers an interface or dialog for modifying the course name and section.
+     *
+     * @param oldCourseName the current name of the course to be edited
+     * @param oldSection the current section of the course to be edited
+     * @return a Button configured to initiate the edit functionality
+     */
     private static Button createEditButton(String oldCourseName, String oldSection) {
         Button editButton = new Button("Edit");
         editButton.setStyle("-fx-background-color: #FFFFFF;" +  
@@ -187,7 +263,15 @@ public class TeacherViewClassListCenterPanel {
         return editButton;
     }
 
-
+    /**
+     * Creates a delete button for removing a specific course and its associated section.
+     * The button triggers a delete action when clicked, calling the `handleDeleteCourse`
+     * method in the `ViewClassList` class.
+     *
+     * @param courseName the name of the course to be deleted
+     * @param section the section of the course to be deleted
+     * @return a Button styled and configured to delete the specified course
+     */
     private static Button createDeleteButton(String courseName, String section) {
         Button deleteButton = new Button("Delete");
         deleteButton.setStyle("-fx-background-color: #FFFFFF;" +  
@@ -201,6 +285,13 @@ public class TeacherViewClassListCenterPanel {
         return deleteButton;
     }
 
+    /**
+     * Creates navigation buttons for paginating through the class list.
+     * The buttons allow the user to navigate between pages of courses based on the total number of courses.
+     *
+     * @param totalCourses the total number of courses available
+     * @return an HBox containing the navigation buttons
+     */
     private static HBox createNavButtons(int totalCourses) {
         HBox navButtons = new HBox(10);
         navButtons.setAlignment(Pos.CENTER);
@@ -221,12 +312,19 @@ public class TeacherViewClassListCenterPanel {
         return navButtons;
     }
 
-    // ==== Para ma-access ng logic ====
+    /**
+     * Increments the current page number and updates the class list panel.
+     * This method is used to navigate to the next page of courses.
+     */
     public static void incrementPage() {
         currentPage++;
         updateClassListPanel(teacherId);
     }
 
+    /**
+     * Decrements the current page number and updates the class list panel.
+     * This method is used to navigate to the previous page of courses.
+     */
     public static void decrementPage() {
         currentPage--;
         updateClassListPanel(teacherId);

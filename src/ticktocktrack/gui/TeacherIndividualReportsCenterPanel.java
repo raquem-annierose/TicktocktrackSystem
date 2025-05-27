@@ -25,8 +25,20 @@ import ticktocktrack.logic.CourseInfo;
 import ticktocktrack.logic.Student;
 
 
+/**
+ * This class provides the UI panel for displaying individual attendance reports
+ * for students under a specific teacher. It creates and manages the layout and
+ * components necessary to view detailed attendance information.
+ */
 public class TeacherIndividualReportsCenterPanel {
 
+    /**
+     * Creates and returns the main panel displaying individual attendance reports
+     * for the given teacher.
+     *
+     * @param teacherId the unique identifier of the teacher whose reports are to be shown
+     * @return a Pane containing the UI components for the individual reports view
+     */
     public static Pane createPanel(int teacherId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);

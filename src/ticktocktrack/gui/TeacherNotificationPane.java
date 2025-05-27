@@ -33,23 +33,75 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ * The TeacherNotificationPane class manages the notification UI components
+ * for a teacher user, including the notification popup, icon, and list of
+ * notifications. It handles displaying notifications and interaction logic.
+ */
 public class TeacherNotificationPane {
+
+    /** The ID of the teacher user. */
     private int userId;
+
+    /** Popup window that shows the list of notifications. */
     private Popup notificationPopup;
+
+    /** Icon image shown in the UI to represent notifications. */
     private ImageView notificationIcon;
+
+    /** Wrapper pane containing the notification icon for positioning. */
     private StackPane notificationIconWrapper;
+
+    /** Observable list holding all notifications for the user. */
     private ObservableList<Notification> notifications;
+
+    /** Container holding notification UI elements inside the popup. */
     private VBox notificationHolder;
+
+    /** The user ID of the sender of a notification. */
     private int senderUserId;
+
+    /** The message content of a notification. */
     private String message;
+
     
+    /**
+     * The number of notifications to load per page when fetching notifications.
+     */
     private static final int PAGE_SIZE = 3;
+
+    /**
+     * Offset tracking how many notifications have been loaded so far.
+     */
     private int notificationsOffset = 0;
+
+    /**
+     * Flag indicating whether all notifications have been loaded from the database.
+     */
     private boolean allNotificationsLoaded = false;
 
-    public int getSenderUserId() { return senderUserId; }
-    public String getMessage() { return message; }
+    /**
+     * Gets the user ID of the sender of the notification.
+     * 
+     * @return the sender user ID
+     */
+    public int getSenderUserId() {
+        return senderUserId;
+    }
 
+    /**
+     * Gets the message content of the notification.
+     * 
+     * @return the notification message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Constructs a new TeacherNotificationPane, initializing the notification UI components
+     * and data structures.
+     */
     public TeacherNotificationPane() {
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null) {
@@ -111,6 +163,11 @@ public class TeacherNotificationPane {
         });
     }
 
+    /**
+     * Loads notifications for the current user from the database in pages.
+     * If all notifications have already been loaded, this method returns immediately.
+     * Newly loaded notifications are added to the internal list and UI.
+     */
     private void loadNotificationsFromDatabase() {
         if (allNotificationsLoaded) {
             return; // no more notifications to load
@@ -131,16 +188,27 @@ public class TeacherNotificationPane {
         }
     }
 
-   
-
+    /**
+     * Adds a new notification to the notifications list and updates the UI.
+     * 
+     * @param message the notification message content
+     * @param dateSent the date and time when the notification was sent
+     * @param status the status of the notification (e.g., "unread", "read")
+     * @param senderUserId the user ID of the sender of this notification
+     */
     public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
         Notification note = new Notification(message, dateSent, status, senderUserId);
         notifications.add(note);
         addNotificationToHolder(note);
     }
 
+    /**
+     * Adds a notification UI element to the notification holder pane.
+     * 
+     * @param note the Notification object to be added to the UI list
+     */
     private void addNotificationToHolder(Notification note) {
-        int senderUserId = note.getSenderUserId(); // use 'note' not 'notification'
+        int senderUserId = note.getSenderUserId();
 
         // Try to get the sender's profile path from the database
         String profilePath = StudentNotificationDAO.getUserProfilePath(senderUserId);
@@ -196,12 +264,24 @@ public class TeacherNotificationPane {
         notificationHolder.getChildren().add(box);
     }
     
+    /**
+     * Returns a default user icon as an ImageView.
+     * The icon image is loaded from the resources folder.
+     *
+     * @return ImageView containing the default user icon with size 50x50 pixels
+     */
     private ImageView getDefaultIcon() {
         String iconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
         return new ImageView(new Image(iconPath, 50, 50, true, true));
     }
-
-
+    
+    /**
+     * Adds a hover effect to the given notification box.
+     * Typically used to highlight or change appearance when mouse hovers over the notification.
+     *
+     * @param box the HBox representing the notification UI element
+     * @param notificationId the unique identifier of the notification (for event handling)
+     */
     private void addHoverEffect(HBox box, int notificationId) {
         // Create the button with the image, but don't add it yet
     	String btnImagePath = getClass().getResource("/resources/others_button.png").toExternalForm();
@@ -259,6 +339,12 @@ public class TeacherNotificationPane {
         });
     }
 
+    /**
+     * Displays a detailed popup for the given notification.
+     * This popup typically shows more information or actions related to the notification.
+     *
+     * @param note the Notification object whose details are to be displayed
+     */
     private void showDetailedNotificationPopup(Notification note) {
         if (notificationPopup.isShowing()) {
             notificationPopup.hide();
@@ -431,7 +517,14 @@ public class TeacherNotificationPane {
         }
     }
 
-    // Helper method to insert newlines every 'lineLength' characters without breaking words
+    /**
+     * Helper method to insert newlines into the given text every 'lineLength' characters,
+     * ensuring that words are not broken across lines.
+     *
+     * @param text       the original text to wrap
+     * @param lineLength the maximum number of characters per line
+     * @return the text with newline characters inserted appropriately
+     */
     private String wrapText(String text, int lineLength) {
         if (text == null) return "";
         StringBuilder wrapped = new StringBuilder();
@@ -452,6 +545,12 @@ public class TeacherNotificationPane {
     }
 
 
+    /**
+     * Closes the notification popup by removing the given dim overlay from the scene graph.
+     * It searches the root StackPane's children for any StackPane containing the dimOverlay and removes it.
+     *
+     * @param dimOverlay the dim overlay StackPane to be removed from the scene
+     */
     private void closePopup(StackPane dimOverlay) {
         Scene scene = notificationIconWrapper.getScene();
         if (scene != null && scene.getRoot() instanceof StackPane) {
@@ -460,9 +559,48 @@ public class TeacherNotificationPane {
         }
     }
 
-    public StackPane getNotificationIconWrapper() { return notificationIconWrapper; }
-    public ImageView getNotificationIcon() { return notificationIcon; }
-    public void showPopup(double x, double y) { notificationPopup.show(notificationIconWrapper, x, y); }
-    public void hidePopup() { notificationPopup.hide(); }
-    public boolean isPopupShowing() { return notificationPopup.isShowing(); }
+    /**
+     * Gets the wrapper StackPane containing the notification icon.
+     * 
+     * @return the StackPane that wraps the notification icon
+     */
+    public StackPane getNotificationIconWrapper() {
+        return notificationIconWrapper;
+    }
+
+    /**
+     * Gets the ImageView used as the notification icon.
+     * 
+     * @return the ImageView representing the notification icon
+     */
+    public ImageView getNotificationIcon() {
+        return notificationIcon;
+    }
+
+    /**
+     * Shows the notification popup at the specified screen coordinates.
+     * 
+     * @param x the X coordinate where the popup will be displayed
+     * @param y the Y coordinate where the popup will be displayed
+     */
+    public void showPopup(double x, double y) {
+        notificationPopup.show(notificationIconWrapper, x, y);
+    }
+
+    /**
+     * Hides the notification popup if it is currently showing.
+     */
+    public void hidePopup() {
+        notificationPopup.hide();
+    }
+
+    /**
+     * Checks if the notification popup is currently visible.
+     * 
+     * @return true if the popup is showing; false otherwise
+     */
+    public boolean isPopupShowing() {
+        return notificationPopup.isShowing();
+    }
+
 }
