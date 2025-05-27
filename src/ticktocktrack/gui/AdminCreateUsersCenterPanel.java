@@ -9,9 +9,23 @@ import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
 import javafx.scene.Cursor;
 
+/**
+ * Represents the center panel UI for the admin dashboard section where new users (Faculty and Students) can be created.
+ * 
+ * <p>This class provides a static method to create the panel, which includes clickable panes for Faculty and Student user creation.
+ * Upon clicking, the appropriate registration panel is displayed.</p>
+ */
 public class AdminCreateUsersCenterPanel {
 	
-	
+	/**
+	 * Provides the center panel UI for the "Create Users" section in the admin dashboard.
+	 * 
+	 * <p>This panel includes clickable areas for creating Faculty and Student user accounts,
+	 * displaying respective registration forms upon selection.</p>
+	 * 
+	 * @param adminId The ID of the admin user (currently unused in this method).
+	 * @return A Pane containing the UI components for user creation.
+	 */
     public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
@@ -71,6 +85,15 @@ public class AdminCreateUsersCenterPanel {
         return centerPanel;
     }
 
+    /**
+     * Creates a user selection pane with an image and label, styled with hover effects.
+     *
+     * @param imagePath the resource path to the user image to display
+     * @param labelText the text label for the user type (e.g., "Faculty" or "Student")
+     * @param layoutX the X-coordinate for the pane's layout position
+     * @param layoutY the Y-coordinate for the pane's layout position
+     * @return a styled Pane representing a user type selection with hover effects
+     */
     private static Pane createUserPane(String imagePath, String labelText, double layoutX, double layoutY) {
         Pane pane = new Pane();
         pane.setPrefSize(325, 309);

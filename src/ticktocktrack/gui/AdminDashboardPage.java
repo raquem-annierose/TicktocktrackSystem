@@ -21,11 +21,35 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UserIconUpdate;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Main JavaFX application class for the Admin Dashboard page.
+ * 
+ * <p>This class initializes and displays the admin dashboard window,
+ * manages the primary stage, center content pane, and user icon display.</p>
+ */
 public class AdminDashboardPage extends Application {
-	private Stage adminDashboardStage;
-	private Pane centerContentPane;
-	private ImageView userIcon;
-	// Store reference to the currently selected text
+    /**
+     * The main stage (window) for the admin dashboard.
+     */
+    private Stage adminDashboardStage;
+
+    /**
+     * The pane that holds the center content of the dashboard UI.
+     */
+    private Pane centerContentPane;
+
+    /**
+     * The image view used to display the current user's icon/avatar.
+     */
+    private ImageView userIcon;
+
+    /**
+     * The main entry point for the JavaFX application.
+     * Initializes and shows the primary stage with the admin dashboard UI.
+     *
+     * @param primaryStage the primary stage for this application, onto which
+     * the application scene can be set.
+     */
 	 @Override
 	    public void start(Stage primaryStage) {
 	        this.adminDashboardStage = primaryStage;
@@ -336,6 +360,10 @@ public class AdminDashboardPage extends Application {
        
     }
 	 
+	    /**
+	     * Loads the current user's profile image into the user icon.
+	     * If no custom profile image is found, loads a default admin icon.
+	     */
 	 public void loadUserIcon() {
 	        Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
 	        if (profileImage != null) {
@@ -346,6 +374,12 @@ public class AdminDashboardPage extends Application {
 	        }
 	    }
  
+	    /**
+	     * Handles the event when the profile icon is clicked.
+	     * Opens the user profile window and refreshes the user icon after changes.
+	     * 
+	     * @param event the mouse click event triggering this handler
+	     */
 	 private void onProfileClicked(MouseEvent event) {
 		    System.out.println("Profile clicked");
 
@@ -358,20 +392,28 @@ public class AdminDashboardPage extends Application {
 		    } catch (Exception e) {
 		        e.printStackTrace();
 		    }
-		}
+		}  
 
-
-   
-
-    // Define the logout click handler
+	    /**
+	     * Handles the logout click event.
+	     * Logs out the current session and navigates back to the home screen.
+	     * 
+	     * @param event the mouse click event triggering this handler
+	     */
     private void onLogoutClicked(MouseEvent event) {
         Session.logoutAndGoHome(adminDashboardStage);
     }
-
-
-    
+   
+    /**
+     * Tracks the currently selected sidebar Text element to manage highlight state.
+     */
     private Text selectedText; // Track the currently selected sidebar Text
     
+    /**
+     * Highlights the selected sidebar text and resets the previous selection.
+     * 
+     * @param newSelectedText the new Text element to be highlighted
+     */
     private void selectSidebarText(Text newSelectedText) {
         if (selectedText != null && selectedText != newSelectedText) {
             selectedText.setFill(Color.web("#02383E")); // Reset old selected color
@@ -381,6 +423,9 @@ public class AdminDashboardPage extends Application {
         // Set new selected color
     }
 
+    /**
+     * Clears any highlights on the sidebar by resetting the selected text color.
+     */
     @SuppressWarnings("unused")
 	private void clearSidebarHighlights() {
         if (selectedText != null) {
@@ -389,6 +434,12 @@ public class AdminDashboardPage extends Application {
         }
     }
 
+    /**
+     * Handles the event when the Dashboard sidebar option is clicked.
+     * Updates the center content pane to show the dashboard panel.
+     * 
+     * @param event the mouse click event triggering this handler
+     */
     private void onDashboardClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -397,6 +448,13 @@ public class AdminDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
     
+    /**
+     * Handles the event when the Create Users sidebar option is clicked.
+     * Loads the user creation panel into the center content pane.
+     * Verifies that the current user is logged in and is an admin.
+     * 
+     * @param event the mouse click event triggering this handler
+     */
     private void onCreateUsersClicked(MouseEvent event) {
         System.out.println("Create Users clicked!");
 
@@ -419,9 +477,14 @@ public class AdminDashboardPage extends Application {
         Pane createUsersPanel = AdminCreateUsersCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(createUsersPanel);
     }
-
-
     
+    /**
+     * Handles the event when the View All Users sidebar option is clicked.
+     * Loads the view all users panel into the center content pane.
+     * Verifies that the current user is logged in and is an admin.
+     * 
+     * @param event the mouse click event triggering this handler
+     */
     private void onViewAllUsersClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -442,11 +505,14 @@ public class AdminDashboardPage extends Application {
         Pane dashboardPanel = AdminViewAllUsersCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
-
     
-   
-
-    
+    /**
+     * Handles the event when the Manage Accounts sidebar option is clicked.
+     * Loads the manage accounts panel into the center content pane.
+     * Verifies that the current user is logged in and is an admin.
+     * 
+     * @param event the mouse click event triggering this handler
+     */
     private void onManageAccountsClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -467,8 +533,13 @@ public class AdminDashboardPage extends Application {
         Pane dashboardPanel = AdminManageAccountsCenterPanel.createPanel(adminId);
         centerContentPane.getChildren().add(dashboardPanel);
     }
+    
 
-
+    /**
+     * The main entry point for launching the application.
+     * 
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
