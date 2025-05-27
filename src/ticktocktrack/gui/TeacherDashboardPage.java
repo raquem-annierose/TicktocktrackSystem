@@ -35,6 +35,7 @@ public class TeacherDashboardPage extends Application {
     public void start(Stage primaryStage) {
     	 // Store the reference to the primaryStage
         this.teacherDashboardStage = primaryStage;
+        IconHelper.applyIcon(primaryStage);
         
         
         UsersModel currentUser = Session.getCurrentUser();

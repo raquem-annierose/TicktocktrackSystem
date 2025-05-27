@@ -30,37 +30,7 @@ public class Login {
      * @return The role of the user ( "Admin", "Teacher", "Student") if successful; otherwise null.
      */
     public String authenticate(String username, String password) {
-        // --- HARD CODED USERS ---
-        if ("admin".equals(username) && "adminpass".equals(password)) {
-            UsersModel user = new UsersModel(0, "admin", "admin@example.com", "Admin");
-            user.setAdminId(0);
-            user.setFirstName("Hardcoded");
-            user.setLastName("Admin");
-            Session.setCurrentUser(user);
-            return "Admin";
-        }
-        if ("teacher".equals(username) && "teacherpass".equals(password)) {
-            UsersModel user = new UsersModel(1, "teacher", "teacher@example.com", "Teacher");
-            user.setTeacherId(1);
-            user.setFirstName("Hardcoded");
-            user.setLastName("Teacher");
-            Session.setCurrentUser(user);
-            return "Teacher";
-        }
-        if ("student".equals(username) && "studentpass".equals(password)) {
-            UsersModel user = new UsersModel(2, "student", "student@example.com", "Student");
-            user.setStudentId(2);
-            user.setFirstName("Hardcoded");
-            user.setLastName("Student");
-            user.setMiddleName("H");
-            user.setYearLevel("3");
-            user.setProgram("CS");
-            user.setSection("A");
-            Session.setCurrentUser(user);
-            return "Student";
-        }
-        // --- END HARD CODED USERS ---
-
+       
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;

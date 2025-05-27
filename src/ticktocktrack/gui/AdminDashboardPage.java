@@ -29,6 +29,7 @@ public class AdminDashboardPage extends Application {
 	 @Override
 	    public void start(Stage primaryStage) {
 	        this.adminDashboardStage = primaryStage;
+	        IconHelper.applyIcon(primaryStage);
 	        
 	        UsersModel currentUser = Session.getCurrentUser();
 	        if (currentUser == null) {
