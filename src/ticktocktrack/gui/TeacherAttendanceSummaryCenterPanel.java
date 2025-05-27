@@ -38,7 +38,7 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         StackPane content = new StackPane();
 	     // REDUCE top padding to pull everything up
-	    content.setPadding(new Insets(0, 20, 20, 50)); // was (20, 20, 20, 50) — now top is 0
+	    content.setPadding(new Insets(0, 20, 20, 50)); 
 	    content.setPrefHeight(750); // use full height
 	
 	    ScrollPane scrollPane = new ScrollPane();

@@ -482,6 +482,8 @@ public class TeacherNotificationPane {
             if (success) {
                 System.out.println("Excuse rejected and marked as Absent.");
                 new Alert(Alert.AlertType.INFORMATION, "Excuse rejected and attendance marked as absent.").showAndWait();
+                StudentNotificationDAO.sendExcuseRejectedNotification(studentId, courseName, LocalDate.parse(dateString));
+
             } else {
                 System.out.println("Failed to reject excuse.");
                 new Alert(Alert.AlertType.ERROR, "Failed to update attendance record.").showAndWait();

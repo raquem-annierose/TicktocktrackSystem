@@ -19,8 +19,20 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UsersModel;
 import ticktocktrack.database.DatabaseDashboard;
 
+/**
+ * The {@code TeacherDashboardCenterPanel} class is responsible for creating the main content panel 
+ * displayed in the center of the Teacher Dashboard. This panel serves as the default view when 
+ * a teacher logs into the dashboard.
+ */
 public class TeacherDashboardCenterPanel {
 
+	/**
+	 * Creates the default center panel for the Teacher Dashboard.
+	 * This panel is styled with a white background and a border, and it serves as the main container 
+	 * for dashboard content displayed to the teacher.
+	 *
+	 * @return A {@code Pane} object configured as the main center panel of the Teacher Dashboard.
+	 */
     public static Pane createPanel() {
         // Root panel
     	

@@ -263,7 +263,7 @@ public class TeacherNotificationDAO {
             }
         } catch (SQLException e) {
             System.err.println("ERROR: Failed to retrieve notifications for userId = " + userId
-                              + " • " + e.getMessage());
+                              + " ï¿½ " + e.getMessage());
         } finally {
             dbConn.closeConnection();
         }
@@ -271,7 +271,12 @@ public class TeacherNotificationDAO {
         return notifications;
     }
 
-    
+    /**
+     * Deletes a notification from the database based on its unique identifier.
+     *
+     * @param notificationId The unique identifier of the notification to be deleted.
+     * @return {@code true} if the notification was successfully deleted, {@code false} otherwise.
+     */ 
     public static boolean deleteNotificationById(int notificationId) {
         String sql = "DELETE FROM Notifications WHERE notification_id = ?";
         DatabaseConnection dbConn = new DatabaseConnection();
@@ -293,5 +298,13 @@ public class TeacherNotificationDAO {
         return false;
     }
 
+    /**
+     * Default constructor for the {@code TeacherNotificationDAO} class.
+     * Initializes the DAO for managing teacher notifications.
+     */
+    public TeacherNotificationDAO() {
+        // Default constructor
+    }
 
+    
 }

@@ -23,14 +23,31 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.UserIconUpdate;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * JavaFX Application class representing the Teacher Dashboard UI.
+ * Manages the main window, including notifications, user icon, and center content pane.
+ */
 public class TeacherDashboardPage extends Application {
-	private Stage teacherDashboardStage;
-	private Pane centerContentPane;
-	private TeacherNotificationPane notificationPane; 
-	private ImageView userIcon;
-		 // Declare the notificationDot as an instance variable to update its visibility later
-   
-	// Store reference to the currently selected text
+
+    /** The primary stage (window) for the teacher dashboard. */
+    private Stage teacherDashboardStage;
+
+    /** The pane that holds the main center content of the dashboard. */
+    private Pane centerContentPane;
+
+    /** Pane that displays notifications specific to the teacher. */
+    private TeacherNotificationPane notificationPane;
+
+    /** ImageView for displaying the user's profile or icon image. */
+    private ImageView userIcon;
+
+    /**
+     * Starts the Teacher Dashboard application.
+     * Stores the primary stage reference and applies the application icon.
+     * Checks if a user is logged in; if not, terminates the application.
+     *
+     * @param primaryStage the main stage (window) provided by JavaFX
+     */
     @Override
     public void start(Stage primaryStage) {
     	 // Store the reference to the primaryStage
@@ -446,10 +463,10 @@ public class TeacherDashboardPage extends Application {
        
     }
     
-   
-
-   
-    
+    /**
+     * Loads and sets the current user's profile image into the userIcon ImageView.
+     * If the current user has no profile image, sets a default admin user icon.
+     */
     public void loadUserIcon() {
         Image profileImage = UserIconUpdate.getCurrentUserProfileImage();
         if (profileImage != null) {
@@ -460,7 +477,14 @@ public class TeacherDashboardPage extends Application {
         }
     }
 
- private void onProfileClicked(MouseEvent event) {
+    /**
+     * Handles the profile icon click event.
+     * Opens the UserProfile window and provides a callback to reload the user icon
+     * when the user profile is updated.
+     *
+     * @param event The mouse event triggered by clicking the profile icon
+     */
+    private void onProfileClicked(MouseEvent event) {
 	    System.out.println("Profile clicked");
 
 	    try {
@@ -474,19 +498,27 @@ public class TeacherDashboardPage extends Application {
 	    }
 	}
 
-
-
-    
-
-    // Define the logout click handler
+    /**
+     * Handles the logout action when the logout button or icon is clicked.
+     * Logs out the current session and navigates back to the home page.
+     *
+     * @param event The mouse event triggered by clicking the logout control
+     */
     private void onLogoutClicked(MouseEvent event) {
         Session.logoutAndGoHome(teacherDashboardStage);
     }
 
-
-    
+    /** 
+     * Stores the currently selected sidebar Text control to manage selection highlights.
+     */
     private Text selectedText; // Track the currently selected sidebar Text
     
+    /**
+     * Updates the sidebar to visually mark the newly selected Text element and
+     * reset the previous selection's style.
+     *
+     * @param newSelectedText The Text element to be selected in the sidebar
+     */
     private void selectSidebarText(Text newSelectedText) {
         if (selectedText != null && selectedText != newSelectedText) {
             selectedText.setFill(Color.web("#02383E")); // Reset old selected color
@@ -496,6 +528,10 @@ public class TeacherDashboardPage extends Application {
         // Set new selected color
     }
 
+    /**
+     * Clears any sidebar text selection highlighting by resetting the color and
+     * clearing the selectedText reference.
+     */
     @SuppressWarnings("unused")
 	private void clearSidebarHighlights() {
         if (selectedText != null) {
@@ -504,6 +540,13 @@ public class TeacherDashboardPage extends Application {
         }
     }
 
+    /**
+     * Handles the event when the Dashboard sidebar item is clicked.
+     * Updates sidebar selection highlighting and loads the dashboard panel
+     * into the center content pane.
+     *
+     * @param event The mouse event triggered by clicking the dashboard text
+     */
     private void onDashboardClicked(MouseEvent event) {
         System.out.println("Dashboard clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -513,6 +556,13 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
 
+    /**
+     * Handles the event when the Mark Attendance sidebar item is clicked.
+     * Updates sidebar selection highlighting and loads the mark attendance panel
+     * into the center content pane.
+     *
+     * @param event The mouse event triggered by clicking the mark attendance text
+     */
     private void onMarkAttendanceClicked(MouseEvent event) {
         System.out.println("Mark Attendance clicked!");
         selectSidebarText((Text) event.getSource()); // If you want sidebar highlighting like in view class list
@@ -537,7 +587,13 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.getChildren().add(markAttendancePanel);
     }
 
-    
+    /**
+     * Handles the event when the "View Class List" sidebar item is clicked.
+     * Updates sidebar selection highlighting and loads the class list panel
+     * for the logged-in teacher into the center content pane.
+     *
+     * @param event The mouse event triggered by clicking the "View Class List" text
+     */
     private void onViewClassListClicked(MouseEvent event) {
         System.out.println("View Class List clicked!");
         selectSidebarText((Text) event.getSource());
@@ -559,7 +615,13 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.getChildren().add(dashboardPanel);
     }
 
-    
+    /**
+     * Handles the event when the "Register Class" sidebar item is clicked.
+     * Updates sidebar selection highlighting and prepares the center content pane
+     * for loading the class registration panel.
+     *
+     * @param event The mouse event triggered by clicking the "Register Class" text
+     */
     private void onRegisterClassClicked(MouseEvent event) {
         System.out.println("Register Class clicked!");
         selectSidebarText((Text) event.getSource());
@@ -583,8 +645,14 @@ public class TeacherDashboardPage extends Application {
         Pane addCourseDialog = TeacherRegisterClassCenterPanel.createAddCourseDialog(centerContentPane, teacherId);
         centerContentPane.getChildren().add(addCourseDialog);
     }
-
-
+    
+    /**
+     * Handles the event when the "Attendance Summary" sidebar item is clicked.
+     * Highlights the selected sidebar text and loads the attendance summary panel
+     * for the logged-in teacher into the center content pane.
+     *
+     * @param event The mouse event triggered by clicking the "Attendance Summary" text
+     */
     private void onAttendanceSummaryClicked(MouseEvent event) {
         System.out.println("Attendance Summary clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -609,7 +677,13 @@ public class TeacherDashboardPage extends Application {
         centerContentPane.getChildren().add(summaryPanel);
     }
 
-    
+    /**
+     * Handles the event when the "Individual Reports" sidebar item is clicked.
+     * Highlights the selected sidebar text and prepares the center content pane
+     * for loading individual report panels.
+     *
+     * @param event The mouse event triggered by clicking the "Individual Reports" text
+     */
     private void onIndividualReportsClicked(MouseEvent event) {
         System.out.println("Individual Reports clicked!");
         selectSidebarText((Text) event.getSource()); // Set the clicked text as selected
@@ -635,6 +709,12 @@ public class TeacherDashboardPage extends Application {
     }
 
 
+    /**
+     * The main method serves as the entry point for the application.
+     * It launches the JavaFX application by calling the {@code launch} method.
+     *
+     * @param args The command-line arguments passed to the program
+     */
     public static void main(String[] args) {
         launch(args);
     }

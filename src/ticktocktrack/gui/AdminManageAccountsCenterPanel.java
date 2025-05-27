@@ -20,8 +20,20 @@ import javafx.scene.layout.HBox;
 import ticktocktrack.database.UserDAO;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Provides the center panel UI for managing user accounts in the admin dashboard.
+ * <p>
+ * This panel allows the admin to view, edit, or delete user accounts.
+ * </p>
+ */
 public class AdminManageAccountsCenterPanel {
 
+    /**
+     * Creates and returns the main pane for managing accounts.
+     * 
+     * @param adminId the ID of the current admin user
+     * @return a Pane containing the UI components for managing user accounts
+     */
     public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
@@ -222,6 +234,12 @@ public class AdminManageAccountsCenterPanel {
         return centerPanel;
     }
 
+    /**
+     * Returns the CSS style string used for styling ComboBox controls
+     * throughout the admin manage accounts panel.
+     * 
+     * @return a CSS style string for ComboBox appearance
+     */
     private static String getComboBoxStyle() {
         return "-fx-background-color: white;" +
                 "-fx-font-size: 11px;" +
@@ -234,7 +252,13 @@ public class AdminManageAccountsCenterPanel {
                 "-fx-text-fill: black;";
     }
 
-    
+    /**
+     * Updates the columns of the provided TableView based on the specified user role.
+     * This clears existing columns and adds columns relevant to the given role.
+     * 
+     * @param table the TableView of UsersModel to update columns for
+     * @param role  the user role which determines the columns to display
+     */
     @SuppressWarnings("unchecked")
     private static void updateTableColumns(TableView<UsersModel> table, String role) {
         table.getColumns().clear();
@@ -268,9 +292,22 @@ public class AdminManageAccountsCenterPanel {
         manageCol.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 
         manageCol.setCellFactory(col -> new TableCell<UsersModel, UsersModel>() {
-            private final Button deleteButton = new Button("Delete");
-            private final Button editButton = new Button("Edit");
-            private final HBox manageBox = new HBox(5); // Reduced spacing
+        	/**
+        	 * Button for deleting a user entry from the table.
+        	 */
+        	private final Button deleteButton = new Button("Delete");
+
+        	/**
+        	 * Button for editing a user entry in the table.
+        	 */
+        	private final Button editButton = new Button("Edit");
+
+        	/**
+        	 * Horizontal box container that holds the edit and delete buttons,
+        	 * with spacing of 5 pixels between them.
+        	 */
+        	private final HBox manageBox = new HBox(5);
+
 
             {
             	deleteButton.setStyle(
@@ -333,7 +370,13 @@ public class AdminManageAccountsCenterPanel {
 
             }
 
-       
+            /**
+             * Updates the content of this TableCell to display the manageBox containing
+             * edit and delete buttons when the cell is not empty.
+             *
+             * @param item  The UsersModel item for the current row.
+             * @param empty Indicates whether this cell represents data or is empty.
+             */
             protected void updateItem(UsersModel item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : manageBox);

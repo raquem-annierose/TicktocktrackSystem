@@ -13,13 +13,27 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Provides a panel UI to display the attendance status and history for a course.
+ */
 public class AttendanceStatusPanel {
 
-    /**
-     * Creates an overlay panel showing attendance status for the given course,
-     * today's attendance status, and attendance history.
-     * The caller should set layout position and add it to the scene.
-     */
+	/**
+	 * Creates an overlay panel displaying the attendance status for a specific course.
+	 * 
+	 * The panel shows:
+	 * - The course name
+	 * - The current attendance status for today
+	 * - A history list of past attendance records
+	 * 
+	 * The caller is responsible for setting the panel's layout position and adding it to the scene graph.
+	 * 
+	 * @param courseName the name of the course to display attendance for
+	 * @param attendanceStatus the attendance status for today (e.g., "Present", "Absent", "Late")
+	 * @param history a list of AttendanceRecord objects representing the attendance history
+	 * @param onClose a Runnable callback to execute when the panel is closed
+	 * @return a Pane containing the attendance status overlay UI components
+	 */
     public static Pane createStatusPanel(String courseName, String attendanceStatus, List<AttendanceRecord> history, Runnable onClose) {
         VBox panel = new VBox(20);
         panel.setPadding(new Insets(25));
@@ -115,6 +129,12 @@ public class AttendanceStatusPanel {
         return panel;
     }
 
+    /**
+     * Returns the image file path corresponding to the given attendance status.
+     *
+     * @param attendanceStatus the attendance status string (e.g., "present", "absent")
+     * @return the relative path to the status image, or null if status is unrecognized or null
+     */
     private static String getImagePathForStatus(String attendanceStatus) {
         if (attendanceStatus == null) return null;
         switch (attendanceStatus.toLowerCase()) {
@@ -131,20 +151,42 @@ public class AttendanceStatusPanel {
         }
     }
 
-    // Simple DTO class for attendance record
+    /**
+     * Data Transfer Object (DTO) representing a single attendance record.
+     */
     public static class AttendanceRecord {
+
+        /** The date of the attendance record. */
         private final LocalDate date;
+
+        /** The attendance status for that date (e.g., "present", "absent"). */
         private final String status;
 
+        /**
+         * Constructs an AttendanceRecord with a specific date and status.
+         *
+         * @param date the date of the attendance
+         * @param status the attendance status on that date
+         */
         public AttendanceRecord(LocalDate date, String status) {
             this.date = date;
             this.status = status;
         }
 
+        /**
+         * Gets the date of the attendance record.
+         *
+         * @return the attendance date
+         */
         public LocalDate getDate() {
             return date;
         }
 
+        /**
+         * Gets the attendance status.
+         *
+         * @return the status string
+         */
         public String getStatus() {
             return status;
         }

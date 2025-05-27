@@ -17,10 +17,21 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import ticktocktrack.logic.Login;  // Import the Login class
 
+/**
+ * JavaFX application class for the Login Page.
+ * Handles the UI setup and initializes the login logic.
+ */
 public class LoginPage extends Application {
 
+    /** Logic handler for login operations. */
     private Login loginLogic;  // Declare the Login object
 
+    /**
+     * Starts the JavaFX application by setting up the primary stage,
+     * applying the application icon, and initializing login components.
+     *
+     * @param primaryStage the primary stage for this application
+     */
     @Override
     public void start(Stage primaryStage) {
         // Initialize the Login object
@@ -216,11 +227,17 @@ public class LoginPage extends Application {
         primaryStage.show();
     }
 
- // Handle login click
+    /**
+     * Handles the login button click event.
+     * Attempts to authenticate the user with the provided username and password.
+     * If login is successful, proceeds to the next stage or scene.
+     *
+     * @param username     the entered username
+     * @param password     the entered password
+     * @param primaryStage the primary stage of the application
+     */
     private void handleLoginClick(String username, String password, Stage primaryStage) {
-        // Print the username and password for debugging
        
-
         // Call authenticate method from Login class
         String role = loginLogic.authenticate(username, password);
 
@@ -252,7 +269,11 @@ public class LoginPage extends Application {
         }
     }
 
-    // Open Admin Dashboard
+    /**
+     * Opens the Admin Dashboard in a new window and closes the current login window.
+     *
+     * @param primaryStage the current login window's stage to be closed
+     */
     private void openAdminDashboard(Stage primaryStage) {
         AdminDashboardPage adminDashboard = new AdminDashboardPage();
         try {
@@ -263,7 +284,11 @@ public class LoginPage extends Application {
         }
     }
 
-    // Open Teacher Dashboard
+    /**
+     * Opens the Teacher Dashboard in a new window and closes the current login window.
+     *
+     * @param primaryStage the current login window's stage to be closed
+     */
     private void openTeacherDashboard(Stage primaryStage) {
         TeacherDashboardPage teacherDashboard = new TeacherDashboardPage();
         try {
@@ -274,7 +299,11 @@ public class LoginPage extends Application {
         }
     }
 
-    // Open Student Dashboard
+    /**
+     * Opens the Student Dashboard in a new window and closes the current login window.
+     *
+     * @param primaryStage the current login window's stage to be closed
+     */
     private void openStudentDashboard(Stage primaryStage) {
         StudentDashboardPage studentDashboard = new StudentDashboardPage();
         try {
@@ -285,8 +314,12 @@ public class LoginPage extends Application {
         }
     }
 
-
-
+    /**
+     * The main entry point of the application.
+     * Launches the JavaFX application.
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
