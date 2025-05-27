@@ -67,7 +67,7 @@ public class CardIndividualReport {
             "-fx-background-radius: 15;" +
             "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 12, 0, 0, 4);"
         );
-        modalContent.setMaxWidth(760);
+        modalContent.setMaxWidth(900);
         modalContent.setAlignment(Pos.TOP_LEFT);
 
         Label closeBtn = new Label("✕");
@@ -108,6 +108,8 @@ public class CardIndividualReport {
             styledLabel("Program: " + fullStudent.getProgram() + " | Year: " + fullStudent.getYearLevel() + " | Section: " + fullStudent.getSection()),
             styledLabel("Total Classes: " + fullStudent.getTotalClasses())
         );
+        studentInfo.setTranslateX(15);
+
 
         profileHeader.getChildren().addAll(userIcon, studentInfo);
 
@@ -122,8 +124,28 @@ public class CardIndividualReport {
         VBox leftCol = new VBox(15);
         leftCol.setPrefWidth(350);
         leftCol.getChildren().add(sectionTitle("Enrolled Courses:"));
-        String coursesText = courseNames.isEmpty() ? "None" : String.join(", ", courseNames);
-        leftCol.getChildren().add(styledLabel(coursesText));
+        FlowPane coursesFlow = new FlowPane();
+        coursesFlow.setHgap(8);
+        coursesFlow.setVgap(6);
+        coursesFlow.setPrefWrapLength(320); // wrap width to arrange nicely
+
+        if (courseNames.isEmpty()) {
+            coursesFlow.getChildren().add(styledLabel("None"));
+        } else {
+            for (String course : courseNames) {
+                Label courseLabel = new Label(course);
+                courseLabel.setStyle(
+                    "-fx-padding: 5 12 5 12;" +
+                    "-fx-background-color: #e0e7ff;" +
+                    "-fx-text-fill: #1e40af;" +
+                    "-fx-background-radius: 10;" +
+                    "-fx-font-size: 13px;" +
+                    "-fx-font-weight: 600;"
+                );
+                coursesFlow.getChildren().add(courseLabel);
+            }
+        }
+        leftCol.getChildren().add(coursesFlow);
         leftCol.getChildren().add(new Separator());
 
         leftCol.getChildren().add(sectionTitle("Monthly Attendance Summary:"));
@@ -164,7 +186,7 @@ public class CardIndividualReport {
 
         // RIGHT COLUMN (col 1)
         VBox rightCol = new VBox(15);
-        rightCol.setPrefWidth(350);
+        rightCol.setPrefWidth(450);
         rightCol.getChildren().add(sectionTitle("Attendance Per Class:"));
         if (attendanceSummaries.isEmpty()) {
             rightCol.getChildren().add(styledLabel("No attendance records found."));
@@ -176,9 +198,15 @@ public class CardIndividualReport {
                     summary.getPresentCount(), summary.getAbsentCount(),
                     summary.getExcusedCount(), summary.getLateCount()
                 );
-                rightCol.getChildren().add(styledLabel(classSummary));
+                Label classSummaryLabel = styledLabel(classSummary);
+                classSummaryLabel.setWrapText(true);
+                classSummaryLabel.setMaxWidth(350);
+                rightCol.setPadding(new Insets(0, 0, 0, 30));
+                rightCol.getChildren().add(classSummaryLabel);
+
             }
         }
+
 
         // Add columns to grid
         grid.add(leftCol, 0, 0);
@@ -201,8 +229,8 @@ public class CardIndividualReport {
 
         modalContainer.setPadding(Insets.EMPTY);
         StackPane.setAlignment(modalContainer, Pos.TOP_LEFT);
-        StackPane.setMargin(modalContainer, new Insets(0, 0, 0, 170));
-        modalContainer.setTranslateY(0); // zero vertical translation for top alignment
+        StackPane.setMargin(modalContainer, new Insets(0, 0, 0, 140));
+        modalContainer.setTranslateY(-20); // zero vertical translation for top alignment
 
         overlay.getChildren().add(modalContainer);
 
