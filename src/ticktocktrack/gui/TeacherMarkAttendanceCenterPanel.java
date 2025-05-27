@@ -110,29 +110,47 @@ public class TeacherMarkAttendanceCenterPanel {
         VBox centerVBox = new VBox(10);
         centerVBox.setPadding(new Insets(20, 50, 20, 50));
         
-      
         HBox searchCourseBox = new HBox(20);
         searchCourseBox.setPadding(new Insets(1, 0, 10, 4));
         searchCourseBox.setAlignment(Pos.CENTER_LEFT);
 
         TextField searchField = new TextField();
         searchField.setPromptText("Search Student");
-        searchField.setPrefWidth(350);
+        searchField.setPrefWidth(300);
         searchField.setStyle("-fx-font-size: 14px; -fx-padding: 10; -fx-background-radius: 20px;");
 
         ComboBox<String> courseComboBox = new ComboBox<>();
-        courseComboBox.setPrefWidth(200);
-        courseComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
+        courseComboBox.setPrefWidth(210);
+        courseComboBox.setStyle(
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 8;" +
+            "-fx-background-color: white;" +   // Light blue background
+            "-fx-border-color: #00796b;" +      // Teal border
+            "-fx-text-fill: #004d40;" +      // Dark teal text
+            "-fx-background-radius: 10;" +      // Rounded background corners
+            "-fx-border-radius: 10;"
+        );
         courseComboBox.getItems().addAll(courseSectionsMap.keySet());
-
+        
+        
         ComboBox<String> sectionComboBox = new ComboBox<>();
-        sectionComboBox.setPrefWidth(120);
-        sectionComboBox.setStyle("-fx-font-size: 14px; -fx-padding: 8;");
+        sectionComboBox.setPrefWidth(255);
+        sectionComboBox.setStyle(
+                "-fx-font-size: 14px;" +
+                "-fx-padding: 8;" +
+                "-fx-background-color: white;" +   // Light blue background
+                "-fx-border-color: #00796b;" +      // Teal border
+                "-fx-text-fill: #004d40;" +      // Dark teal text
+                "-fx-background-radius: 10;" +      // Rounded background corners
+                "-fx-border-radius: 10;"
+       );
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Button saveAttendanceButton = new Button("Save Attendance");
+        Button saveAttendanceButton = new Button("Save");
+        saveAttendanceButton.setPrefWidth(75);
+       
         saveAttendanceButton.setStyle(
             "-fx-font-size: 14px; " +
             "-fx-padding: 8 20; " +
