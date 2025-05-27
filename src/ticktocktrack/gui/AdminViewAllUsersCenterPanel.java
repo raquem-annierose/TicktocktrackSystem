@@ -18,10 +18,18 @@ import javafx.scene.text.TextAlignment;
 import ticktocktrack.database.UserDAO;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Represents the center panel in the Admin dashboard for viewing all users.
+ */
 public class AdminViewAllUsersCenterPanel {
-	
-	
 
+    /**
+     * Creates and returns the main pane displaying all users for the given admin.
+     * The pane includes styling and a shadow image at the top.
+     * 
+     * @param adminId the ID of the admin viewing the users, used to fetch or filter data as needed
+     * @return a Pane configured to show all users with proper UI elements
+     */
     public static Pane createPanel(int adminId) {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
@@ -320,6 +328,14 @@ public class AdminViewAllUsersCenterPanel {
         return centerPanel;
     }
 
+    /**
+     * Updates the columns of the given TableView based on the specified user role.
+     * Clears existing columns and sets new ones relevant to the role.
+     * 
+     * @param table the TableView of UsersModel to update columns for
+     * @param role the user role filter determining which columns to display; 
+     *             e.g., "All Users" shows all user-related columns
+     */
     @SuppressWarnings("unchecked")
     private static void updateTableColumns(TableView<UsersModel> table, String role) {
     	

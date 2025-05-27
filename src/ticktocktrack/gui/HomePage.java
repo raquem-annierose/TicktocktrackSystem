@@ -12,9 +12,18 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+/**
+ * The main homepage of the application, showing the initial UI.
+ * Provides a method to handle login button click that opens the LoginPage.
+ */
 public class HomePage extends Application {
 
-    // Method to handle the click event
+    /**
+     * Handles the login button click event by closing the current window
+     * and opening the LoginPage in a new window.
+     * 
+     * @param primaryStage The primary stage (window) of the homepage to close.
+     */
     private void handleLoginClick(Stage primaryStage) {
         System.out.println("Login Clicked!");
         
@@ -26,6 +35,13 @@ public class HomePage extends Application {
         loginPage.start(new Stage());  // Open the LoginPage in a new stage (window)
     }
 
+
+    /**
+     * Starts the JavaFX application by setting up the homepage scene with
+     * a background image and login button.
+     * 
+     * @param primaryStage The primary stage for this application.
+     */
     @Override
     public void start(Stage primaryStage) {
         // Path to your image
@@ -112,6 +128,12 @@ public class HomePage extends Application {
         primaryStage.show();
     }
 
+    /**
+     * The main entry point of the application.
+     * Launches the JavaFX application by calling the start method.
+     *
+     * @param args command-line arguments 
+     */
     public static void main(String[] args) {
         launch(args);
     }

@@ -23,8 +23,19 @@ import ticktocktrack.logic.Session;
 import ticktocktrack.logic.Student;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Provides UI components related to displaying detailed individual student reports.
+ * Includes functionality to create overlays showing student details accessible to teachers.
+ */
 public class CardIndividualReport {
 
+	/**
+	 * Creates an overlay panel displaying detailed information about a specific student.
+	 * Ensures that a logged-in teacher is available before proceeding.
+	 *
+	 * @param student The student whose details will be shown.
+	 * @return A Pane containing the student detail UI overlay, or an empty container if no teacher is logged in.
+	 */
     public static Pane createStudentDetailOverlay(Student student) {
         UsersModel currentUser = Session.getCurrentUser();
         if (currentUser == null || currentUser.getTeacherId() == null) {
@@ -198,6 +209,13 @@ public class CardIndividualReport {
         return overlay;
     }
 
+    /**
+     * Creates a PieChart representing the attendance status distribution
+     * for a given monthly attendance summary.
+     *
+     * @param summary The monthly attendance summary containing counts of different attendance statuses.
+     * @return A PieChart visualizing present, absent, excused, and late attendance counts.
+     */
     private static PieChart createAttendanceStatusPieChart(MonthlyAttendanceSummary summary) {
         int present = summary.getPresentCount();
         int absent = summary.getAbsentCount();
@@ -227,18 +245,36 @@ public class CardIndividualReport {
         return pieChart;
     }
 
+    /**
+     * Creates a Label with standard font size and color styling.
+     *
+     * @param text The text to display in the label.
+     * @return A styled Label with font size 13px and dark gray text color.
+     */
     private static Label styledLabel(String text) {
         Label label = new Label(text);
         label.setStyle("-fx-font-size: 13px; -fx-text-fill: #333333;");
         return label;
     }
 
+    /**
+     * Creates a Label with bold font styling and slightly larger font size.
+     *
+     * @param text The text to display in the label.
+     * @return A styled Label with font size 15px, bold weight, and dark text color.
+     */
     private static Label styledLabelBold(String text) {
         Label label = new Label(text);
         label.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #222;");
         return label;
     }
 
+    /**
+     * Creates a section title Label with larger bold font and padding.
+     *
+     * @param text The section title text.
+     * @return A styled Label with font size 16px, bold weight, and top padding.
+     */
     private static Label sectionTitle(String text) {
         Label label = new Label(text);
         label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #555;");

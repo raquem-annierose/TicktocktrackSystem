@@ -10,8 +10,18 @@ import javafx.stage.Stage;
 import ticktocktrack.database.UserDAO;
 import ticktocktrack.logic.UsersModel;
 
+/**
+ * Provides functionality for editing user details within the administration panel.
+ * <p>
+ * This class includes a list of available academic programs and a method to display 
+ * a modal dialog for editing the information of a selected user.
+ * </p>
+ */
 public class AdminEditUsers {
 
+	/**
+	 * List of academic programs available for selection when editing user details.
+	 */
     private static final String[] PROGRAMS = {
         "BSECE – BS in Electronics Engineering",
         "BSME – BS in Mechanical Engineering",
@@ -27,6 +37,11 @@ public class AdminEditUsers {
         "BSOA – BS in Office Administration"
     };
 
+    /**
+     * Displays a modal dialog to edit the details of the specified user.
+     * 
+     * @param user the UsersModel instance representing the user to edit
+     */
     public static void showEditDialog(UsersModel user) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);

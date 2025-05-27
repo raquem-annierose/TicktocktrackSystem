@@ -22,8 +22,16 @@ import javafx.scene.paint.Color;
 import ticktocktrack.logic.UserRegistration;
 import javafx.scene.image.Image;
 
+/**
+ * Class responsible for creating the Admin User Registration UI components.
+ */
 public class AdminUserRegistration {
 
+    /**
+     * Creates the base pane for the registration panel with styling and drop shadow effect.
+     *
+     * @return a styled Pane to be used as the base container for the registration UI.
+     */
     private static Pane createBasePanel() {
         Pane basePanel = new Pane();
         basePanel.setPrefSize(970, 560);
@@ -42,6 +50,12 @@ public class AdminUserRegistration {
         return basePanel;
     }
 
+    /**
+     * Creates an exit button ("X") that hides the specified panel when clicked.
+     *
+     * @param panel the Pane that should be hidden when the exit button is clicked.
+     * @return a styled Button configured as an exit control.
+     */
     private static Button createExitButton(Pane panel) {
         Button exitButton = new Button("X");
         exitButton.setLayoutX(920);
@@ -58,6 +72,13 @@ public class AdminUserRegistration {
         return exitButton;
     }
 
+    /**
+     * Creates a styled "Done" button positioned at the specified coordinates.
+     *
+     * @param x the X coordinate for the button's layout position
+     * @param y the Y coordinate for the button's layout position
+     * @return a Button styled as a "Done" button
+     */
     private static Button createDoneButton(double x, double y) {
         Button doneButton = new Button("Done");
         doneButton.setPrefSize(150, 50);
@@ -68,12 +89,21 @@ public class AdminUserRegistration {
                             "-fx-font-size: 16px; " +
                             "-fx-font-weight: bold; " +
                             "-fx-background-radius: 8px;");
-        doneButton.setCursor(Cursor.HAND);    
-        	
+        doneButton.setCursor(Cursor.HAND);
+
         return doneButton;
     }
 
- // Overloaded version with width and height
+    /**
+     * Creates a styled TextField with the specified prompt text, position, and size.
+     *
+     * @param prompt the prompt text to display inside the TextField
+     * @param x the X coordinate for the TextField's layout position
+     * @param y the Y coordinate for the TextField's layout position
+     * @param width the preferred width of the TextField
+     * @param height the preferred height of the TextField
+     * @return a TextField styled with border and background colors
+     */
     private static TextField createTextField(String prompt, double x, double y, double width, double height) {
         TextField textField = new TextField();
         textField.setPromptText(prompt);
@@ -91,10 +121,20 @@ public class AdminUserRegistration {
         return textField;
     }
 
+    /**
+     * Creates a styled PasswordField with the specified prompt text, position, and size.
+     *
+     * @param prompt the prompt text to display inside the PasswordField
+     * @param x the X coordinate for the PasswordField's layout position
+     * @param y the Y coordinate for the PasswordField's layout position
+     * @param width the preferred width of the PasswordField
+     * @param height the preferred height of the PasswordField
+     * @return a PasswordField styled with border and background colors
+     */
     private static PasswordField createPasswordField(String prompt, double x, double y, double width, double height) {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText(prompt);
-        passwordField.setPrefSize(width, height); // width and height passed as arguments
+        passwordField.setPrefSize(width, height);
         passwordField.setLayoutX(x);
         passwordField.setLayoutY(y);
         passwordField.setStyle(
@@ -108,7 +148,19 @@ public class AdminUserRegistration {
         );
         return passwordField;
     }
-    
+
+    /**
+     * Creates a Pane containing a PasswordField with a toggle feature to show/hide password text.
+     * The password is initially hidden, but the user can toggle visibility by switching between
+     * a PasswordField and a TextField with the same content.
+     *
+     * @param prompt the prompt text to display inside the password input fields
+     * @param x the X coordinate for the Pane's layout position
+     * @param y the Y coordinate for the Pane's layout position
+     * @param width the preferred width of the password input fields
+     * @param height the preferred height of the password input fields
+     * @return a Pane containing the password input fields with toggle functionality
+     */
     public static Pane createPasswordFieldWithToggle(String prompt, double x, double y, double width, double height) {
         PasswordField passwordField = new PasswordField();
         TextField textField = new TextField();
@@ -181,6 +233,14 @@ public class AdminUserRegistration {
         return container;
     }
 
+    /**
+     * Retrieves the password text from the given Pane that contains a PasswordField and a TextField.
+     * If the TextField (showing password in plain text) is visible, its text is returned.
+     * Otherwise, the PasswordField's text is returned.
+     *
+     * @param pane the Pane containing password input fields
+     * @return the current password text, or an empty string if none found
+     */
     public static String getPasswordFromPane(Pane pane) {
         for (javafx.scene.Node node : pane.getChildren()) {
             if (node instanceof PasswordField) {
@@ -195,7 +255,14 @@ public class AdminUserRegistration {
         }
         return "";
     }
-    
+
+    /**
+     * Displays an alert dialog on the JavaFX application thread.
+     *
+     * @param alertType the type of alert (e.g., INFORMATION, ERROR)
+     * @param title the title of the alert window
+     * @param message the message content displayed in the alert
+     */
     private static void showAlert(AlertType alertType, String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(alertType);
@@ -205,9 +272,18 @@ public class AdminUserRegistration {
             alert.showAndWait();
         });
     }
-    
+
+    /**
+     * Nested class representing the panel UI for Faculty Registration.
+     */
     public static class FacultyRegistrationPanel {
 
+        /**
+         * Creates and returns the pane for the Faculty Registration panel.
+         * Includes title text and an exit button.
+         *
+         * @return a Pane representing the Faculty Registration UI
+         */
         public static Pane createPanel() {
             Pane facultyRegistrationPanel = createBasePanel();
 
@@ -311,7 +387,17 @@ public class AdminUserRegistration {
     }
 
 
+    /**
+     * Nested class representing the panel UI for Student Registration.
+     */
     public static class StudentRegistrationPanel {
+
+        /**
+         * Creates and returns the pane for the Student Registration panel.
+         * Includes title text and initializes the base panel styling.
+         *
+         * @return a Pane representing the Student Registration UI
+         */
         public static Pane createPanel() {
             Pane studentRegistrationPanel = createBasePanel();
 
