@@ -1,4 +1,4 @@
-	package ticktocktrack.gui;
+package ticktocktrack.gui;
 	
 	import javafx.geometry.Insets;
 	import javafx.scene.control.Label;
@@ -283,8 +283,22 @@
 	     */
 	    private void addHoverEffect(HBox notificationBox, int notificationId) {
 	        // Create the button with the image
-	    	String btnImagePath = getClass().getResource("/resources/others_button.png").toExternalForm();
-	        ImageView btnIcon = new ImageView(new Image(btnImagePath, 30, 30, true, true));
+	        String btnImagePath = null;
+	        try {
+	            java.net.URL url = getClass().getResource("/resources/others_button.png");
+	            if (url != null) {
+	                btnImagePath = url.toExternalForm();
+	            }
+	        } catch (Exception e) {
+	            btnImagePath = null;
+	        }
+	        ImageView btnIcon;
+	        if (btnImagePath != null) {
+	            btnIcon = new ImageView(new Image(btnImagePath, 30, 30, true, true));
+	        } else {
+	            // fallback to a default icon or just a blank button
+	            btnIcon = new ImageView();
+	        }
 	        Button hoverButton = new Button();
 	        hoverButton.setGraphic(btnIcon);
 	        hoverButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
@@ -386,4 +400,3 @@
 
 	
 	}
-	    
