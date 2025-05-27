@@ -57,8 +57,8 @@ public class StudentIndividualReportPanel {
         shadowView.setLayoutY(-115);
 
         Text title = new Text("My Attendance Report");
-        title.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        title.setFill(Color.web("#02383E"));
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        title.setFill(Color.web("#6D00B5"));
         title.setLayoutX(50);
         title.setLayoutY(70);
 

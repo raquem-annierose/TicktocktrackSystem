@@ -179,7 +179,7 @@
 
 /* Table styling you already have */
 .table-view .column-header-background {
-    -fx-background-color: linear-gradient(to right, #e0f7fa, #b2ebf2);
+    -fx-background-color: linear-gradient(to right, #FFF1AB, #FFEA81);
     -fx-border-color: transparent;
     -fx-border-width: 0px;
 }

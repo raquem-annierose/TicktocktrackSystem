@@ -68,8 +68,8 @@ public class StudentViewMyAttendanceCenterPanel {
 
         // Title Label
         Label titleLabel = new Label("Classes Enrolled:");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
-        titleLabel.setTextFill(Color.web("#202124"));
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
+        titleLabel.setTextFill(Color.web("#8B43BC"));
         titleLabel.setPadding(new Insets(20, 0, 10, 20));
 
         // HBox for horizontal scrolling cards

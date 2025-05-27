@@ -91,7 +91,7 @@ public class StudentAttendanceStatusCenterPanel {
         headerBox.setPrefHeight(80);
         headerBox.setPadding(new Insets(10, 30, 10, 30));
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setStyle("-fx-background-color: #02383E; -fx-background-radius: 12 12 0 0;");
+        headerBox.setStyle("-fx-background-color: #6D00B5; -fx-background-radius: 12 12 0 0;");
 
         ImageView shadow = new ImageView(new Image(StudentAttendanceStatusCenterPanel.class
                 .getResource("/resources/SHADOW.png").toExternalForm()));
