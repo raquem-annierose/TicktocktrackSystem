@@ -180,18 +180,6 @@
 
 	
 	    /**
-	     * Adds a new notification with the given message, date sent, and status.
-	     * Uses a default senderUserId of 0.
-	     * 
-	     * @param message The notification message content.
-	     * @param dateSent The date and time the notification was sent.
-	     * @param status The status of the notification (e.g., "read", "unread").
-	     */
-	    public void addNotification(String message, LocalDateTime dateSent, String status) {
-	        addNotification(message, dateSent, status, 0); // default senderUserId
-	    }
-	
-	    /**
 	     * Adds a new notification with the given message, date sent, status, and sender user ID.
 	     * 
 	     * @param message The notification message content.
