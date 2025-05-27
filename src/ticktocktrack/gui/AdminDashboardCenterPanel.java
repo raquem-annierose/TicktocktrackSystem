@@ -21,8 +21,30 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.net.URL;
 
+/**
+ * This class provides the main center panel UI for the Admin Dashboard.
+ * It includes user statistics (Admins, Teachers, Students),
+ * account creation stats, a welcome message with the admin's name,
+ * current date display, decorative images, and a right-side holidays panel.
+ */
 public class AdminDashboardCenterPanel {
 
+    /**
+     * Creates and returns the main center panel Pane for the Admin Dashboard UI.
+     * 
+     * <p>The panel includes:
+     * <ul>
+     *   <li>Background and decorative images</li>
+     *   <li>Welcome message with the current admin's full name</li>
+     *   <li>Current date display</li>
+     *   <li>User statistics for Admins, Teachers, Students</li>
+     *   <li>Number of accounts created by the current admin</li>
+     *   <li>A right-side panel showing a scrollable list of holidays</li>
+     * </ul>
+     * </p>
+     *
+     * @return a configured Pane containing all dashboard UI elements
+     */
     public static Pane createPanel() {
         Pane centerPanel = new Pane();
         centerPanel.setPrefSize(1300, 750);
@@ -235,6 +257,17 @@ public class AdminDashboardCenterPanel {
         return centerPanel;
     }
 
+    /**
+     * Creates an ImageView from a resource path with specified size and position.
+     *
+     * @param resourcePath the path to the image resource
+     * @param width the desired width of the ImageView
+     * @param height the desired height of the ImageView
+     * @param x the X-coordinate for the ImageView's layout position
+     * @param y the Y-coordinate for the ImageView's layout position
+     * @return an ImageView configured with the specified image, size, and position;
+     *         returns an empty ImageView if the resource is not found
+     */
     private static ImageView createImageView(String resourcePath, double width, double height, double x, double y) {
         URL resourceUrl = AdminDashboardCenterPanel.class.getResource(resourcePath);
         if (resourceUrl == null) {
