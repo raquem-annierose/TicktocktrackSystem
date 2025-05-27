@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ticktocktrack"},{"l":"ticktocktrack.database"},{"l":"ticktocktrack.logic"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"ticktocktrack"},{"l":"ticktocktrack.gui"},{"l":"ticktocktrack.logic"}];updateSearchResults();

@@ -20,6 +20,14 @@ import ticktocktrack.logic.Session;
  */
 public class StudentNotificationDAO {
 	
+	/**
+	 * Sends a notification to a student indicating that their excuse for a specific attendance record 
+	 * has been rejected. The notification is associated with a particular course and attendance date.
+	 *
+	 * @param studentId     The unique identifier of the student whose excuse was rejected.
+	 * @param courseName    The name of the course related to the rejected excuse.
+	 * @param attendanceDate The date of the attendance record for which the excuse was rejected.
+	 */
 	public static void sendExcuseRejectedNotification(int studentId, String courseName, LocalDate attendanceDate) {
 	    int studentUserId = getUserIdByStudentId(studentId);
 	    if (studentUserId == -1) {
