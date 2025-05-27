@@ -138,9 +138,7 @@ public class TeacherNotificationPane {
         notificationPopup.getContent().add(scrollPane);
 
         loadNotificationsFromDatabase();
-        for (Notification n : notifications) {
-            addNotificationToHolder(n);
-        }
+       
 
         String iconPath = getClass().getResource("/resources/Teacher_Dashboard/Teacher_notification_icon.png").toExternalForm();
         notificationIcon = new ImageView(new Image(iconPath));

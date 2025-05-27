@@ -487,16 +487,7 @@ public class TeacherMarkAttendanceCenterPanel {
                     studentSection
                 );
 
-                DatabaseAttendance.saveAttendance(
-                    studentId,
-                    student.getDate(),
-                    student.getStatus(),
-                    student.getReason(),
-                    studentProgram,
-                    course,
-                    studentSection
-                    
-                );
+                
                 DatabaseAttendance.updateStudentAttendance(
                 	    student.getStudentId(),
                 	    student.getDate(),
