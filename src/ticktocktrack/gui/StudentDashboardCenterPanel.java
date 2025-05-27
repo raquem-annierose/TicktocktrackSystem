@@ -28,8 +28,17 @@ import javafx.scene.shape.Line;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Provides the main content panel for the Student Dashboard UI.
+ * This panel displays the core student-related information and controls.
+ */
 public class StudentDashboardCenterPanel {
 
+	 /**
+     * Creates and returns the main content pane for the student dashboard.
+     *
+     * @return a Pane containing the student dashboard UI elements
+     */
     public static Pane createPanel() {
         // Create the center panel
         Pane centerPanel = new Pane();
