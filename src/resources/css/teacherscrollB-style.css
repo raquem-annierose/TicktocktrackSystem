@@ -1,0 +1,18 @@
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-pref-width: 9px; /* Increase this value for a thicker scrollbar */
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #34BCCE; /* Customize thumb color (orange) */
+    -fx-background-radius: 6px;
+    -fx-padding: 2px;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 10px;
+}
