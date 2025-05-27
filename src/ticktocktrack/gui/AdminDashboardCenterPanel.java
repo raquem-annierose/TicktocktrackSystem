@@ -82,7 +82,7 @@ public class AdminDashboardCenterPanel {
         int totalStudents = DatabaseDashboard.countUsersByRole("student");
         int totalCreatedByAdmin = DatabaseDashboard.countAccountsCreatedBy(fullName);
 
-        Text totalUsersText = new Text("Total of Users");
+        Text totalUsersText = new Text("TOTAL OF USERS");
         totalUsersText.setFont(Font.font("Poppins", FontWeight.BOLD, 17));
         totalUsersText.setFill(Color.web("#916500"));
         totalUsersText.setLayoutX(39);

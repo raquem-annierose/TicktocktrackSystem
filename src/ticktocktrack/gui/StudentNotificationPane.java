@@ -35,21 +35,47 @@
 	import javafx.scene.layout.Priority;
 	import javafx.scene.control.Button;
 	
+	/**
+	 * Represents the notification panel in the student dashboard.
+	 * Manages loading, displaying, and interacting with student notifications.
+	 */
 	public class StudentNotificationPane {
-		private final int PAGE_SIZE = 3;  // Number of notifications to load each time
-		private int loadedNotificationCount = 0; // How many have been loaded so far
-		private boolean allNotificationsLoaded = false; // Flag when no more notifications left
 
-		
-		private StudentDashboardPage dashboardPage;
+	    /** Number of notifications to load each time (pagination size). */
+	    private final int PAGE_SIZE = 3;
+
+	    /** Count of how many notifications have been loaded so far. */
+	    private int loadedNotificationCount = 0;
+
+	    /** Flag to indicate whether all notifications have been loaded. */
+	    private boolean allNotificationsLoaded = false;
+
+	    /** Reference to the parent student dashboard page. */
+	    private StudentDashboardPage dashboardPage;
+
+	    /** The user ID of the current student. */
 	    private int userId;
+
+	    /** Popup window for displaying notifications. */
 	    private Popup notificationPopup;
+
+	    /** ImageView representing the notification icon. */
 	    private ImageView notificationIcon;
+
+	    /** Wrapper around the notification icon, useful for styling and event handling. */
 	    private StackPane notificationIconWrapper;
+
+	    /** Container VBox that holds the notification items in the popup. */
 	    private VBox notificationHolder;
-	    // Declare the notifications list as a class field
+
+	    /** Observable list holding the loaded notifications. */
 	    private ObservableList<Notification> notifications;
-	
+
+	    /**
+	     * Constructs a new StudentNotificationPane linked to the specified dashboard page.
+	     *
+	     * @param dashboardPage the StudentDashboardPage that this notification pane belongs to
+	     */
 	    public StudentNotificationPane(StudentDashboardPage dashboardPage) {
 	        this.dashboardPage = dashboardPage;
 	        
@@ -125,6 +151,11 @@
 	        });
 	    }
 	
+	    /**
+	     * Loads a batch of notifications from the database for the current user.
+	     * Uses pagination to load notifications in chunks defined by PAGE_SIZE.
+	     * If all notifications have already been loaded, this method returns immediately.
+	     */
 	    private void loadNotificationsFromDatabase() {
 	        if (allNotificationsLoaded) return; // no more to load
 	        
@@ -148,14 +179,26 @@
 	    }
 
 	
-	    // New overloaded method with senderUserId parameter
+	    /**
+	     * Adds a new notification with the given message, date sent, status, and sender user ID.
+	     * 
+	     * @param message The notification message content.
+	     * @param dateSent The date and time the notification was sent.
+	     * @param status The status of the notification (e.g., "read", "unread").
+	     * @param senderUserId The user ID of the sender who generated this notification.
+	     */
 	    public void addNotification(String message, LocalDateTime dateSent, String status, int senderUserId) {
 	        Notification note = new Notification(message, dateSent, status, senderUserId);
 	        notifications.add(note);
 	        addNotificationToHolder(note);
 	    }
-	
-	
+	    
+	    /**
+	     * Adds a single notification item to the notification holder UI container.
+	     * Creates the visual representation of the notification and appends it to the notification list.
+	     * 
+	     * @param notification The Notification object to be displayed.
+	     */
 	    private void addNotificationToHolder(Notification notification) {
 	        int senderUserId = notification.getSenderUserId();
 	
@@ -220,12 +263,24 @@
 	        }
 	    }
 	    
+	    /**
+	     * Returns the default user icon as an ImageView with preset size.
+	     * This icon is used when no specific user icon is available for a notification.
+	     * 
+	     * @return ImageView containing the default user icon image.
+	     */
 	    private ImageView getDefaultIcon() {
 	        String iconPath = getClass().getResource("/resources/Admin_Dashboard/Admin_user_icon.png").toExternalForm();
 	        return new ImageView(new Image(iconPath, 50, 50, true, true));
 	    }
-	
-	
+	    
+	    /**
+	     * Adds a hover effect to the given notification box.
+	     * The effect typically involves changing styles or visuals on mouse enter and exit.
+	     * 
+	     * @param notificationBox The HBox representing the notification UI element.
+	     * @param notificationId The unique identifier for the notification.
+	     */
 	    private void addHoverEffect(HBox notificationBox, int notificationId) {
 	        // Create the button with the image
 	    	String btnImagePath = getClass().getResource("/resources/others_button.png").toExternalForm();
@@ -283,25 +338,52 @@
 	    }
 
 	
+	    /**
+	     * Gets the wrapper StackPane containing the notification icon.
+	     * This wrapper may be used for positioning or styling purposes.
+	     * 
+	     * @return The StackPane that wraps the notification icon.
+	     */
 	    public StackPane getNotificationIconWrapper() {
 	        return notificationIconWrapper;
 	    }
-	
+
+	    /**
+	     * Gets the ImageView representing the notification icon.
+	     * This icon is typically displayed in the dashboard UI.
+	     * 
+	     * @return The ImageView of the notification icon.
+	     */
 	    public ImageView getNotificationIcon() {
 	        return notificationIcon;
 	    }
-	
+
+	    /**
+	     * Shows the notification popup at the specified screen coordinates.
+	     * 
+	     * @param x The x-coordinate where the popup should appear.
+	     * @param y The y-coordinate where the popup should appear.
+	     */
 	    public void showPopup(double x, double y) {
 	        notificationPopup.show(notificationIconWrapper, x, y);
 	    }
-	
+
+	    /**
+	     * Hides the notification popup if it is currently visible.
+	     */
 	    public void hidePopup() {
 	        notificationPopup.hide();
 	    }
-	
+
+	    /**
+	     * Checks whether the notification popup is currently visible on the screen.
+	     * 
+	     * @return true if the popup is showing, false otherwise.
+	     */
 	    public boolean isPopupShowing() {
 	        return notificationPopup.isShowing();
 	    }
+
 	
 	}
 	    

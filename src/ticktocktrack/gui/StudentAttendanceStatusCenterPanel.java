@@ -17,15 +17,40 @@ import ticktocktrack.logic.AttendanceStats;
 
 import java.util.List;
 
+/**
+ * A UI component that displays the attendance status for a student.
+ * It shows subject-specific attendance cards and allows selection highlighting.
+ */
 public class StudentAttendanceStatusCenterPanel {
 
+    /**
+     * The icon image URL used for subjects.
+     */
     private static final String SUBJECT_ICON = StudentAttendanceStatusCenterPanel.class
             .getResource("/resources/Subject_icon.png").toExternalForm();
 
+    /**
+     * The currently selected attendance card (highlighted).
+     */
     private static HBox selectedCard = null;
+
+    /**
+     * Container holding all subject attendance cards.
+     */
     private static VBox cardsContainer;
+
+    /**
+     * List of all subjects for the student.
+     */
     private static List<String> allSubjects;
 
+    /**
+     * Creates and returns a pane containing the attendance status panel for the given student.
+     * The panel shows subject cards with attendance information and allows interaction.
+     *
+     * @param studentId the unique identifier of the student whose attendance status is displayed
+     * @return a Pane representing the student attendance status UI
+     */
     public static Pane createPanel(int studentId) {
         BorderPane root = new BorderPane();
         root.setPrefSize(1100, 630);
@@ -55,6 +80,12 @@ public class StudentAttendanceStatusCenterPanel {
         return root;
     }
 
+    /**
+     * Builds the header section of the attendance status panel.
+     * This header includes a background with shadow effect and a title.
+     *
+     * @return a Pane containing the styled header UI components
+     */
     private static Pane buildHeader() {
         HBox headerBox = new HBox();
         headerBox.setPrefHeight(80);
@@ -81,6 +112,12 @@ public class StudentAttendanceStatusCenterPanel {
         return headerPane;
     }
 
+    /**
+     * Updates the attendance subject cards displayed in the panel
+     * by clearing existing cards and loading new data for the specified student.
+     *
+     * @param studentId the ID of the student whose attendance cards are to be updated
+     */
     private static void updateCards(int studentId) {
         cardsContainer.getChildren().clear();
 
@@ -107,6 +144,15 @@ public class StudentAttendanceStatusCenterPanel {
         }
     }
 
+    /**
+     * Builds a collapsible subject card UI component displaying attendance statistics
+     * for the given student and subject. The card expands and collapses on click to
+     * show or hide detailed information.
+     *
+     * @param subject the name of the subject to display
+     * @param studentId the ID of the student whose attendance stats will be shown
+     * @return an HBox representing the subject card with attendance details
+     */
     private static HBox buildSubjectCard(String subject, int studentId) {
         final double COLLAPSED_HEIGHT = 150;
         final double EXPANDED_HEIGHT = 280;
@@ -224,6 +270,12 @@ public class StudentAttendanceStatusCenterPanel {
         return card;
     }
 
+    /**
+     * Expands the given subject card by making its detailed summary visible and
+     * animating the card's height and fade-in effect.
+     *
+     * @param card the HBox representing the subject card to expand
+     */
     private static void setCardExpanded(HBox card) {
         VBox summary = (VBox) card.getUserData();
         summary.setVisible(true);
@@ -241,6 +293,12 @@ public class StudentAttendanceStatusCenterPanel {
         fadeIn.play();
     }
 
+    /**
+     * Collapses the given subject card by hiding its detailed summary and
+     * animating the card's height and fade-out effect.
+     *
+     * @param card the HBox representing the subject card to collapse
+     */
     private static void setCardCollapsed(HBox card) {
         VBox summary = (VBox) card.getUserData();
 
