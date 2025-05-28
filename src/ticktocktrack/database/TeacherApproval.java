@@ -200,7 +200,7 @@ public class TeacherApproval {
 	 * @param teacherId   The ID of the teacher rejecting the excuse.
 	 * @return true if the attendance record was successfully inserted or updated and the notification sent; false otherwise.
 	 */
- static boolean rejectExcuse(int studentId, String courseName, String dateString, int teacherId) {
+ public static boolean rejectExcuse(int studentId, String courseName, String dateString, int teacherId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    boolean success = false;
 
