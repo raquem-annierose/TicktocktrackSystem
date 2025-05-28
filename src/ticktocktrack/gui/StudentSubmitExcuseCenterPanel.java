@@ -260,9 +260,20 @@ public class StudentSubmitExcuseCenterPanel {
         messageOverlay.getChildren().addAll(submissionCard, confirmationMsg, okBtn, courseBox);
 
         submitButton.setOnAction(e -> {
+            // Check if reason is selected
+            if (selectedReason == null) {
+                new Alert(Alert.AlertType.WARNING, "Please select a reason for the excuse. If none of the above apply, please select 'Others'.").showAndWait();
+                return;  // stop further processing
+            }
+            
+            // If reason is "Others", remarks must be filled (specified)
+            if (selectedReason.equalsIgnoreCase("Others") && remarks.getText().trim().isEmpty()) {
+                new Alert(Alert.AlertType.WARNING, "Since you selected 'Others', please specify your reason in the remarks field.").showAndWait();
+                return;
+            }
+
             // Validate all required fields are filled
-            if (selectedReason != null
-                && !remarks.getText().trim().isEmpty()
+            if (!remarks.getText().trim().isEmpty()
                 && monthBox.getValue() != null
                 && dayBox.getValue() != null
                 && yearBox.getValue() != null
@@ -285,7 +296,7 @@ public class StudentSubmitExcuseCenterPanel {
 
                 // Compose notification message
                 String eventMessage = "submitted an excuse for " + dateString
-                    + " in course " + selectedCourse + ": " + selectedReason
+                    + " in course " + selectedCourse 
                     + " | Reason: " + remarks.getText().trim();
 
                 // Get current logged-in user's ID
@@ -311,7 +322,6 @@ public class StudentSubmitExcuseCenterPanel {
                 new Alert(Alert.AlertType.WARNING, "Please complete all fields before submitting.").showAndWait();
             }
         });
-
 
         // Excuse reason buttons grid
         Pane excuseGrid = new Pane();
@@ -345,14 +355,46 @@ public class StudentSubmitExcuseCenterPanel {
             reasonBtn.setLayoutX(x);
             reasonBtn.setLayoutY(y);
             reasonBtn.setStyle(defaultButtonStyle());
+            
+         // This flag tracks if placeholder is showing (only relevant for "Others")
+            final String OTHERS_PLACEHOLDER = "Please specify";
+
+            // Initially remarks is not editable and no placeholder shown
+            remarks.setEditable(false);
+
+            // Add listener to manage placeholder for Others
+            remarks.textProperty().addListener((obs, oldText, newText) -> {
+                if (selectedReason != null && selectedReason.equalsIgnoreCase("Others")) {
+                    if (newText.isEmpty()) {
+                        remarks.setPromptText(OTHERS_PLACEHOLDER);
+                    } else {
+                        remarks.setPromptText(null);
+                    }
+                } else {
+                    // For other reasons, no prompt text
+                    remarks.setPromptText(null);
+                }
+            });
 
             int index = i;
             reasonBtn.setOnAction(evt -> {
                 excuseButtons.forEach(b -> b.setStyle(defaultButtonStyle()));
                 reasonBtn.setStyle(selectedButtonStyle());
                 selectedReason = labels[index];
-                remarks.setText("Reason: " + selectedReason);
+
+                if (selectedReason.equalsIgnoreCase("Others")) {
+                    remarks.clear();            // clear remarks so user can type
+                    remarks.setEditable(true);  // allow editing
+                    remarks.setPromptText(OTHERS_PLACEHOLDER);  // show placeholder text
+                    remarks.requestFocus();     // focus text area
+                } else {
+                    remarks.setText(selectedReason);  // autofill remarks
+                    remarks.setEditable(false);       // disable editing
+                    remarks.setPromptText(null);      // remove placeholder text
+                }
             });
+
+
 
             Text lbl = new Text(labels[i]);
             lbl.setFont(Font.font("Poppins", 12));
