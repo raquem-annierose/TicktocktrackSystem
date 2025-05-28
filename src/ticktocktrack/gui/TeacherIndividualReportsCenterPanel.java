@@ -64,8 +64,8 @@ public class TeacherIndividualReportsCenterPanel {
         
         // Title
         Text title = new Text("Individual Reports of Students");
-        title.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        title.setFill(Color.web("#02383E"));
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 25));
+        title.setFill(Color.web("#055F82"));
         title.setLayoutX(50);
         title.setLayoutY(70);
         
@@ -135,7 +135,7 @@ public class TeacherIndividualReportsCenterPanel {
 
         Text filterTitle = new Text("Class Filters");
         filterTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 22));
-        filterTitle.setFill(Color.web("#02383E"));
+        filterTitle.setFill(Color.web("#055F82"));
         rightPanelVBox.getChildren().add(filterTitle);
 
         final String[] SUBJECT_COLORS = {

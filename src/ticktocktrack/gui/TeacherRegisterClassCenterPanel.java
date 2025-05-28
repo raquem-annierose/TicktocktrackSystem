@@ -52,7 +52,7 @@ public class TeacherRegisterClassCenterPanel {
         // Title
         Text title = new Text("Register Class");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
-        title.setFill(Color.web("#02383E"));
+        title.setFill(Color.web("#055F82"));
 
         // Fields
         TextField courseField = new TextField();
