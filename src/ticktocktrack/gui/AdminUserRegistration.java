@@ -317,6 +317,14 @@ public class AdminUserRegistration {
             TextField usernameField = createTextField("Username", startX, startY + gap * 2, 480, 50);
             facultyRegistrationPanel.getChildren().add(usernameField);
 
+            // Add username requirement text below the username field
+            Text usernameRequirement = new Text("Username must be 4-8 characters.");
+            usernameRequirement.setFont(Font.font("Poppins", 12));
+            usernameRequirement.setFill(Color.GRAY);
+            usernameRequirement.setLayoutX(startX);
+            usernameRequirement.setLayoutY(startY + gap * 2 + 65); // 65px below username field
+            facultyRegistrationPanel.getChildren().add(usernameRequirement);
+
             // Create and add role ComboBox (shifted down)
             ComboBox<String> roleComboBox = new ComboBox<>();
             roleComboBox.getItems().addAll("Admin", "Teacher");
@@ -365,15 +373,15 @@ public class AdminUserRegistration {
                 String password = getPasswordFromPane(passwordPane);
                 String confirmPassword = getPasswordFromPane(confirmPasswordPane);
 
-                if (!password.equals(confirmPassword)) {
-                    showAlert(AlertType.ERROR, "Error", "Passwords do not match!");
+                String validationError = validateStudentRegistrationFields(username, password, confirmPassword, email);
+                if (validationError != null) {
+                    showAlert(AlertType.ERROR, "Validation Error", validationError);
                     return;
                 }
 
                 boolean registered = UserRegistration.registerFaculty(username, email, role, password, confirmPassword, firstName, lastName);
                 if (registered) {
                     showAlert(AlertType.INFORMATION, "Registration Successful", "Faculty successfully registered!");
-                    // Restore main center panel UI (same as StudentRegistrationPanel)
                     Platform.runLater(() -> {
                         parentCenterPanel.getChildren().clear();
                         parentCenterPanel.getChildren().add(AdminCreateUsersCenterPanel.createPanel(0));
@@ -507,6 +515,12 @@ public class AdminUserRegistration {
                 String section = sectionField.getText();
                 String program = programComboBox.getValue();
 
+                String validationError = validateStudentRegistrationFields(username, password, confirmPassword, email);
+                if (validationError != null) {
+                    showAlert(AlertType.ERROR, "Validation Error", validationError);
+                    return;
+                }
+
                 UserRegistration.registerStudent(
                     username,
                     email,
@@ -520,7 +534,6 @@ public class AdminUserRegistration {
                     program
                 );
 
-                // Instead of adding children, just recreate the panel:
                 Platform.runLater(() -> {
                     parentCenterPanel.getChildren().clear();
                     parentCenterPanel.getChildren().add(AdminCreateUsersCenterPanel.createPanel(0));
@@ -532,7 +545,7 @@ public class AdminUserRegistration {
                 emailField, usernameField, lastNameField,
                 firstNameField, middleNameField,
                 passwordFieldPane, confirmPasswordFieldPane,
-                yearLevelComboBox, programComboBox, sectionField, // ⬅️ NEW programComboBox added
+                yearLevelComboBox, programComboBox, sectionField,
                 doneButton
             );
 
@@ -540,6 +553,25 @@ public class AdminUserRegistration {
         }
     }
 
-	
+    // Add this method to AdminUserRegistration (outside of inner classes)
+    private static String validateStudentRegistrationFields(String username, String password, String confirmPassword, String email) {
+        // Username: 4-8 characters
+        if (username == null || username.length() < 4 || username.length() > 8) {
+            return "Username must be between 4 and 8 characters.";
+        }
+        // Password: at least 8 characters
+        if (password == null || password.length() < 8) {
+            return "Password must be at least 8 characters.";
+        }
+        // Passwords match
+        if (!password.equals(confirmPassword)) {
+            return "Passwords do not match.";
+        }
+        // Email: simple regex check
+        if (email == null || !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            return "Please enter a valid email address.";
+        }
+        return null; // All good
+    }
 
 }
