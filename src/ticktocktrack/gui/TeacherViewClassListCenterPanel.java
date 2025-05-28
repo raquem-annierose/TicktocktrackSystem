@@ -75,9 +75,9 @@ public class TeacherViewClassListCenterPanel {
      * The title is styled and positioned to align with the panel's design.
      */
     private static void addTitle() {
-        Text title = new Text("View Class List");
-        title.setFont(Font.font("Poppins", FontWeight.BOLD, 36));
-        title.setFill(Color.web("#02383E"));
+        Text title = new Text("Class List");
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 20));
+        title.setFill(Color.web("#055F82"));
         title.setLayoutX(50);
         title.setLayoutY(70);
 
