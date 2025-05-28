@@ -284,7 +284,7 @@ public class AdminUserRegistration {
          *
          * @return a Pane representing the Faculty Registration UI
          */
-        public static Pane createPanel() {
+        public static Pane createPanel(Pane parentCenterPanel) {
             Pane facultyRegistrationPanel = createBasePanel();
 
             Text title = new Text("Faculty Registration");
@@ -356,14 +356,12 @@ public class AdminUserRegistration {
             facultyRegistrationPanel.getChildren().add(doneButton);
 
             doneButton.setOnAction(e -> {
-                System.out.println("Done button clicked");
                 String firstName = firstNameField.getText();
                 String lastName = lastNameField.getText();
                 String username = usernameField.getText();
                 String email = emailField.getText();
                 String role = roleComboBox.getValue();
 
-                // Use helper to get text from your toggle password panes
                 String password = getPasswordFromPane(passwordPane);
                 String confirmPassword = getPasswordFromPane(confirmPasswordPane);
 
@@ -375,6 +373,11 @@ public class AdminUserRegistration {
                 boolean registered = UserRegistration.registerFaculty(username, email, role, password, confirmPassword, firstName, lastName);
                 if (registered) {
                     showAlert(AlertType.INFORMATION, "Registration Successful", "Faculty successfully registered!");
+                    // Restore main center panel UI (same as StudentRegistrationPanel)
+                    Platform.runLater(() -> {
+                        parentCenterPanel.getChildren().clear();
+                        parentCenterPanel.getChildren().add(AdminCreateUsersCenterPanel.createPanel(0));
+                    });
                 } else {
                     showAlert(AlertType.ERROR, "Registration Failed", "Registration failed. Please try again.");
                 }
@@ -398,7 +401,7 @@ public class AdminUserRegistration {
          *
          * @return a Pane representing the Student Registration UI
          */
-        public static Pane createPanel() {
+        public static Pane createPanel(Pane parentCenterPanel) {
             Pane studentRegistrationPanel = createBasePanel();
 
             Text title = new Text("Student Registration");
@@ -502,7 +505,7 @@ public class AdminUserRegistration {
                 String confirmPassword = getPasswordFromPane(confirmPasswordFieldPane);
                 String yearLevel = yearLevelComboBox.getValue();
                 String section = sectionField.getText();
-                String program = programComboBox.getValue(); // NEW
+                String program = programComboBox.getValue();
 
                 UserRegistration.registerStudent(
                     username,
@@ -514,8 +517,14 @@ public class AdminUserRegistration {
                     lastName,
                     yearLevel,
                     section,
-                    program // NEW
+                    program
                 );
+
+                // Instead of adding children, just recreate the panel:
+                Platform.runLater(() -> {
+                    parentCenterPanel.getChildren().clear();
+                    parentCenterPanel.getChildren().add(AdminCreateUsersCenterPanel.createPanel(0));
+                });
             });
 
 

@@ -65,18 +65,29 @@ public class AdminCreateUsersCenterPanel {
             150
         );
 
+        // Use a single-element array to allow modification inside lambdas
+        final Pane[] currentRegistrationPanel = new Pane[1];
+
         // Faculty Click
         facultyPane.setOnMouseClicked(event -> {
             System.out.println("Faculty pane clicked!");
-            Pane facultyRegistration = AdminUserRegistration.FacultyRegistrationPanel.createPanel();
-            centerPanel.getChildren().setAll(shadowView, createUsersTitle, facultyPane, studentPane, facultyRegistration); // replace entire content
+            if (currentRegistrationPanel[0] != null && centerPanel.getChildren().contains(currentRegistrationPanel[0])) {
+                centerPanel.getChildren().remove(currentRegistrationPanel[0]);
+            }
+            Pane facultyRegistration = AdminUserRegistration.FacultyRegistrationPanel.createPanel(centerPanel);
+            currentRegistrationPanel[0] = facultyRegistration;
+            centerPanel.getChildren().add(facultyRegistration);
         });
 
         // Student Click
         studentPane.setOnMouseClicked(event -> {
             System.out.println("Student pane clicked!");
-            Pane studentRegistration = AdminUserRegistration.StudentRegistrationPanel.createPanel();
-            centerPanel.getChildren().setAll(shadowView, createUsersTitle, facultyPane, studentPane, studentRegistration); // replace entire content
+            if (currentRegistrationPanel[0] != null && centerPanel.getChildren().contains(currentRegistrationPanel[0])) {
+                centerPanel.getChildren().remove(currentRegistrationPanel[0]);
+            }
+            Pane studentRegistration = AdminUserRegistration.StudentRegistrationPanel.createPanel(centerPanel);
+            currentRegistrationPanel[0] = studentRegistration;
+            centerPanel.getChildren().add(studentRegistration);
         });
 
         // Add all elements
