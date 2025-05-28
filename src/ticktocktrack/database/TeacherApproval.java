@@ -52,18 +52,19 @@ public class TeacherApproval {
 	    return enrollmentId;
 	}
 
-    /**
-     * Approves a student's excuse for an absence on a specific date and course,
-     * updating or inserting the attendance record accordingly,
-     * and sends a notification to the student.
-     *
-     * @param studentId The ID of the student.
-     * @param courseName The name of the course.
-     * @param dateString The date of the absence in ISO format (yyyy-MM-dd).
-     * @param reason The reason for the excuse.
-     * @param teacherId The ID of the approving teacher.
-     * @return true if the operation was successful; false otherwise.
-     */
+	/**
+	 * Approves a student's excuse for an absence on a specific date and course.
+	 * If an attendance record for that date exists, it updates the record to mark the status as 'Excused',
+	 * includes the reason, and sets the approval details. If no record exists, a new attendance record is inserted.
+	 * After a successful update or insert, a notification is sent to the student.
+	 * @param studentId The ID of the student whose excuse is being approved.
+	 * @param courseName The name of the course for which the excuse is being approved.
+	 * @param dateString The date of the absence in ISO format (yyyy-MM-dd).
+	 * @param reason The reason for the student's absence.
+	 * @param teacherId The ID of the teacher approving the excuse.
+	 * @return true if the attendance record was successfully inserted or updated and the notification sent; false otherwise.
+	 */
+
 	public static boolean approveExcuse(int studentId, String courseName, String dateString, String reason, int teacherId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    try {
@@ -186,18 +187,20 @@ public class TeacherApproval {
 	}
 
 	
-    /**
-     * Rejects a student's excuse for an absence on a specific date and course,
-     * updating or inserting the attendance record accordingly,
-     * and sends a notification to the student.
-     *
-     * @param studentId The ID of the student.
-     * @param courseName The name of the course.
-     * @param dateString The date of the absence in ISO format (yyyy-MM-dd).
-     * @param teacherId The ID of the teacher rejecting the excuse.
-     * @return true if the operation was successful; false otherwise.
-     */
-	public static boolean rejectExcuse(int studentId, String courseName, String dateString, int teacherId) {
+	/**
+	 * Rejects a student's excuse for an absence on a specific date and course.
+	 * If an attendance record exists for the specified date, it is updated to mark the status as 'Absent',
+	 * clears the reason, and sets the approval status to 'Rejected'. If no record exists,
+	 * a new 'Absent' attendance record is inserted with rejection details.
+	 * A notification is sent to the student informing them of the rejection.
+	 *
+	 * @param studentId   The ID of the student whose excuse is being rejected.
+	 * @param courseName  The name of the course for which the excuse is being rejected.
+	 * @param dateString  The date of the absence in ISO format (yyyy-MM-dd).
+	 * @param teacherId   The ID of the teacher rejecting the excuse.
+	 * @return true if the attendance record was successfully inserted or updated and the notification sent; false otherwise.
+	 */
+ static boolean rejectExcuse(int studentId, String courseName, String dateString, int teacherId) {
 	    DatabaseConnection db = new DatabaseConnection();
 	    boolean success = false;
 
@@ -429,3 +432,5 @@ public class TeacherApproval {
 	}
 
 }
+
+
