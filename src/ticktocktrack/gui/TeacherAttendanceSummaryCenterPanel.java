@@ -65,7 +65,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         StackPane content = new StackPane();
 	     // REDUCE top padding to pull everything up
 	    content.setPadding(new Insets(0, 20, 20, 50)); 
-	    content.setPrefHeight(750); // use full height
+	    content.setPrefHeight(100); // use full height
 	
 	    ScrollPane scrollPane = new ScrollPane();
 	    scrollPane.setContent(buildSubjectGrid(content, teacherId));
@@ -75,7 +75,7 @@ public class TeacherAttendanceSummaryCenterPanel {
 	    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 	    scrollPane.getStylesheets().add(TeacherAttendanceSummaryCenterPanel.class
 	             .getResource("/resources/css/scrollbar.css").toExternalForm());
-	
+	    
 	     // Optional: slightly increase scroll pane height
 	     scrollPane.setPrefHeight(680); // Previously maybe 615 (750 - 135)
 	
@@ -102,14 +102,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         shadow.setFitHeight(250);
         shadow.setLayoutY(-115);
 
-        // Title text displaying "Attendance Summary" with font and color styling
-        Text summaryTitle = new Text("Attendance Summary");
-        summaryTitle.setFont(Font.font("Poppins", FontWeight.BOLD, 26));
-        summaryTitle.setFill(Color.web("#02383E"));
-        summaryTitle.setLayoutX(50); // X-position of the title
-        summaryTitle.setLayoutY(75); // Y-position for vertical centering
-
-        headerPane.getChildren().addAll(shadow, summaryTitle);
+        headerPane.getChildren().addAll(shadow);
         return headerPane;
     }
 
@@ -249,12 +242,7 @@ public class TeacherAttendanceSummaryCenterPanel {
 
         HBox titleBox = new HBox(8, subjectIcon, title);
         titleBox.setAlignment(Pos.CENTER_LEFT);
-        titleBox.relocate(-960, -110);
-
-        Text attendance = new Text("Attendance Summary");
-        attendance.setFont(Font.font("Poppins", FontWeight.BOLD, 25));
-        attendance.setFill(Color.web("#02383E"));
-        attendance.relocate(-300, -120);
+        titleBox.relocate(-960, -65);
 
         TableView<AttendanceRecord> table = createAttendanceTable();
 
@@ -301,7 +289,7 @@ public class TeacherAttendanceSummaryCenterPanel {
         ok.relocate(-960, 540);
         ok.setOnAction(e -> content.getChildren().setAll(buildSubjectGrid(content, teacherId)));
 
-        centerPane.getChildren().addAll(titleBox, table, ok, attendance);
+        centerPane.getChildren().addAll(titleBox, table, ok);
         detail.setCenter(centerPane);
         content.getChildren().setAll(detail);
     }
@@ -342,6 +330,10 @@ public class TeacherAttendanceSummaryCenterPanel {
         cLate.setPrefWidth(80);
 
         table.getColumns().addAll(cStudent, cStatus, cPresent, cAbsent, cExcused, cLate);
+        
+        String cssPath = TeacherAttendanceSummaryCenterPanel.class.getResource("/resources/css/adminsummary.css").toExternalForm();
+        table.getStylesheets().add(cssPath);
+        
         return table;
     }
 
