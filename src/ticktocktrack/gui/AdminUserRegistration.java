@@ -318,7 +318,7 @@ public class AdminUserRegistration {
             facultyRegistrationPanel.getChildren().add(usernameField);
 
             // Add username requirement text below the username field
-            Text usernameRequirement = new Text("Username must be 4-8 characters.");
+            Text usernameRequirement = new Text("Username must be 6-12 characters.");
             usernameRequirement.setFont(Font.font("Poppins", 12));
             usernameRequirement.setFill(Color.GRAY);
             usernameRequirement.setLayoutX(startX);
@@ -556,8 +556,8 @@ public class AdminUserRegistration {
     // Add this method to AdminUserRegistration (outside of inner classes)
     private static String validateStudentRegistrationFields(String username, String password, String confirmPassword, String email) {
         // Username: 4-8 characters
-        if (username == null || username.length() < 4 || username.length() > 8) {
-            return "Username must be between 4 and 8 characters.";
+        if (username == null || username.length() < 6 || username.length() > 12) {
+            return "Username must be between 6 and 12 characters.";
         }
         // Password: at least 8 characters
         if (password == null || password.length() < 8) {

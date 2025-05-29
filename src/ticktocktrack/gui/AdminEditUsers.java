@@ -37,6 +37,37 @@ public class AdminEditUsers {
         "BSOA – BS in Office Administration"
     };
 
+    // Place this method here, outside of showEditDialog
+    private static String validateUserEditFields(String username, String email, String role, String firstName, String lastName, String middleName, String program, String section, String yearLevel) {
+        if (username == null || username.length() < 6 || username.length() > 12) {
+            return "Username must be between 6 and 12 characters.";
+        }
+        if (email == null || !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            return "Please enter a valid email address.";
+        }
+        if (firstName == null || firstName.trim().isEmpty()) {
+            return "First name is required.";
+        }
+        if (lastName == null || lastName.trim().isEmpty()) {
+            return "Last name is required.";
+        }
+        if (role != null && role.equalsIgnoreCase("Student")) {
+            if (middleName == null || middleName.trim().isEmpty()) {
+                return "Middle name is required for students.";
+            }
+            if (program == null || program.trim().isEmpty()) {
+                return "Program is required for students.";
+            }
+            if (section == null || section.trim().isEmpty()) {
+                return "Section is required for students.";
+            }
+            if (yearLevel == null || yearLevel.trim().isEmpty()) {
+                return "Year level is required for students.";
+            }
+        }
+        return null;
+    }
+
     /**
      * Displays a modal dialog to edit the details of the specified user.
      * 
@@ -180,18 +211,39 @@ public class AdminEditUsers {
         sectionField.getStyleClass().add(roleClass);
         yearLevelField.getStyleClass().add(roleClass);
 
+
         // Save button action
         saveBtn.setOnAction(e -> {
-            user.setUsername(usernameField.getText());
-            user.setEmail(emailField.getText());
-            user.setFirstName(firstNameField.getText());
-            user.setLastName(lastNameField.getText());
+            String username = usernameField.getText();
+            String email = emailField.getText();
+            String firstName = firstNameField.getText();
+            String lastName = lastNameField.getText();
+            String middleName = middleNameField.getText();
+            String program = programComboBox.getValue();
+            String section = sectionField.getText();
+            String yearLevel = yearLevelField.getText();
+            String role = user.getRole();
 
-            if (user.getRole().equalsIgnoreCase("Student")) {
-                user.setMiddleName(middleNameField.getText());
-                user.setProgram(programComboBox.getValue() != null ? programComboBox.getValue() : "");
-                user.setSection(sectionField.getText());
-                user.setYearLevel(yearLevelField.getText());
+            String validationError = validateUserEditFields(
+                username, email, role, firstName, lastName, middleName, program, section, yearLevel
+            );
+            if (validationError != null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, validationError, ButtonType.OK);
+                alert.initOwner(dialog);
+                alert.showAndWait();
+                return;
+            }
+
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+
+            if (role.equalsIgnoreCase("Student")) {
+                user.setMiddleName(middleName);
+                user.setProgram(program != null ? program : "");
+                user.setSection(section);
+                user.setYearLevel(yearLevel);
             }
 
             boolean success = UserDAO.updateUser(user);
